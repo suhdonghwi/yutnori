@@ -36,6 +36,7 @@ type MovePreview = {
   label: string;
   action: "잡기!" | "업기!" | null;
   color: string;
+  pathNodes: NodeId[];
 };
 type ActiveMove = {
   id: number;
@@ -173,6 +174,54 @@ function BoardPathSegment({ from, to }: { from: [number, number, number]; to: [n
         <boxGeometry args={[0.065, 0.012, Math.max(0.1, length - 0.08)]} />
         <meshBasicMaterial color="#c39a5c" />
       </mesh>
+    </group>
+  );
+}
+
+function PreviewPathSegment({ from, to, color }: { from: [number, number, number]; to: [number, number, number]; color: string }) {
+  const material = useRef<THREE.MeshBasicMaterial>(null);
+  const dx = to[0] - from[0];
+  const dz = to[2] - from[2];
+  const length = Math.hypot(dx, dz);
+  const angle = Math.atan2(dx, dz);
+  const center: [number, number, number] = [(from[0] + to[0]) / 2, 0.082, (from[2] + to[2]) / 2];
+
+  useFrame(({ clock }) => {
+    if (material.current) material.current.opacity = 0.68 + Math.sin(clock.elapsedTime * 7) * 0.16;
+  });
+
+  return (
+    <group position={center} rotation={[0, angle, 0]}>
+      <mesh>
+        <boxGeometry args={[0.18, 0.025, Math.max(0.12, length - 0.04)]} />
+        <meshBasicMaterial
+          ref={material}
+          color={color}
+          transparent
+          opacity={0.8}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function PreviewPathNode({ position, color }: { position: [number, number, number]; color: string }) {
+  const ref = useRef<THREE.Group>(null);
+  useFrame(({ clock }) => {
+    if (!ref.current) return;
+    const scale = 1 + Math.sin(clock.elapsedTime * 7.5) * 0.1;
+    ref.current.scale.setScalar(scale);
+  });
+
+  return (
+    <group ref={ref} position={[position[0], 0.115, position[2]]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.34, 0.46, 36]} />
+        <meshBasicMaterial color={color} transparent opacity={0.9} depthWrite={false} blending={THREE.AdditiveBlending} />
+      </mesh>
+      <pointLight color={color} intensity={1.3} distance={1.8} position={[0, 0.32, 0]} />
     </group>
   );
 }
@@ -420,22 +469,103 @@ function createYutGeometry() {
 const YUT_GEOMETRY = createYutGeometry();
 const YUT_COLLIDER_VERTICES = new Float32Array(YUT_GEOMETRY.attributes.position.array);
 
-function FlatBackdoX() {
+function YutImpactBurst({
+  id,
+  position,
+  intensity,
+  onComplete,
+}: {
+  id: number;
+  position: [number, number, number];
+  intensity: number;
+  onComplete: (id: number) => void;
+}) {
+  const meshes = useRef<(THREE.Mesh | null)[]>([]);
+  const elapsed = useRef(0);
+  const particles = useMemo(() => Array.from({ length: 12 }, (_, index) => {
+    const angle = (index / 12) * Math.PI * 2 + Math.random() * 0.28;
+    const speed = (0.8 + Math.random() * 0.9) * intensity;
+    return {
+      velocity: new THREE.Vector3(Math.cos(angle) * speed, 1.2 + Math.random() * 1.7, Math.sin(angle) * speed),
+      size: 0.045 + Math.random() * 0.055,
+      color: index % 3 === 0 ? "#fff0b8" : index % 2 === 0 ? "#d9ad64" : "#9b7041",
+    };
+  }), [intensity]);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => onComplete(id), 850);
+    return () => window.clearTimeout(timeout);
+  }, [id, onComplete]);
+
+  useFrame((_, delta) => {
+    elapsed.current += delta;
+    const progress = Math.min(1, elapsed.current / 0.82);
+    particles.forEach((particle, index) => {
+      const mesh = meshes.current[index];
+      if (!mesh) return;
+      const time = elapsed.current;
+      mesh.position.set(
+        particle.velocity.x * time,
+        particle.velocity.y * time - 3.6 * time * time,
+        particle.velocity.z * time,
+      );
+      const scale = particle.size * (1 - progress) * 1.25;
+      mesh.scale.setScalar(Math.max(0.001, scale));
+      const material = mesh.material as THREE.MeshBasicMaterial;
+      material.opacity = Math.max(0, 0.9 * (1 - progress));
+    });
+  });
+
   return (
-    <group position={[0, -0.014, 0]}>
-      <mesh rotation={[0, Math.PI / 4, 0]} castShadow>
-        <boxGeometry args={[0.065, 0.018, 0.42]} />
-        <meshStandardMaterial color="#17130f" roughness={0.82} />
-      </mesh>
-      <mesh rotation={[0, -Math.PI / 4, 0]} castShadow>
-        <boxGeometry args={[0.065, 0.018, 0.42]} />
-        <meshStandardMaterial color="#17130f" roughness={0.82} />
-      </mesh>
+    <group position={position}>
+      {particles.map((particle, index) => (
+        <mesh key={index} ref={(mesh) => { meshes.current[index] = mesh; }}>
+          <sphereGeometry args={[1, 6, 6]} />
+          <meshBasicMaterial color={particle.color} transparent opacity={0.9} depthWrite={false} />
+        </mesh>
+      ))}
     </group>
   );
 }
 
-function YutStickMesh({ backdo = false }: { backdo?: boolean }) {
+function FlatBackdoX({ glowing }: { glowing: boolean }) {
+  const ring = useRef<THREE.Mesh>(null);
+  const light = useRef<THREE.PointLight>(null);
+
+  useFrame(({ clock }) => {
+    if (!glowing) return;
+    const pulse = 0.5 + Math.sin(clock.elapsedTime * 10) * 0.5;
+    if (ring.current) {
+      ring.current.scale.setScalar(1 + pulse * 0.35);
+      (ring.current.material as THREE.MeshBasicMaterial).opacity = 0.42 + pulse * 0.38;
+    }
+    if (light.current) light.current.intensity = 2.8 + pulse * 3.4;
+  });
+
+  return (
+    <group position={[0, -0.014, 0]}>
+      <mesh rotation={[0, Math.PI / 4, 0]} castShadow>
+        <boxGeometry args={[0.065, 0.018, 0.42]} />
+        <meshStandardMaterial color={glowing ? "#5d130f" : "#17130f"} roughness={0.82} emissive="#ff241c" emissiveIntensity={glowing ? 4.2 : 0} />
+      </mesh>
+      <mesh rotation={[0, -Math.PI / 4, 0]} castShadow>
+        <boxGeometry args={[0.065, 0.018, 0.42]} />
+        <meshStandardMaterial color={glowing ? "#5d130f" : "#17130f"} roughness={0.82} emissive="#ff241c" emissiveIntensity={glowing ? 4.2 : 0} />
+      </mesh>
+      {glowing && (
+        <>
+          <mesh ref={ring} position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.25, 0.32, 40]} />
+            <meshBasicMaterial color="#ff3b2f" transparent opacity={0.72} depthWrite={false} blending={THREE.AdditiveBlending} side={THREE.DoubleSide} />
+          </mesh>
+          <pointLight ref={light} color="#ff3026" intensity={4} distance={2.3} position={[0, -0.24, 0]} />
+        </>
+      )}
+    </group>
+  );
+}
+
+function YutStickMesh({ backdo = false, backdoGlow = false }: { backdo?: boolean; backdoGlow?: boolean }) {
   return (
     <group>
       <mesh geometry={YUT_GEOMETRY} castShadow receiveShadow>
@@ -444,7 +574,7 @@ function YutStickMesh({ backdo = false }: { backdo?: boolean }) {
       <XMark z={-0.66} />
       <XMark z={0} />
       <XMark z={0.66} />
-      {backdo && <FlatBackdoX />}
+      {backdo && <FlatBackdoX glowing={backdoGlow} />}
     </group>
   );
 }
@@ -452,11 +582,15 @@ function YutStickMesh({ backdo = false }: { backdo?: boolean }) {
 function PhysicsYutStick({
   index,
   nonce,
+  backdoGlow,
   onSleep,
+  onImpact,
 }: {
   index: number;
   nonce: number;
+  backdoGlow: boolean;
   onSleep: (index: number, body: RapierRigidBody) => void;
+  onImpact: (position: [number, number, number], intensity: number) => void;
 }) {
   const body = useRef<RapierRigidBody>(null);
   const preparing = useRef(false);
@@ -468,6 +602,7 @@ function PhysicsYutStick({
   const launchVelocity = useRef(new THREE.Vector3());
   const launchAngularVelocity = useRef(new THREE.Vector3());
   const launchAfterPrepare = useRef(false);
+  const lastImpactAt = useRef(0);
   const idlePosition = useMemo(
     () => [(index - 1.5) * 0.76, 0.325, 0] as [number, number, number],
     [index],
@@ -558,9 +693,23 @@ function PhysicsYutStick({
       ccd
       canSleep
       onSleep={() => !preparing.current && body.current && onSleep(index, body.current)}
+      onCollisionEnter={() => {
+        const rigidBody = body.current;
+        if (!rigidBody || preparing.current || nonce === 0) return;
+        const position = rigidBody.translation();
+        const velocity = rigidBody.linvel();
+        const speed = Math.hypot(velocity.x, velocity.y, velocity.z);
+        const now = performance.now();
+        if (position.y > 0.85 || speed < 2.25 || now - lastImpactAt.current < 150) return;
+        lastImpactAt.current = now;
+        onImpact(
+          [position.x, Math.max(0.12, position.y - 0.2), position.z],
+          Math.min(1.65, Math.max(0.85, speed * 0.13)),
+        );
+      }}
     >
       <ConvexHullCollider args={[YUT_COLLIDER_VERTICES]} friction={0.92} restitution={0.34} contactSkin={0.028} />
-      <YutStickMesh backdo={index === 0} />
+      <YutStickMesh backdo={index === 0} backdoGlow={backdoGlow} />
     </RigidBody>
   );
 }
@@ -579,12 +728,23 @@ function YutPhysics({
   const outcomes = useRef<(boolean | null)[]>([null, null, null, null]);
   const retries = useRef([0, 0, 0, 0]);
   const completed = useRef(false);
+  const burstId = useRef(0);
+  const [impactBursts, setImpactBursts] = useState<{ id: number; position: [number, number, number]; intensity: number }[]>([]);
+  const [backdoGlow, setBackdoGlow] = useState(false);
 
   useEffect(() => {
     outcomes.current = [null, null, null, null];
     retries.current = [0, 0, 0, 0];
     completed.current = false;
+    setImpactBursts([]);
+    setBackdoGlow(false);
   }, [nonce]);
+
+  useEffect(() => {
+    if (!backdoGlow) return;
+    const timeout = window.setTimeout(() => setBackdoGlow(false), 2200);
+    return () => window.clearTimeout(timeout);
+  }, [backdoGlow]);
 
   useEffect(() => {
     if (!rolling || nonce === 0) return;
@@ -593,6 +753,16 @@ function YutPhysics({
     }, PHYSICS_THROW_TIMEOUT_MS);
     return () => window.clearTimeout(timeout);
   }, [nonce, onTimeout, rolling]);
+
+  const handleImpact = useCallback((position: [number, number, number], intensity: number) => {
+    burstId.current += 1;
+    const burst = { id: burstId.current, position, intensity };
+    setImpactBursts((bursts) => [...bursts.slice(-7), burst]);
+  }, []);
+
+  const removeImpactBurst = useCallback((id: number) => {
+    setImpactBursts((bursts) => bursts.filter((burst) => burst.id !== id));
+  }, []);
 
   const handleSleep = useCallback((index: number, body: RapierRigidBody) => {
     if (!rolling || completed.current) return;
@@ -612,7 +782,9 @@ function YutPhysics({
     if (outcomes.current.every((value) => value !== null)) {
       completed.current = true;
       const flats = outcomes.current.filter(Boolean).length;
-      onSettled(flats, flats === 1 && outcomes.current[0] === true);
+      const isBackdo = flats === 1 && outcomes.current[0] === true;
+      setBackdoGlow(isBackdo);
+      onSettled(flats, isBackdo);
     }
   }, [onSettled, rolling]);
 
@@ -626,7 +798,17 @@ function YutPhysics({
         <CuboidCollider args={[5.95, 5.5, 0.28]} position={[0, 5.5, 5.52]} friction={0.72} restitution={0.2} />
       </RigidBody>
       {[0, 1, 2, 3].map((index) => (
-        <PhysicsYutStick key={index} index={index} nonce={nonce} onSleep={handleSleep} />
+        <PhysicsYutStick
+          key={index}
+          index={index}
+          nonce={nonce}
+          backdoGlow={backdoGlow && index === 0}
+          onSleep={handleSleep}
+          onImpact={handleImpact}
+        />
+      ))}
+      {impactBursts.map((burst) => (
+        <YutImpactBurst key={burst.id} {...burst} onComplete={removeImpactBurst} />
       ))}
     </Physics>
   );
@@ -672,6 +854,23 @@ function Scene({
         {BOARD_EDGES.map(([from, to]) => (
           <BoardPathSegment key={`${from}-${to}`} from={NODE_POSITIONS[from]} to={NODE_POSITIONS[to]} />
         ))}
+
+        {movePreviews.flatMap((preview) => preview.pathNodes.slice(1).map((node, index) => (
+          <PreviewPathSegment
+            key={`preview-path-${preview.key}-${index}-${node}`}
+            from={NODE_POSITIONS[preview.pathNodes[index]]}
+            to={NODE_POSITIONS[node]}
+            color={preview.color}
+          />
+        )))}
+
+        {movePreviews.flatMap((preview) => preview.pathNodes.map((node, index) => (
+          <PreviewPathNode
+            key={`preview-node-${preview.key}-${index}-${node}`}
+            position={NODE_POSITIONS[node]}
+            color={preview.color}
+          />
+        )))}
 
         {BOARD_NODE_IDS.map((node) => (
           <BoardNode key={node} position={NODE_POSITIONS[node]} major={MAJOR_NODE_IDS.has(node)} />
@@ -796,6 +995,7 @@ export default function YutnoriGame() {
     return choices.map((choice) => {
       const resolution = resolveMove(pieces, current, pieceIndex, result.steps, choice);
       const destinationNode = nodeForPiece(resolution.destination);
+      const sourceNode = nodeForPiece(piece);
       const destinationPosition = destinationNode
         ? NODE_POSITIONS[destinationNode]
         : resolution.destination.status === "finished"
@@ -821,6 +1021,7 @@ export default function YutnoriGame() {
             ? "업기!"
             : null,
         color: choice === "shortcut" ? "#f2cb72" : PLAYERS[current].glow,
+        pathNodes: sourceNode ? [sourceNode, ...resolution.waypoints] : resolution.waypoints,
       };
     });
   }, [current, hoveredRouteChoice, hoveredToken, pendingRoute, phase, pieces, result]);
