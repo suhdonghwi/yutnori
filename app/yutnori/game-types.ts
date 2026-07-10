@@ -33,6 +33,7 @@ export type ActiveMove = {
   nextPlayer: Player;
   winner: Player | null;
   notice: string;
+  arrivalEffect: "stack" | "capture" | null;
   captureReturn: {
     player: Player;
     pieces: number[];

@@ -9,6 +9,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { PHYSICS_THROW_TIMEOUT_MS } from "./game-config";
+import { gameSfx } from "./game-sfx";
 
 function XMark({ z }: { z: number }) {
   return (
@@ -282,6 +283,7 @@ function PhysicsYutStick({
     rigidBody.setTranslation(prepareEnd.current, true);
     rigidBody.setRotation(prepareEndRotation.current, true);
     if (launchAfterPrepare.current) {
+      if (index === 0) gameSfx.playThrow();
       rigidBody.setGravityScale(1, true);
       rigidBody.setLinvel(launchVelocity.current, true);
       rigidBody.setAngvel(launchAngularVelocity.current, true);
@@ -366,6 +368,7 @@ export function YutPhysics({
   }, [nonce, onTimeout, rolling]);
 
   const handleImpact = useCallback((position: [number, number, number], intensity: number) => {
+    gameSfx.playYutImpact(intensity, THREE.MathUtils.clamp(position[0] / 5.7, -1, 1));
     burstId.current += 1;
     const burst = { id: burstId.current, position, intensity };
     setImpactBursts((bursts) => [...bursts.slice(-7), burst]);

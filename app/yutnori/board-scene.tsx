@@ -16,6 +16,7 @@ import {
 } from "./rules";
 import { PLAYERS } from "./game-config";
 import type { ActiveMove, HoveredToken, MovePreview } from "./game-types";
+import { gameSfx } from "./game-sfx";
 import { YutPhysics } from "./yut-physics";
 
 const TOKEN_STACK_STEP = 0.17;
@@ -345,6 +346,7 @@ function Token({
       group.position.y += Math.sin(Math.PI * t) * jumpHeight.current;
       if (segmentProgress.current >= 1) {
         group.position.copy(segmentEnd.current);
+        if (notifyOnMoveComplete) gameSfx.playPieceStep();
         beginNextSegment();
       }
     }

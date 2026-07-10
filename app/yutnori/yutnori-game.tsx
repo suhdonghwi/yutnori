@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { ArrowRight, DoorOpen, Plus } from "@phosphor-icons/react";
+import { ArrowRight, DoorOpen, Plus, SpeakerHigh, SpeakerSlash } from "@phosphor-icons/react";
 import { josa, susa } from "es-hangul";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -32,6 +32,7 @@ import type {
 } from "./game-types";
 import { ThrowResultEffect, VictoryEffect } from "./result-effects";
 import { Lobby } from "./lobby";
+import { gameSfx } from "./game-sfx";
 
 function PlayerProgress({
   player,
@@ -83,6 +84,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
   const [hoveredRouteChoice, setHoveredRouteChoice] = useState<RouteChoice | null>(null);
   const [aiDecision, setAiDecision] = useState<AiDecision | null>(null);
   const [notice, setNotice] = useState("");
+  const [sfxEnabled, setSfxEnabled] = useState(() => gameSfx.isEnabled());
   const activeMoveRef = useRef<ActiveMove>(null);
   const moveId = useRef(0);
   const throwEffectId = useRef(0);
@@ -173,6 +175,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
 
   const settleThrow = useCallback((flats: number, backdo: boolean) => {
     const nextResult = backdo ? BACKDO_RESULT : RESULT_BY_FLATS[flats];
+    gameSfx.playResult(nextResult.steps);
     throwEffectId.current += 1;
     setThrowResultEffect({ id: throwEffectId.current, result: nextResult });
     setResult(nextResult);
@@ -190,6 +193,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
     if (!move) return;
 
     if (move.captureReturn) {
+      gameSfx.playCapture();
       const capture = move.captureReturn;
       setPieces(capture.board);
       moveId.current += 1;
@@ -202,6 +206,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
         leader: capture.pieces[capture.pieces.length - 1],
         waypoints: [],
         waypointClearances: [],
+        arrivalEffect: null,
         captureReturn: null,
       };
       activeMoveRef.current = returnMove;
@@ -211,6 +216,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
 
     activeMoveRef.current = null;
     setActiveMove(null);
+    if (move.arrivalEffect === "stack") gameSfx.playStack();
     setNotice(move.notice);
     if (move.winner !== null) {
       setWinner(move.winner);
@@ -280,6 +286,11 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
       nextPlayer,
       winner: resolution.won ? current : null,
       notice: messages.join(" · "),
+      arrivalEffect: resolution.capturedPieces.length > 0
+        ? "capture"
+        : resolution.stackedPieces.length > 0
+          ? "stack"
+          : null,
       captureReturn,
     };
     activeMoveRef.current = move;
@@ -353,6 +364,13 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
     setActiveMove(null);
   };
 
+  const toggleSfx = () => {
+    const next = !sfxEnabled;
+    gameSfx.setEnabled(next);
+    setSfxEnabled(next);
+    if (next) gameSfx.playToggle();
+  };
+
   const statusText = phase === "ready"
     ? isAiTurn
       ? notice || "홍군 AI가 윷을 준비하는 중"
@@ -395,6 +413,12 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
             active={current === 1 && phase !== "gameover"}
           />
           <div className="flex items-start gap-4 border-l border-[rgba(217,186,112,.34)] pl-5 max-[760px]:gap-2 max-[760px]:pl-3">
+            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={toggleSfx} aria-label={sfxEnabled ? "효과음 끄기" : "효과음 켜기"} aria-pressed={sfxEnabled}>
+              {sfxEnabled
+                ? <SpeakerHigh size={21} weight="regular" aria-hidden="true" />
+                : <SpeakerSlash size={21} weight="regular" aria-hidden="true" />}
+              <span className="max-[760px]:hidden">효과음</span>
+            </button>
             <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={onExit} aria-label="로비로 돌아가기">
               <DoorOpen size={21} weight="regular" aria-hidden="true" />
               <span className="max-[760px]:hidden">로비로</span>
@@ -517,7 +541,12 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
 export default function YutnoriGame() {
   const [screen, setScreen] = useState<"lobby" | GameMode>("lobby");
 
+  const startGame = (mode: GameMode) => {
+    gameSfx.unlock();
+    setScreen(mode);
+  };
+
   return screen === "lobby"
-    ? <Lobby onStartLocal={() => setScreen("local")} onStartAi={() => setScreen("ai")} />
+    ? <Lobby onStartLocal={() => startGame("local")} onStartAi={() => startGame("ai")} />
     : <GameSession mode={screen} onExit={() => setScreen("lobby")} />;
 }
