@@ -696,7 +696,7 @@ function Scene({
         dampingFactor={0.08}
         zoomSpeed={0.85}
         minDistance={8.5}
-        maxDistance={21}
+        maxDistance={30}
         minPolarAngle={0.72}
         maxPolarAngle={1.08}
         minAzimuthAngle={-0.25}
@@ -963,7 +963,6 @@ export default function YutnoriGame() {
       <header className="topbar">
         <div className="brand-mark" aria-hidden="true">윷</div>
         <div>
-          <p className="eyebrow">두 사람이 마주 앉는 작은 놀이판</p>
           <h1>한판 윷놀이</h1>
         </div>
         <button className="reset-button" type="button" onClick={reset}>새 판</button>
