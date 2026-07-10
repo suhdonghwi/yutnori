@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev": "vite",
+    "clean": "node scripts/clean-dist.mjs",
+    "prebuild": "npm run clean",
     "build": "vite build",
     "preview": "vite preview",
     "test": "npm run build",
