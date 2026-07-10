@@ -72,6 +72,43 @@ const RESULT_BY_FLATS: Record<number, ThrowResult> = {
 const BACKDO_RESULT: ThrowResult = { name: "빽도", steps: -1, flats: 1, extraThrow: false };
 const PHYSICS_THROW_TIMEOUT_MS = 15000;
 
+function VictoryEffect({ winner }: { winner: Player }) {
+  const player = PLAYERS[winner];
+  const confetti = Array.from({ length: 18 }, (_, index) => ({
+    angle: index * 20,
+    delay: (index % 6) * 0.06,
+    color: index % 3 === 0 ? "#f4d283" : index % 2 === 0 ? player.glow : "#fff1c9",
+  }));
+
+  return (
+    <div
+      className="victory-effect"
+      style={{ "--victory-color": player.color, "--victory-glow": player.glow } as React.CSSProperties}
+      role="status"
+      aria-live="assertive"
+    >
+      <div className="victory-rays" aria-hidden="true" />
+      <div className="victory-confetti" aria-hidden="true">
+        {confetti.map((piece, index) => (
+          <i
+            key={index}
+            style={{
+              "--confetti-angle": `${piece.angle}deg`,
+              "--confetti-delay": `${piece.delay}s`,
+              "--confetti-color": piece.color,
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
+      <div className="victory-card">
+        <span className="victory-kicker">한판 승부의 주인공</span>
+        <strong>{player.name} 승리!</strong>
+        <p>네 말을 모두 먼저 냈습니다</p>
+      </div>
+    </div>
+  );
+}
+
 function ThrowResultEffect({ effect }: { effect: NonNullable<ThrowResultEffectState> }) {
   const accent = effect.result.steps < 0
     ? "#dc5543"
@@ -960,6 +997,7 @@ export default function YutnoriGame() {
     <main className="game-shell">
       <div className="grain" aria-hidden="true" />
       {throwResultEffect && <ThrowResultEffect effect={throwResultEffect} />}
+      {phase === "gameover" && winner !== null && <VictoryEffect winner={winner} />}
       <header className="topbar">
         <div className="brand-mark" aria-hidden="true">윷</div>
         <div>
