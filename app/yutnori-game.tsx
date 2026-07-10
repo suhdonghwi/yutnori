@@ -29,6 +29,7 @@ import {
 
 type Phase = "ready" | "rolling" | "move" | "route" | "moving" | "gameover";
 type ThrowResult = { name: string; steps: number; flats: number; extraThrow: boolean };
+type ThrowResultEffectState = { id: number; result: ThrowResult } | null;
 type HoveredToken = { player: Player; piece: number } | null;
 type MovePreview = {
   key: string;
@@ -68,6 +69,38 @@ const RESULT_BY_FLATS: Record<number, ThrowResult> = {
 };
 
 const BACKDO_RESULT: ThrowResult = { name: "빽도", steps: -1, flats: 1, extraThrow: false };
+
+function ThrowResultEffect({ effect }: { effect: NonNullable<ThrowResultEffectState> }) {
+  const accent = effect.result.steps < 0
+    ? "#dc5543"
+    : effect.result.extraThrow
+      ? "#e1b44d"
+      : "#8ebfd0";
+  const detail = effect.result.steps < 0
+    ? "한 칸 뒤로"
+    : effect.result.extraThrow
+      ? `${effect.result.steps}칸 · 한 번 더!`
+      : `${effect.result.steps}칸 전진`;
+
+  return (
+    <div
+      key={effect.id}
+      className="throw-result-effect"
+      style={{ "--result-accent": accent } as React.CSSProperties}
+      aria-hidden="true"
+    >
+      <div className="throw-result-rays">
+        {Array.from({ length: 12 }, (_, index) => (
+          <i key={index} style={{ "--ray-index": index } as React.CSSProperties} />
+        ))}
+      </div>
+      <div className="throw-result-seal">
+        <strong>{effect.result.name}</strong>
+        <small>{detail}</small>
+      </div>
+    </div>
+  );
+}
 
 function BoardNode({ position, major = false }: { position: [number, number, number]; major?: boolean }) {
   return (
@@ -136,11 +169,11 @@ function tokenPlacement(pieces: BoardState, player: number, piece: number) {
   const state = pieces[player][piece];
   if (state.status === "home") {
     const side = player === 0 ? -1 : 1;
-    return { position: [side * 6.5, 0.06, 1.5 - piece] as [number, number, number], count: 1 };
+    return { position: [side * 6.5, 0.06, 1.5 - piece] as [number, number, number], count: 1, slot: 0, members: [piece] };
   }
   if (state.status === "finished") {
     const side = player === 0 ? -1 : 1;
-    return { position: [side * 5.32, 0.06, -1.35 - piece * 0.62] as [number, number, number], count: 1 };
+    return { position: [side * 5.32, 0.06, -1.35 - piece * 0.62] as [number, number, number], count: 1, slot: 0, members: [piece] };
   }
 
   const node = nodeForPiece(state)!;
@@ -153,14 +186,15 @@ function tokenPlacement(pieces: BoardState, player: number, piece: number) {
   });
   const slot = occupants.findIndex((occupant) => occupant.player === player && occupant.piece === piece);
   const count = occupants.length;
+  const members = occupants.map((occupant) => occupant.piece);
   const base = NODE_POSITIONS[node];
-  if (count <= 1) return { position: [base[0], base[1], base[2]] as [number, number, number], count: 1 };
+  if (count <= 1) return { position: [base[0], base[1], base[2]] as [number, number, number], count: 1, slot: 0, members };
 
-  const radius = count === 2 ? 0.38 : count === 3 ? 0.43 : 0.5;
-  const angle = -Math.PI / 2 + (slot / count) * Math.PI * 2;
   return {
-    position: [base[0] + Math.cos(angle) * radius, base[1], base[2] + Math.sin(angle) * radius] as [number, number, number],
+    position: [base[0], base[1] + slot * 0.19, base[2]] as [number, number, number],
     count,
+    slot,
+    members,
   };
 }
 
@@ -169,9 +203,7 @@ function Token({
   color,
   state,
   highlighted,
-  player,
-  piece,
-  stackCount,
+  stackLabel,
   activeMoveId,
   moveWaypoints,
   notifyOnMoveComplete,
@@ -181,9 +213,7 @@ function Token({
   color: string;
   state: PieceState;
   highlighted: boolean;
-  player: number;
-  piece: number;
-  stackCount: number;
+  stackLabel: string | null;
   activeMoveId: number | null;
   moveWaypoints: NodeId[] | null;
   notifyOnMoveComplete: boolean;
@@ -261,8 +291,7 @@ function Token({
       }
     }
 
-    const stackedScale = stackCount >= 4 ? 0.74 : stackCount > 1 ? 0.84 : 1;
-    const targetScale = highlighted ? Math.max(1.12, stackedScale * 1.22) : stackedScale;
+    const targetScale = highlighted ? 1.16 : 1;
     const scaleEase = 1 - Math.exp(-delta * 11);
     group.scale.x += (targetScale - group.scale.x) * scaleEase;
     group.scale.y += (targetScale - group.scale.y) * scaleEase;
@@ -289,9 +318,9 @@ function Token({
         <meshBasicMaterial color="#f4d283" transparent opacity={0.95} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
       <pointLight color={highlighted ? "#f4d283" : color} intensity={highlighted ? 2.1 : state.status === "finished" ? 1.3 : 0} distance={2.7} />
-      {stackCount > 1 && (
+      {stackLabel && (
         <Html center position={[0, 0.54, 0]} distanceFactor={8.5} style={{ pointerEvents: "none" }}>
-          <span className={`token-id-badge ${player === 0 ? "blue" : "red"}`}>{player === 0 ? "청" : "홍"}{piece + 1}</span>
+          <span className="token-stack-label">{stackLabel}</span>
         </Html>
       )}
     </group>
@@ -527,6 +556,9 @@ function Scene({
             const highlighted = hoveredToken?.player === player
               && (hoveredToken.piece === piece || (hoveredState ? sameStack(state, hoveredState) : false));
             const isMovingPiece = activeMove?.player === player && activeMove.pieces.includes(piece);
+            const stackLabel = placement.count > 1 && placement.slot === placement.count - 1
+              ? placement.members.map((member) => `${player === 0 ? "청" : "홍"}${member + 1}`).join(" + ")
+              : null;
             return (
               <Token
                 key={`${player}-${piece}`}
@@ -534,9 +566,7 @@ function Scene({
                 color={PLAYERS[player as Player].color}
                 state={state}
                 highlighted={highlighted}
-                player={player}
-                piece={piece}
-                stackCount={placement.count}
+                stackLabel={stackLabel}
                 activeMoveId={isMovingPiece ? activeMove.id : null}
                 moveWaypoints={isMovingPiece ? activeMove.waypoints : null}
                 notifyOnMoveComplete={isMovingPiece && activeMove.leader === piece}
@@ -579,6 +609,7 @@ export default function YutnoriGame() {
   const [phase, setPhase] = useState<Phase>("ready");
   const [pieces, setPieces] = useState<BoardState>(() => createInitialBoard());
   const [result, setResult] = useState<ThrowResult | null>(null);
+  const [throwResultEffect, setThrowResultEffect] = useState<ThrowResultEffectState>(null);
   const [nonce, setNonce] = useState(0);
   const [winner, setWinner] = useState<Player | null>(null);
   const [hoveredToken, setHoveredToken] = useState<HoveredToken>(null);
@@ -587,9 +618,16 @@ export default function YutnoriGame() {
   const [notice, setNotice] = useState("");
   const activeMoveRef = useRef<ActiveMove>(null);
   const moveId = useRef(0);
+  const throwEffectId = useRef(0);
   const otherPlayer = (current === 0 ? 1 : 0) as Player;
   const routeChoiceFromCenter = pendingRoute !== null
     && nodeForPiece(pieces[current][pendingRoute.piece]) === "C";
+
+  useEffect(() => {
+    if (!throwResultEffect) return;
+    const timeout = window.setTimeout(() => setThrowResultEffect(null), 1450);
+    return () => window.clearTimeout(timeout);
+  }, [throwResultEffect]);
 
   const movePreviews = useMemo<MovePreview[]>(() => {
     if (phase !== "move" || !result || !hoveredToken || hoveredToken.player !== current) return [];
@@ -635,6 +673,8 @@ export default function YutnoriGame() {
 
   const settleThrow = useCallback((flats: number, backdo: boolean) => {
     const nextResult = backdo ? BACKDO_RESULT : RESULT_BY_FLATS[flats];
+    throwEffectId.current += 1;
+    setThrowResultEffect({ id: throwEffectId.current, result: nextResult });
     setResult(nextResult);
     if (nextResult.steps < 0 && !pieces[current].some((piece) => piece.status === "board")) {
       setCurrent(current === 0 ? 1 : 0);
@@ -659,7 +699,7 @@ export default function YutnoriGame() {
         stage: "capture-return",
         player: capture.player,
         pieces: capture.pieces,
-        leader: Math.min(...capture.pieces),
+        leader: Math.max(...capture.pieces),
         waypoints: [],
         captureReturn: null,
       };
@@ -720,7 +760,7 @@ export default function YutnoriGame() {
       stage: "advance",
       player: current,
       pieces: resolution.movedPieces,
-      leader: Math.min(...resolution.movedPieces),
+      leader: Math.max(...resolution.movedPieces),
       waypoints: resolution.waypoints,
       nextPlayer,
       winner: resolution.won ? current : null,
@@ -755,6 +795,7 @@ export default function YutnoriGame() {
     setPhase("ready");
     setPieces(createInitialBoard());
     setResult(null);
+    setThrowResultEffect(null);
     setWinner(null);
     setNonce(0);
     setHoveredToken(null);
@@ -781,6 +822,7 @@ export default function YutnoriGame() {
   return (
     <main className="game-shell">
       <div className="grain" aria-hidden="true" />
+      {throwResultEffect && <ThrowResultEffect effect={throwResultEffect} />}
       <header className="topbar">
         <div className="brand-mark" aria-hidden="true">윷</div>
         <div>
