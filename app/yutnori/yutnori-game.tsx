@@ -28,8 +28,9 @@ import type {
   ThrowResultEffectState,
 } from "./game-types";
 import { ThrowResultEffect, VictoryEffect } from "./result-effects";
+import { Lobby } from "./lobby";
 
-export default function YutnoriGame() {
+function GameSession({ onExit }: { onExit: () => void }) {
   const [current, setCurrent] = useState<Player>(0);
   const [phase, setPhase] = useState<Phase>("ready");
   const [pieces, setPieces] = useState<BoardState>(() => createInitialBoard());
@@ -298,7 +299,10 @@ export default function YutnoriGame() {
         <div>
           <h1>한판 윷놀이</h1>
         </div>
-        <button className="reset-button" type="button" onClick={reset}>새 판</button>
+        <div className="topbar-actions">
+          <button className="reset-button secondary" type="button" onClick={onExit}>로비로</button>
+          <button className="reset-button" type="button" onClick={reset}>새 판</button>
+        </div>
       </header>
 
       <section className="game-layout" aria-label="3D 윷놀이 게임">
@@ -409,4 +413,12 @@ export default function YutnoriGame() {
       </footer>
     </main>
   );
+}
+
+export default function YutnoriGame() {
+  const [screen, setScreen] = useState<"lobby" | "local">("lobby");
+
+  return screen === "lobby"
+    ? <Lobby onStartLocal={() => setScreen("local")} />
+    : <GameSession onExit={() => setScreen("lobby")} />;
 }

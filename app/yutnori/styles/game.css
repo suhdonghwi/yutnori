@@ -35,6 +35,10 @@
 }
 .reset-button:hover { background: rgba(255,255,255,.08); border-color: rgba(230,206,160,.5); }
 
+.topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.reset-button.secondary { color: #b9ad96; background: rgba(255,255,255,.025); border-color: rgba(230,206,160,.16); }
+.reset-button.secondary:hover { color: #eadbbd; }
+
 .game-layout {
   flex: 1;
   width: min(1420px, calc(100% - 64px));
@@ -358,4 +362,3 @@ footer { display: none; }
   color: #fff0bd;
   background: rgba(126, 91, 25, .96);
 }
-
