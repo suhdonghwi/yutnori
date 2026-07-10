@@ -413,10 +413,10 @@ function PhysicsYutStick({
     }
     const direction = index - 1.5;
     return {
-      position: [direction * 0.95, 1.18 + (index % 2) * 0.18, 0.78] as [number, number, number],
-      rotation: [(Math.random() - 0.5) * 0.28, (Math.random() - 0.5) * 0.08, (Math.random() - 0.5) * 0.16] as [number, number, number],
-      linearVelocity: [direction * 0.72 + (Math.random() - 0.5) * 0.65, 5.3 + Math.random() * 1.1, -1.15 + (Math.random() - 0.5) * 1.1] as [number, number, number],
-      angularVelocity: [(Math.random() - 0.5) * 18, (Math.random() - 0.5) * 12, (Math.random() - 0.5) * 18] as [number, number, number],
+      position: [direction * 0.95, 1.32 + (index % 2) * 0.22, 1.15] as [number, number, number],
+      rotation: [(Math.random() - 0.5) * 0.34, (Math.random() - 0.5) * 0.12, (Math.random() - 0.5) * 0.22] as [number, number, number],
+      linearVelocity: [direction * 0.95 + (Math.random() - 0.5) * 0.9, 7.8 + Math.random() * 1.4, -1.6 + (Math.random() - 0.5) * 1.5] as [number, number, number],
+      angularVelocity: [(Math.random() - 0.5) * 26, (Math.random() - 0.5) * 18, (Math.random() - 0.5) * 26] as [number, number, number],
     };
   }, [index, nonce]);
 
@@ -430,14 +430,14 @@ function PhysicsYutStick({
       linearVelocity={initial.linearVelocity}
       angularVelocity={initial.angularVelocity}
       friction={0.92}
-      restitution={0.28}
-      linearDamping={0.42}
-      angularDamping={0.62}
+      restitution={0.34}
+      linearDamping={0.3}
+      angularDamping={0.48}
       ccd
       canSleep
       onSleep={() => body.current && onSleep(index, body.current)}
     >
-      <ConvexHullCollider args={[YUT_COLLIDER_VERTICES]} friction={0.92} restitution={0.28} contactSkin={0.028} />
+      <ConvexHullCollider args={[YUT_COLLIDER_VERTICES]} friction={0.92} restitution={0.34} contactSkin={0.028} />
       <YutStickMesh backdo={index === 0} />
     </RigidBody>
   );
@@ -488,10 +488,10 @@ function YutPhysics({
     <Physics key="world-y0-v2" gravity={[0, -12.8, 0]} timeStep={1 / 60} paused={!rolling && nonce === 0}>
       <RigidBody type="fixed" colliders={false}>
         <CuboidCollider args={[5.74, 0.13, 5.54]} position={[0, -0.13, 0]} friction={0.95} restitution={0.2} />
-        <CuboidCollider args={[0.12, 0.65, 5.55]} position={[-5.72, 0.65, 0]} restitution={0.35} />
-        <CuboidCollider args={[0.12, 0.65, 5.55]} position={[5.72, 0.65, 0]} restitution={0.35} />
-        <CuboidCollider args={[5.55, 0.65, 0.12]} position={[0, 0.65, -5.52]} restitution={0.35} />
-        <CuboidCollider args={[5.55, 0.65, 0.12]} position={[0, 0.65, 5.52]} restitution={0.35} />
+        <CuboidCollider args={[0.2, 3.2, 5.75]} position={[-5.72, 3.2, 0]} friction={0.72} restitution={0.22} />
+        <CuboidCollider args={[0.2, 3.2, 5.75]} position={[5.72, 3.2, 0]} friction={0.72} restitution={0.22} />
+        <CuboidCollider args={[5.75, 3.2, 0.2]} position={[0, 3.2, -5.52]} friction={0.72} restitution={0.22} />
+        <CuboidCollider args={[5.75, 3.2, 0.2]} position={[0, 3.2, 5.52]} friction={0.72} restitution={0.22} />
       </RigidBody>
       {[0, 1, 2, 3].map((index) => (
         <PhysicsYutStick key={`${nonce}-${index}`} index={index} nonce={nonce} onSleep={handleSleep} />
