@@ -34,6 +34,9 @@
   .piece-actions button { padding: 5px; }
   .route-actions { grid-template-columns: 1fr 1fr; gap: 5px; }
   .route-actions button { min-width: 0; padding: 7px 6px; font-size: 11px; }
+  .ai-decision-panel { min-width: 0; padding: 7px 9px; gap: 8px; }
+  .ai-badge { width: 34px; height: 34px; }
+  .ai-decision-panel strong { max-width: 32vw; overflow: hidden; font-size: 11px; text-overflow: ellipsis; }
 }
 
 @media (prefers-reduced-motion: reduce) {

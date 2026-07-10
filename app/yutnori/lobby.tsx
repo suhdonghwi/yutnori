@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 type LobbyProps = {
   onStartLocal: () => void;
+  onStartAi: () => void;
 };
 
 const PLAY_MODES = [
@@ -24,7 +25,7 @@ const PLAY_MODES = [
     badge: "AI",
     title: "AI 대전",
     description: "컴퓨터 상대와 혼자서 대전합니다.",
-    available: false,
+    available: true,
   },
 ] as const;
 
@@ -96,7 +97,7 @@ function RulesDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function Lobby({ onStartLocal }: LobbyProps) {
+export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
   const [showRules, setShowRules] = useState(false);
 
   return (
@@ -113,7 +114,7 @@ export function Lobby({ onStartLocal }: LobbyProps) {
                 className={`mode-card ${mode.available ? "available" : "coming-soon"}`}
                 type="button"
                 disabled={!mode.available}
-                onClick={mode.available ? onStartLocal : undefined}
+                onClick={mode.id === "local" ? onStartLocal : mode.id === "ai" ? onStartAi : undefined}
               >
                 <span className="mode-icon" aria-hidden="true">{mode.badge}</span>
                 <span className="mode-copy">

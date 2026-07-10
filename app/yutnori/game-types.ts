@@ -1,6 +1,7 @@
 import type { BoardState, NodeId, Player } from "./rules";
 
 export type Phase = "ready" | "rolling" | "move" | "route" | "moving" | "gameover";
+export type GameMode = "local" | "ai";
 
 export type ThrowResult = {
   name: string;

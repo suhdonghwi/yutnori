@@ -17,9 +17,11 @@ import {
   type RouteChoice,
 } from "./rules";
 import { Scene, tokenPlacement } from "./board-scene";
+import { chooseAiMove, type AiDecision } from "./ai-player";
 import { BACKDO_RESULT, PLAYERS, RESULT_BY_FLATS } from "./game-config";
 import type {
   ActiveMove,
+  GameMode,
   HoveredToken,
   MovePreview,
   PendingRoute,
@@ -30,7 +32,7 @@ import type {
 import { ThrowResultEffect, VictoryEffect } from "./result-effects";
 import { Lobby } from "./lobby";
 
-function GameSession({ onExit }: { onExit: () => void }) {
+function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
   const [current, setCurrent] = useState<Player>(0);
   const [phase, setPhase] = useState<Phase>("ready");
   const [pieces, setPieces] = useState<BoardState>(() => createInitialBoard());
@@ -42,11 +44,13 @@ function GameSession({ onExit }: { onExit: () => void }) {
   const [activeMove, setActiveMove] = useState<ActiveMove>(null);
   const [pendingRoute, setPendingRoute] = useState<PendingRoute>(null);
   const [hoveredRouteChoice, setHoveredRouteChoice] = useState<RouteChoice | null>(null);
+  const [aiDecision, setAiDecision] = useState<AiDecision | null>(null);
   const [notice, setNotice] = useState("");
   const activeMoveRef = useRef<ActiveMove>(null);
   const moveId = useRef(0);
   const throwEffectId = useRef(0);
   const otherPlayer = (current === 0 ? 1 : 0) as Player;
+  const isAiTurn = mode === "ai" && current === 1;
   const routeChoiceFromCenter = pendingRoute !== null
     && nodeForPiece(pieces[current][pendingRoute.piece]) === "C";
   const previewWinner = useMemo<Player | null>(() => {
@@ -66,8 +70,10 @@ function GameSession({ onExit }: { onExit: () => void }) {
 
   const movePreviews = useMemo<MovePreview[]>(() => {
     if (!result) return [];
-    const pieceIndex = phase === "move" && hoveredToken?.player === current
-      ? hoveredToken.piece
+    const pieceIndex = phase === "move" && aiDecision
+      ? aiDecision.pieceIndex
+      : phase === "move" && hoveredToken?.player === current
+        ? hoveredToken.piece
       : phase === "route" && pendingRoute
         ? pendingRoute.piece
         : null;
@@ -76,7 +82,9 @@ function GameSession({ onExit }: { onExit: () => void }) {
     if (!isMovable(piece, result.steps) || groupLeader(pieces, current, pieceIndex) !== pieceIndex) return [];
 
     const hasRouteChoice = canChooseRoute(piece, result.steps);
-    const choices: RouteChoice[] = hasRouteChoice
+    const choices: RouteChoice[] = aiDecision
+      ? [aiDecision.routeChoice]
+      : hasRouteChoice
       ? phase === "route" && hoveredRouteChoice ? [hoveredRouteChoice] : ["shortcut", "outer"]
       : ["outer"];
     return choices.map((choice) => {
@@ -111,15 +119,16 @@ function GameSession({ onExit }: { onExit: () => void }) {
         pathNodes: sourceNode ? [sourceNode, ...resolution.waypoints] : resolution.waypoints,
       };
     });
-  }, [current, hoveredRouteChoice, hoveredToken, pendingRoute, phase, pieces, result]);
+  }, [aiDecision, current, hoveredRouteChoice, hoveredToken, pendingRoute, phase, pieces, result]);
 
-  const throwYut = () => {
+  const throwYut = useCallback(() => {
     if (phase !== "ready") return;
+    setAiDecision(null);
     setResult(null);
     setNotice("");
     setNonce((value) => value + 1);
     setPhase("rolling");
-  };
+  }, [phase]);
 
   const retryTimedOutThrow = useCallback(() => {
     setNonce((value) => value + 1);
@@ -177,6 +186,7 @@ function GameSession({ onExit }: { onExit: () => void }) {
 
   const executeMove = (pieceIndex: number, routeChoice: RouteChoice) => {
     if (!result || (phase !== "move" && phase !== "route")) return;
+    setAiDecision(null);
     setHoveredToken(null);
     setHoveredRouteChoice(null);
     setPendingRoute(null);
@@ -241,7 +251,7 @@ function GameSession({ onExit }: { onExit: () => void }) {
   };
 
   const movePiece = (pieceIndex: number) => {
-    if (phase !== "move" || !result) return;
+    if (isAiTurn || phase !== "move" || !result) return;
     const piece = pieces[current][pieceIndex];
     if (!isMovable(piece, result.steps) || groupLeader(pieces, current, pieceIndex) !== pieceIndex) return;
     if (canChooseRoute(piece, result.steps)) {
@@ -255,9 +265,39 @@ function GameSession({ onExit }: { onExit: () => void }) {
   };
 
   const chooseRoute = (choice: RouteChoice) => {
-    if (!pendingRoute) return;
+    if (isAiTurn || !pendingRoute) return;
     executeMove(pendingRoute.piece, choice);
   };
+
+  useEffect(() => {
+    if (!isAiTurn) return;
+
+    if (phase === "ready") {
+      const timeout = window.setTimeout(throwYut, 700);
+      return () => window.clearTimeout(timeout);
+    }
+
+    if (phase !== "move" || !result) return;
+    if (!aiDecision) {
+      const timeout = window.setTimeout(() => {
+        const decision = chooseAiMove(pieces, result);
+        if (!decision) {
+          setNotice("AI가 움직일 수 없어 차례가 넘어갔습니다");
+          setCurrent(0);
+          setPhase("ready");
+          return;
+        }
+        setAiDecision(decision);
+        setHoveredToken({ player: 1, piece: decision.pieceIndex });
+      }, 600);
+      return () => window.clearTimeout(timeout);
+    }
+
+    const timeout = window.setTimeout(() => {
+      executeMove(aiDecision.pieceIndex, aiDecision.routeChoice);
+    }, 1400);
+    return () => window.clearTimeout(timeout);
+  }, [aiDecision, isAiTurn, phase, pieces, result, throwYut]);
 
   const reset = () => {
     setCurrent(0);
@@ -269,6 +309,7 @@ function GameSession({ onExit }: { onExit: () => void }) {
     setNonce(0);
     setHoveredToken(null);
     setHoveredRouteChoice(null);
+    setAiDecision(null);
     setPendingRoute(null);
     setNotice("");
     activeMoveRef.current = null;
@@ -276,11 +317,15 @@ function GameSession({ onExit }: { onExit: () => void }) {
   };
 
   const statusText = phase === "ready"
-    ? notice || `${PLAYERS[current].name}의 차례입니다`
+    ? isAiTurn
+      ? notice || "홍군 AI가 윷을 준비하는 중"
+      : notice || `${PLAYERS[current].name}의 차례입니다`
     : phase === "rolling"
-      ? "윷이 안정될 때까지 기다리는 중"
+      ? isAiTurn ? "홍군 AI가 던진 윷을 판정하는 중" : "윷이 안정될 때까지 기다리는 중"
       : phase === "move"
-        ? result?.steps === -1 ? "빽도 · 움직일 말을 골라 한 칸 뒤로 가세요" : `${result?.name} · ${result?.steps}칸 움직이세요`
+        ? isAiTurn
+          ? aiDecision ? `AI 판단 · ${aiDecision.reason}` : "AI가 최선의 수를 계산하는 중"
+          : result?.steps === -1 ? "빽도 · 움직일 말을 골라 한 칸 뒤로 가세요" : `${result?.name} · ${result?.steps}칸 움직이세요`
         : phase === "route"
           ? routeChoiceFromCenter ? "중앙에서 어느 지름길로 갈까요?" : "이 갈림길에서 어느 길로 갈까요?"
           : phase === "moving"
@@ -308,7 +353,7 @@ function GameSession({ onExit }: { onExit: () => void }) {
       <section className="game-layout" aria-label="3D 윷놀이 게임">
         <aside className={`player-card blue ${current === 0 && phase !== "gameover" ? "active" : ""}`}>
           <span className="player-seal">靑</span>
-          <div><small>첫째 선수</small><strong>청군</strong></div>
+          <div><small>{mode === "ai" ? "플레이어" : "첫째 선수"}</small><strong>청군</strong></div>
           <span className="finished-count">도착 {pieces[0].filter((piece) => piece.status === "finished").length}/4</span>
         </aside>
 
@@ -338,7 +383,15 @@ function GameSession({ onExit }: { onExit: () => void }) {
               <div><small>지금은</small><strong>{statusText}</strong></div>
             </div>
 
-            {phase === "move" ? (
+            {phase === "move" && isAiTurn ? (
+              <div className="ai-decision-panel" aria-live="polite">
+                <span className="ai-badge">AI</span>
+                <div>
+                  <small>홍군의 선택</small>
+                  <strong>{aiDecision?.reason ?? "수를 읽는 중"}</strong>
+                </div>
+              </div>
+            ) : phase === "move" ? (
               <div className="piece-actions" aria-label="움직일 말 선택">
                 {pieces[current].map((piece, index) => {
                   const group = groupForPiece(pieces, current, index);
@@ -392,8 +445,8 @@ function GameSession({ onExit }: { onExit: () => void }) {
             ) : phase === "gameover" ? (
               <button className="throw-button" type="button" onClick={reset}>한 판 더</button>
             ) : (
-              <button className="throw-button" type="button" onClick={throwYut} disabled={phase === "rolling" || phase === "moving"}>
-                <span>{phase === "rolling" ? "물리 판정 중" : phase === "moving" ? "말 이동 중" : "윷 던지기"}</span>
+              <button className="throw-button" type="button" onClick={throwYut} disabled={isAiTurn || phase === "rolling" || phase === "moving"}>
+                <span>{isAiTurn && phase === "ready" ? "AI 자동 진행" : phase === "rolling" ? "물리 판정 중" : phase === "moving" ? "말 이동 중" : "윷 던지기"}</span>
                 <i aria-hidden="true">↗</i>
               </button>
             )}
@@ -402,7 +455,7 @@ function GameSession({ onExit }: { onExit: () => void }) {
 
         <aside className={`player-card red ${current === 1 && phase !== "gameover" ? "active" : ""}`}>
           <span className="player-seal">紅</span>
-          <div><small>둘째 선수</small><strong>홍군</strong></div>
+          <div><small>{mode === "ai" ? "AI 상대" : "둘째 선수"}</small><strong>홍군</strong></div>
           <span className="finished-count">도착 {pieces[1].filter((piece) => piece.status === "finished").length}/4</span>
         </aside>
       </section>
@@ -416,9 +469,9 @@ function GameSession({ onExit }: { onExit: () => void }) {
 }
 
 export default function YutnoriGame() {
-  const [screen, setScreen] = useState<"lobby" | "local">("lobby");
+  const [screen, setScreen] = useState<"lobby" | GameMode>("lobby");
 
   return screen === "lobby"
-    ? <Lobby onStartLocal={() => setScreen("local")} />
-    : <GameSession onExit={() => setScreen("lobby")} />;
+    ? <Lobby onStartLocal={() => setScreen("local")} onStartAi={() => setScreen("ai")} />
+    : <GameSession mode={screen} onExit={() => setScreen("lobby")} />;
 }
