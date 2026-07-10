@@ -102,25 +102,9 @@ export function Lobby({ onStartLocal }: LobbyProps) {
   return (
     <main className="lobby-shell">
       <div className="grain" aria-hidden="true" />
-      <header className="lobby-header">
-        <div className="lobby-brand">
-          <span className="brand-mark" aria-hidden="true">윷</span>
-          <div>
-            <small>KOREAN TRADITIONAL BOARD GAME</small>
-            <strong>한판 윷놀이</strong>
-          </div>
-        </div>
-        <button className="rules-entry" type="button" onClick={() => setShowRules(true)}>
-          <span aria-hidden="true">?</span>
-          게임 방법
-        </button>
-      </header>
-
       <section className="lobby-content">
         <div className="lobby-intro">
-          <p className="lobby-kicker">던지고, 업고, 잡는 한판 승부</p>
-          <h1>오늘은 누구와<br />한판 벌일까요?</h1>
-          <p className="lobby-description">플레이 방식을 선택하세요. 현재는 한 기기에서 즐기는 로컬 대전을 지원합니다.</p>
+          <h1>한 판 윷놀이</h1>
 
           <div className="mode-list" aria-label="플레이 모드 선택">
             {PLAY_MODES.map((mode) => (
@@ -142,6 +126,10 @@ export function Lobby({ onStartLocal }: LobbyProps) {
               </button>
             ))}
           </div>
+          <button className="rules-entry lobby-rules-entry" type="button" onClick={() => setShowRules(true)}>
+            <span aria-hidden="true">?</span>
+            게임 방법
+          </button>
         </div>
 
         <div className="lobby-visual" aria-hidden="true">
@@ -158,14 +146,6 @@ export function Lobby({ onStartLocal }: LobbyProps) {
           <div className="lobby-yut yut-four"><i /><i /><i /></div>
         </div>
       </section>
-
-      <footer className="lobby-footer">
-        <span>로컬 2인용</span>
-        <i />
-        <span>물리 기반 윷 던지기</span>
-        <i />
-        <span>전통 윷놀이 규칙</span>
-      </footer>
 
       {showRules && <RulesDialog onClose={() => setShowRules(false)} />}
     </main>
