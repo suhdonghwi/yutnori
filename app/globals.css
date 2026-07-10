@@ -354,13 +354,17 @@ footer p { margin: 0; }
   right: 0;
   width: 100%;
   margin: 0;
-  padding: 20px 28px 18px;
+  padding: 10px 22px 12px;
   pointer-events: none;
   border-bottom-color: rgba(227, 204, 158, .12);
   background: linear-gradient(180deg, rgba(8, 15, 12, .92), rgba(8, 15, 12, .48) 72%, transparent);
 }
 
 .topbar > * { pointer-events: auto; }
+.topbar .brand-mark { width: 36px; height: 36px; font-size: 17px; }
+.topbar h1 { font-size: clamp(20px, 1.8vw, 25px); }
+.topbar .eyebrow { margin-bottom: 3px; font-size: 8px; }
+.topbar .reset-button { padding: 7px 14px; font-size: 13px; }
 
 .game-layout {
   position: absolute;
@@ -397,7 +401,7 @@ footer p { margin: 0; }
 .player-card {
   position: absolute;
   z-index: 12;
-  top: 94px;
+  top: 72px;
   width: 224px;
   min-height: 0;
   padding: 12px 14px;
@@ -416,6 +420,13 @@ footer p { margin: 0; }
 .player-card.blue { left: 28px; }
 .player-card.red { right: 28px; }
 .player-card.active { transform: none; }
+.player-card.active::after {
+  top: 7px;
+  right: 10px;
+  padding: 3px 8px;
+  font-size: 8px;
+  letter-spacing: .08em;
+}
 
 .player-seal {
   width: 46px;
@@ -480,11 +491,11 @@ footer { display: none; }
 }
 
 @media (max-width: 760px) {
-  .topbar { padding: 14px 16px 22px; }
-  .brand-mark { width: 39px; height: 39px; font-size: 18px; }
-  .topbar h1 { font-size: 23px; }
+  .topbar { padding: 8px 12px 10px; }
+  .topbar .brand-mark { width: 32px; height: 32px; font-size: 15px; }
+  .topbar h1 { font-size: 20px; }
   .eyebrow { display: none; }
-  .reset-button { padding: 8px 13px; }
+  .topbar .reset-button { padding: 6px 11px; font-size: 12px; }
 
   .player-card {
     top: 72px;

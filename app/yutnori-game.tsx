@@ -615,6 +615,7 @@ export default function YutnoriGame() {
   const [hoveredToken, setHoveredToken] = useState<HoveredToken>(null);
   const [activeMove, setActiveMove] = useState<ActiveMove>(null);
   const [pendingRoute, setPendingRoute] = useState<PendingRoute>(null);
+  const [hoveredRouteChoice, setHoveredRouteChoice] = useState<RouteChoice | null>(null);
   const [notice, setNotice] = useState("");
   const activeMoveRef = useRef<ActiveMove>(null);
   const moveId = useRef(0);
@@ -630,12 +631,20 @@ export default function YutnoriGame() {
   }, [throwResultEffect]);
 
   const movePreviews = useMemo<MovePreview[]>(() => {
-    if (phase !== "move" || !result || !hoveredToken || hoveredToken.player !== current) return [];
-    const pieceIndex = hoveredToken.piece;
+    if (!result) return [];
+    const pieceIndex = phase === "move" && hoveredToken?.player === current
+      ? hoveredToken.piece
+      : phase === "route" && pendingRoute
+        ? pendingRoute.piece
+        : null;
+    if (pieceIndex === null) return [];
     const piece = pieces[current][pieceIndex];
     if (!isMovable(piece, result.steps) || groupLeader(pieces, current, pieceIndex) !== pieceIndex) return [];
 
-    const choices: RouteChoice[] = canChooseRoute(piece, result.steps) ? ["shortcut", "outer"] : ["outer"];
+    const hasRouteChoice = canChooseRoute(piece, result.steps);
+    const choices: RouteChoice[] = hasRouteChoice
+      ? phase === "route" && hoveredRouteChoice ? [hoveredRouteChoice] : ["shortcut", "outer"]
+      : ["outer"];
     return choices.map((choice) => {
       const resolution = resolveMove(pieces, current, pieceIndex, result.steps, choice);
       const destinationNode = nodeForPiece(resolution.destination);
@@ -644,7 +653,7 @@ export default function YutnoriGame() {
         : resolution.destination.status === "finished"
           ? NODE_POSITIONS.O0
           : tokenPlacement(resolution.board, current, pieceIndex).position;
-      const isBranchPreview = choices.length > 1;
+      const isBranchPreview = hasRouteChoice;
       const isCenterPreview = nodeForPiece(piece) === "C";
       return {
         key: `${pieceIndex}-${choice}`,
@@ -661,7 +670,7 @@ export default function YutnoriGame() {
         color: choice === "shortcut" ? "#f2cb72" : PLAYERS[current].glow,
       };
     });
-  }, [current, hoveredToken, phase, pieces, result]);
+  }, [current, hoveredRouteChoice, hoveredToken, pendingRoute, phase, pieces, result]);
 
   const throwYut = () => {
     if (phase !== "ready") return;
@@ -723,6 +732,7 @@ export default function YutnoriGame() {
   const executeMove = (pieceIndex: number, routeChoice: RouteChoice) => {
     if (!result || (phase !== "move" && phase !== "route")) return;
     setHoveredToken(null);
+    setHoveredRouteChoice(null);
     setPendingRoute(null);
 
     const resolution = resolveMove(pieces, current, pieceIndex, result.steps, routeChoice);
@@ -778,6 +788,7 @@ export default function YutnoriGame() {
     if (!isMovable(piece, result.steps) || groupLeader(pieces, current, pieceIndex) !== pieceIndex) return;
     if (canChooseRoute(piece, result.steps)) {
       setHoveredToken(null);
+      setHoveredRouteChoice(null);
       setPendingRoute({ piece: pieceIndex });
       setPhase("route");
       return;
@@ -799,6 +810,7 @@ export default function YutnoriGame() {
     setWinner(null);
     setNonce(0);
     setHoveredToken(null);
+    setHoveredRouteChoice(null);
     setPendingRoute(null);
     setNotice("");
     activeMoveRef.current = null;
@@ -892,11 +904,25 @@ export default function YutnoriGame() {
               </div>
             ) : phase === "route" ? (
               <div className="route-actions" aria-label="이동 경로 선택">
-                <button type="button" onClick={() => chooseRoute("shortcut")}>
+                <button
+                  type="button"
+                  onPointerEnter={() => setHoveredRouteChoice("shortcut")}
+                  onPointerLeave={() => setHoveredRouteChoice(null)}
+                  onFocus={() => setHoveredRouteChoice("shortcut")}
+                  onBlur={() => setHoveredRouteChoice(null)}
+                  onClick={() => chooseRoute("shortcut")}
+                >
                   {routeChoiceFromCenter ? "빠른 지름길" : "지름길"}
                   <span>{routeChoiceFromCenter ? "도착점 방향으로 바로 갑니다" : "가운데를 가로질러 갑니다"}</span>
                 </button>
-                <button type="button" onClick={() => chooseRoute("outer")}>
+                <button
+                  type="button"
+                  onPointerEnter={() => setHoveredRouteChoice("outer")}
+                  onPointerLeave={() => setHoveredRouteChoice(null)}
+                  onFocus={() => setHoveredRouteChoice("outer")}
+                  onBlur={() => setHoveredRouteChoice(null)}
+                  onClick={() => chooseRoute("outer")}
+                >
                   {routeChoiceFromCenter ? "돌아가는 길" : "바깥길"}
                   <span>{routeChoiceFromCenter ? "반대편 모서리를 거쳐 갑니다" : "모서리를 따라 계속 갑니다"}</span>
                 </button>
