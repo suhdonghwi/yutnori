@@ -123,10 +123,10 @@ function MoveDestinationPreview({ preview }: { preview: MovePreview }) {
       </mesh>
       <pointLight color={preview.color} intensity={1.8} distance={2.1} position={[0, 0.42, 0]} />
       <Html center position={[0, 0.72, 0]} distanceFactor={8.5} style={{ pointerEvents: "none" }}>
-        <div className="move-preview-labels">
-          <span className="move-preview-badge">{preview.label}</span>
+        <div className="flex flex-col items-center gap-1.5">
+          <span className="block whitespace-nowrap rounded-full border-[1.5px] border-[rgba(255,242,205,.62)] bg-[rgba(18,25,20,.94)] px-3.5 py-2 text-[clamp(16px,1.35vw,20px)] leading-[1.1] font-extrabold tracking-[-.02em] text-[#fff0c8] shadow-[0_8px_24px_rgba(0,0,0,.46)] backdrop-blur-[5px]">{preview.label}</span>
           {preview.action && (
-            <span className={`move-preview-action ${preview.action === "잡기!" ? "capture" : "stack"}`}>
+            <span className={`block whitespace-nowrap rounded-full border-[1.5px] border-current px-3 py-1.5 text-[clamp(15px,1.2vw,18px)] leading-none font-black tracking-[-.02em] shadow-[0_7px_20px_rgba(0,0,0,.42)] ${preview.action === "잡기!" ? "bg-[rgba(153,45,32,.96)] text-[#ffe3d8]" : "bg-[rgba(126,91,25,.96)] text-[#fff0bd]"}`}>
               {preview.action}
             </span>
           )}
@@ -304,7 +304,7 @@ function Token({
       <pointLight color={highlighted ? "#f4d283" : color} intensity={highlighted ? 2.1 : state.status === "finished" ? 1.3 : 0} distance={2.7} />
       {stackLabel && (
         <Html center position={[0, 0.54, 0]} distanceFactor={8.5} style={{ pointerEvents: "none" }}>
-          <span className="token-stack-label">{stackLabel}</span>
+          <span className="block min-w-[76px] whitespace-nowrap rounded-full border-[1.5px] border-[rgba(244,210,131,.66)] bg-[rgba(16,22,18,.96)] px-[13px] py-2 text-center text-[clamp(15px,1.2vw,18px)] leading-[1.1] font-extrabold tracking-[-.02em] text-[#fff7df] shadow-[0_7px_20px_rgba(0,0,0,.42)]">{stackLabel}</span>
         </Html>
       )}
     </group>
