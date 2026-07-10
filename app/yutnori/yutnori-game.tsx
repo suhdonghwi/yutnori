@@ -152,7 +152,7 @@ export default function YutnoriGame() {
         stage: "capture-return",
         player: capture.player,
         pieces: capture.pieces,
-        leader: Math.max(...capture.pieces),
+        leader: capture.pieces[capture.pieces.length - 1],
         waypoints: [],
         waypointClearances: [],
         captureReturn: null,
@@ -226,7 +226,7 @@ export default function YutnoriGame() {
       stage: "advance",
       player: current,
       pieces: resolution.movedPieces,
-      leader: Math.max(...resolution.movedPieces),
+      leader: resolution.movedPieces[resolution.movedPieces.length - 1],
       waypoints: resolution.waypoints,
       waypointClearances,
       nextPlayer,
@@ -338,7 +338,7 @@ export default function YutnoriGame() {
               <div className="piece-actions" aria-label="움직일 말 선택">
                 {pieces[current].map((piece, index) => {
                   const group = groupForPiece(pieces, current, index);
-                  const leader = Math.min(...group);
+                  const leader = group[0];
                   const follower = piece.status === "board" && leader !== index;
                   const movable = isMovable(piece, result?.steps ?? 0) && !follower;
                   return (

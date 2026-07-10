@@ -155,6 +155,10 @@ export function tokenPlacement(pieces: BoardState, player: number, piece: number
       if (nodeForPiece(occupantState) === node) occupants.push({ player: occupantPlayer, piece: occupantPiece });
     });
   });
+  occupants.sort((first, second) => (
+    pieces[player][first.piece].stackOrder - pieces[player][second.piece].stackOrder
+    || first.piece - second.piece
+  ));
   const slot = occupants.findIndex((occupant) => occupant.player === player && occupant.piece === piece);
   const count = occupants.length;
   const members = occupants.map((occupant) => occupant.piece);
@@ -435,4 +439,3 @@ export function Scene({
     </>
   );
 }
-

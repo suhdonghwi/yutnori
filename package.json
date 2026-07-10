@@ -11,7 +11,8 @@
     "prebuild": "npm run clean",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "npm run build",
+    "test": "npm run typecheck && npm run test:rules && npm run build",
+    "test:rules": "node --experimental-strip-types --test tests/yutnori-rules.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
