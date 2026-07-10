@@ -57,7 +57,7 @@ function createYutGeometry() {
 
 const YUT_GEOMETRY = createYutGeometry();
 const YUT_COLLIDER_VERTICES = new Float32Array(YUT_GEOMETRY.attributes.position.array);
-const YUT_WOOD_TONES = ["#d8b579", "#dfbd82", "#d4ad70", "#e1c18a"] as const;
+const YUT_WOOD_TONES = ["#b98a52", "#c3975d", "#ad7d48", "#c69d65"] as const;
 
 function YutImpactBurst({
   id,
