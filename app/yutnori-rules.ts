@@ -96,9 +96,9 @@ export function groupLeader(board: BoardState, player: Player, pieceIndex: numbe
 }
 
 export function canChooseRoute(piece: PieceState, steps: number): boolean {
-  if (steps <= 0 || piece.status !== "board" || piece.route !== "outer") return false;
+  if (steps <= 0 || piece.status !== "board") return false;
   const node = nodeForPiece(piece);
-  return node === "O5" || node === "O10";
+  return node === "C" || (piece.route === "outer" && (node === "O5" || node === "O10"));
 }
 
 export function isMovable(piece: PieceState, steps: number): boolean {
@@ -108,8 +108,14 @@ export function isMovable(piece: PieceState, steps: number): boolean {
 }
 
 function selectRoute(piece: PieceState, choice: RouteChoice): PieceState {
-  if (piece.status !== "board" || choice === "outer") return { ...piece };
+  if (piece.status !== "board") return { ...piece };
   const node = nodeForPiece(piece);
+  if (node === "C") {
+    return choice === "shortcut"
+      ? { status: "board", route: "shortcut-b", index: 3 }
+      : { status: "board", route: "shortcut-a", index: 3 };
+  }
+  if (choice === "outer") return { ...piece };
   if (node === "O5") return { status: "board", route: "shortcut-a", index: 0 };
   if (node === "O10") return { status: "board", route: "shortcut-b", index: 0 };
   return { ...piece };

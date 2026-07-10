@@ -588,6 +588,8 @@ export default function YutnoriGame() {
   const activeMoveRef = useRef<ActiveMove>(null);
   const moveId = useRef(0);
   const otherPlayer = (current === 0 ? 1 : 0) as Player;
+  const routeChoiceFromCenter = pendingRoute !== null
+    && nodeForPiece(pieces[current][pendingRoute.piece]) === "C";
 
   const movePreviews = useMemo<MovePreview[]>(() => {
     if (phase !== "move" || !result || !hoveredToken || hoveredToken.player !== current) return [];
@@ -605,6 +607,7 @@ export default function YutnoriGame() {
           ? NODE_POSITIONS.O0
           : tokenPlacement(resolution.board, current, pieceIndex).position;
       const isBranchPreview = choices.length > 1;
+      const isCenterPreview = nodeForPiece(piece) === "C";
       return {
         key: `${pieceIndex}-${choice}`,
         position: destinationPosition,
@@ -613,7 +616,9 @@ export default function YutnoriGame() {
           : resolution.destination.status === "home"
             ? "대기석으로"
             : isBranchPreview
-              ? choice === "shortcut" ? "지름길 도착" : "바깥길 도착"
+              ? isCenterPreview
+                ? choice === "shortcut" ? "빠른 길 도착" : "돌아가는 길 도착"
+                : choice === "shortcut" ? "지름길 도착" : "바깥길 도착"
               : `${result.name} 도착`,
         color: choice === "shortcut" ? "#f2cb72" : PLAYERS[current].glow,
       };
@@ -766,7 +771,7 @@ export default function YutnoriGame() {
       : phase === "move"
         ? result?.steps === -1 ? "빽도 · 움직일 말을 골라 한 칸 뒤로 가세요" : `${result?.name} · ${result?.steps}칸 움직이세요`
         : phase === "route"
-          ? "이 갈림길에서 어느 길로 갈까요?"
+          ? routeChoiceFromCenter ? "중앙에서 어느 지름길로 갈까요?" : "이 갈림길에서 어느 길로 갈까요?"
           : phase === "moving"
             ? activeMove?.stage === "capture-return"
               ? "잡힌 말이 대기석으로 돌아가는 중"
@@ -846,10 +851,12 @@ export default function YutnoriGame() {
             ) : phase === "route" ? (
               <div className="route-actions" aria-label="이동 경로 선택">
                 <button type="button" onClick={() => chooseRoute("shortcut")}>
-                  지름길<span>가운데를 가로질러 갑니다</span>
+                  {routeChoiceFromCenter ? "빠른 지름길" : "지름길"}
+                  <span>{routeChoiceFromCenter ? "도착점 방향으로 바로 갑니다" : "가운데를 가로질러 갑니다"}</span>
                 </button>
                 <button type="button" onClick={() => chooseRoute("outer")}>
-                  바깥길<span>모서리를 따라 계속 갑니다</span>
+                  {routeChoiceFromCenter ? "돌아가는 길" : "바깥길"}
+                  <span>{routeChoiceFromCenter ? "반대편 모서리를 거쳐 갑니다" : "모서리를 따라 계속 갑니다"}</span>
                 </button>
               </div>
             ) : phase === "gameover" ? (
