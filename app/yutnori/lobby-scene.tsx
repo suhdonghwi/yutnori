@@ -85,14 +85,14 @@ function FloatingYut({ index, highlighted }: { index: number; highlighted: boole
       floatIntensity={highlighted ? 0.22 : 0.1}
       floatingRange={[-0.06, 0.06]}
     >
-      <group position={positions[index]} rotation={rotations[index]} scale={highlighted ? 1.04 : 1}>
+      <group position={positions[index]} rotation={rotations[index]}>
         <YutStickMesh backdo={index === 0} />
       </group>
     </Float>
   );
 }
 
-function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode }) {
+function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
   const rig = useRef<THREE.Group>(null);
 
   useFrame(({ pointer }, delta) => {
@@ -115,7 +115,7 @@ function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode }) {
       <pointLight color="#174c6b" distance={12} intensity={previewMode === "local" ? 11 : 4} position={[-5, 2, 4]} />
       <pointLight color="#a63f31" distance={12} intensity={previewMode === "ai" ? 11 : 4} position={[5, 2, 4]} />
 
-      <group ref={rig} position={[0, -0.72, 0]} scale={0.82}>
+      <group ref={rig} position={[0, -0.72, 0]} scale={0.78}>
         <BoardSurface />
         <LobbyToken color="#174c6b" highlighted={previewMode === "local"} position={[-3.55, 0.2, 3.1]} />
         <LobbyToken color="#a63f31" highlighted={previewMode === "ai"} position={[3.35, 0.2, 2.4]} />
@@ -129,7 +129,7 @@ function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode }) {
   );
 }
 
-export function LobbyScene({ previewMode }: { previewMode: LobbyPreviewMode }) {
+export function LobbyScene({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
   return (
     <Canvas
       shadows

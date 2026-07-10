@@ -101,7 +101,7 @@ function RulesDialog({ onClose }: { onClose: () => void }) {
 
 export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
   const [showRules, setShowRules] = useState(false);
-  const [previewMode, setPreviewMode] = useState<LobbyPreviewMode>("local");
+  const [previewMode, setPreviewMode] = useState<LobbyPreviewMode | null>(null);
 
   return (
     <main className="lobby-shell relative min-h-svh overflow-hidden text-[#f3e6c8] max-[820px]:overflow-auto">
@@ -116,7 +116,7 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
         <div className="w-[min(520px,43vw)] max-[820px]:w-full">
           <h1 className="m-0 text-[clamp(54px,5.5vw,78px)] leading-[1.04] font-black tracking-[.025em] text-[#fff0cf] text-balance max-[820px]:text-[clamp(42px,11vw,60px)]">한 판 윷놀이</h1>
 
-          <div className="mt-10 border-y border-[rgba(224,199,148,.18)] max-[820px]:mt-[305px] max-[560px]:mt-[260px]" aria-label="플레이 모드 선택" onPointerLeave={() => setPreviewMode("local")}>
+          <div className="mt-10 border-y border-[rgba(224,199,148,.18)] max-[820px]:mt-[305px] max-[560px]:mt-[260px]" aria-label="플레이 모드 선택" onPointerLeave={() => setPreviewMode(null)}>
             {PLAY_MODES.map((mode) => {
               const Icon = mode.icon;
               const active = previewMode === mode.id;
