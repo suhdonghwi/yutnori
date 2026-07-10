@@ -1,0 +1,23 @@
+{
+  "name": "윷놀이",
+  "short_name": "윷놀이",
+  "description": "전통 규칙으로 즐기는 3D 윷놀이 게임",
+  "lang": "ko-KR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d1713",
+  "theme_color": "#0d1713",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

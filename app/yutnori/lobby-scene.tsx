@@ -47,7 +47,7 @@ function LobbyToken({
   );
 }
 
-function FloatingYut({ index, highlighted }: { index: number; highlighted: boolean }) {
+function FloatingYut({ index }: { index: number }) {
   const rotations: [number, number, number][] = [
     [0.08, -0.58, -0.13],
     [-0.03, -0.2, 0.04],
@@ -64,8 +64,8 @@ function FloatingYut({ index, highlighted }: { index: number; highlighted: boole
   return (
     <Float
       speed={0.85 + index * 0.08}
-      rotationIntensity={highlighted ? 0.12 : 0.045}
-      floatIntensity={highlighted ? 0.22 : 0.1}
+      rotationIntensity={0.045}
+      floatIntensity={0.1}
       floatingRange={[-0.06, 0.06]}
     >
       <group position={positions[index]} rotation={rotations[index]}>
@@ -82,6 +82,8 @@ function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
     if (!rig.current) return;
     rig.current.rotation.y = THREE.MathUtils.damp(rig.current.rotation.y, pointer.x * 0.065 - 0.06, 4.5, delta);
     rig.current.rotation.x = THREE.MathUtils.damp(rig.current.rotation.x, pointer.y * -0.025, 4.5, delta);
+    rig.current.position.x = THREE.MathUtils.damp(rig.current.position.x, pointer.x * 0.16, 4.2, delta);
+    rig.current.position.y = THREE.MathUtils.damp(rig.current.position.y, -0.72 + pointer.y * 0.055, 4.2, delta);
   });
 
   return (
@@ -103,7 +105,7 @@ function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
         <LobbyToken color="#174c6b" highlighted={previewMode === "local"} position={[-3.55, 0.06, 3.1]} />
         <LobbyToken color="#a63f31" highlighted={previewMode === "ai"} position={[3.35, 0.06, 2.4]} />
         {[0, 1, 2, 3].map((index) => (
-          <FloatingYut key={index} index={index} highlighted={previewMode !== "online"} />
+          <FloatingYut key={index} index={index} />
         ))}
       </group>
 

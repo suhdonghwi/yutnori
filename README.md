@@ -1,4 +1,4 @@
-# 한판 윷놀이
+# 윷놀이
 
 Vite, React, Three.js, React Three Fiber로 만든 로컬 2인용 3D 윷놀이입니다.
 

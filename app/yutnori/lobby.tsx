@@ -12,7 +12,7 @@ const PLAY_MODES = [
     id: "local",
     icon: UsersThree,
     title: "로컬 대전",
-    description: "한 기기에서 두 사람이 번갈아 플레이합니다.",
+    description: "두 사람이 번갈아 플레이합니다.",
     available: true,
   },
   {
@@ -114,7 +114,7 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
 
       <section className="relative z-[2] mx-auto flex min-h-svh w-[min(1240px,calc(100%-64px))] items-center py-12 max-[820px]:w-[min(620px,calc(100%-36px))] max-[820px]:items-start max-[820px]:pt-10 max-[820px]:pb-16 max-[560px]:w-[calc(100%-28px)]">
         <div className="w-[min(520px,43vw)] max-[820px]:w-full">
-          <h1 className="m-0 text-[clamp(54px,5.5vw,78px)] leading-[1.04] font-black tracking-[.025em] text-[#fff0cf] text-balance max-[820px]:text-[clamp(42px,11vw,60px)]">한 판 윷놀이</h1>
+          <h1 className="m-0 text-[clamp(54px,5.5vw,78px)] leading-[1.04] font-extrabold tracking-[.025em] text-[#fff0cf] text-balance max-[820px]:text-[clamp(42px,11vw,60px)]">윷놀이</h1>
 
           <div className="mt-10 border-y border-[rgba(224,199,148,.18)] max-[820px]:mt-[305px] max-[560px]:mt-[260px]" aria-label="플레이 모드 선택" onPointerLeave={() => setPreviewMode(null)}>
             {PLAY_MODES.map((mode) => {

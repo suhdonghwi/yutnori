@@ -522,7 +522,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
               <button className="flex min-w-[240px] flex-[1.2] cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-[#d9ba70] transition-colors hover:bg-[rgba(217,186,112,.1)] hover:text-[#f4d99b] max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:text-sm" type="button" onClick={reset}>한 판 더 <ArrowRight size={21} weight="bold" aria-hidden="true" /></button>
             ) : (
               <button className="flex min-w-[240px] flex-[1.2] cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-[#d9ba70] transition-colors enabled:hover:bg-[rgba(217,186,112,.1)] enabled:hover:text-[#f4d99b] disabled:cursor-wait disabled:opacity-45 max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:px-3 max-[760px]:text-sm" type="button" onClick={throwYut} disabled={isAiTurn || phase === "rolling" || phase === "moving"}>
-                <span>{isAiTurn && phase === "ready" ? "AI 자동 진행" : phase === "rolling" ? "물리 판정 중" : phase === "moving" ? "말 이동 중" : "윷 던지기"}</span>
+                <span>{isAiTurn && phase === "ready" ? "AI 자동 진행" : phase === "rolling" ? "결과 확인 중" : phase === "moving" ? "말 이동 중" : "윷 던지기"}</span>
                 <ArrowRight size={22} weight="bold" aria-hidden="true" />
               </button>
             )}
