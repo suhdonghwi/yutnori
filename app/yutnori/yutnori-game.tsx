@@ -1,4 +1,5 @@
 import { Canvas } from "@react-three/fiber";
+import { ArrowRight, DoorOpen, Plus } from "@phosphor-icons/react";
 import { josa, susa } from "es-hangul";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -31,6 +32,42 @@ import type {
 } from "./game-types";
 import { ThrowResultEffect, VictoryEffect } from "./result-effects";
 import { Lobby } from "./lobby";
+
+function PlayerProgress({
+  player,
+  role,
+  finished,
+  active,
+}: {
+  player: Player;
+  role: string;
+  finished: number;
+  active: boolean;
+}) {
+  const config = PLAYERS[player];
+
+  return (
+    <div
+      className={`relative flex items-center gap-3 transition-opacity duration-300 max-[760px]:gap-2 ${active ? "opacity-100" : "opacity-55"}`}
+      style={{ "--player-color": config.color } as React.CSSProperties}
+    >
+      <span className="size-6 shrink-0 rounded-full border border-[rgba(245,222,168,.62)] bg-[var(--player-color)] shadow-[0_5px_14px_rgba(0,0,0,.28)] max-[760px]:size-4" aria-hidden="true" />
+      <div className="min-w-0">
+        <div className="flex items-baseline gap-2.5 whitespace-nowrap max-[760px]:gap-1.5">
+          <strong className="text-base leading-none font-extrabold text-[#f0dfbb] max-[760px]:text-[13px]">{config.name}{player === 1 && role === "AI 상대" ? " AI" : ""}</strong>
+          <span className="text-[11px] font-semibold text-[#a69a80] max-[760px]:text-[9px]">{finished} / 4 도착</span>
+          <small className="text-[9px] font-medium tracking-[.08em] text-[#736c5e] max-[960px]:hidden">{role}</small>
+        </div>
+        <div className="mt-2 flex items-center gap-3 max-[760px]:hidden" aria-hidden="true">
+          {Array.from({ length: 4 }, (_, index) => (
+            <span key={index} className={`size-[7px] rounded-full border ${index < finished ? "border-[#d9ba70] bg-[#d9ba70]" : "border-[rgba(217,186,112,.48)] bg-transparent"}`} />
+          ))}
+        </div>
+      </div>
+      {active && <span className="absolute -bottom-3 left-0 h-px w-full bg-[linear-gradient(90deg,#d9ba70,transparent)] max-[760px]:-bottom-2" aria-hidden="true" />}
+    </div>
+  );
+}
 
 function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
   const [current, setCurrent] = useState<Player>(0);
@@ -339,23 +376,35 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
       <div className="grain" aria-hidden="true" />
       {throwResultEffect && <ThrowResultEffect effect={throwResultEffect} />}
       {visibleWinner !== null && <VictoryEffect winner={visibleWinner} />}
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-20 flex w-full items-center gap-4 border-b border-[rgba(227,204,158,.12)] bg-[linear-gradient(180deg,rgba(8,15,12,.92),rgba(8,15,12,.48)_72%,transparent)] px-[22px] pt-2.5 pb-3 max-[760px]:gap-2 max-[760px]:px-3 max-[760px]:pt-2 max-[760px]:pb-2.5">
-        <div className="pointer-events-auto grid size-9 place-items-center rounded-full border border-[rgba(232,199,139,.48)] text-[17px] font-extrabold text-[#d9b96f] max-[760px]:size-8 max-[760px]:text-[15px]" aria-hidden="true">윷</div>
-        <div>
-          <h1 className="pointer-events-auto m-0 text-[clamp(20px,1.8vw,25px)] leading-none font-bold tracking-[-.06em]">한판 윷놀이</h1>
-        </div>
-        <div className="pointer-events-auto ml-auto flex items-center gap-2 max-[760px]:gap-1.5">
-          <button className="cursor-pointer rounded-full border border-[rgba(230,206,160,.16)] bg-white/[.025] px-3.5 py-1.5 text-[13px] text-[#b9ad96] transition-colors hover:border-[rgba(230,206,160,.5)] hover:bg-white/[.08] hover:text-[#eadbbd] max-[760px]:px-[11px] max-[760px]:text-xs" type="button" onClick={onExit}>로비로</button>
-          <button className="cursor-pointer rounded-full border border-[rgba(230,206,160,.28)] bg-white/[.03] px-3.5 py-1.5 text-[13px] text-[#d9c8a8] transition-colors hover:border-[rgba(230,206,160,.5)] hover:bg-white/[.08] max-[760px]:px-[11px] max-[760px]:text-xs" type="button" onClick={reset}>새 판</button>
-        </div>
-      </header>
 
       <section className="pointer-events-none absolute inset-0 block h-full w-full" aria-label="3D 윷놀이 게임">
-        <aside className={`pointer-events-auto absolute top-[72px] left-7 z-[12] flex w-56 items-center gap-3 rounded-[17px] border bg-[rgba(13,22,18,.78)] px-3.5 py-3 text-left shadow-[0_14px_38px_rgba(0,0,0,.28)] backdrop-blur-2xl transition-[opacity,border-color] max-[760px]:left-2.5 max-[760px]:w-[158px] max-[760px]:gap-2 max-[760px]:px-2.5 max-[760px]:py-[9px] ${current === 0 && phase !== "gameover" ? "border-[rgba(226,202,157,.32)] opacity-100 after:absolute after:top-[7px] after:right-2.5 after:rounded-full after:bg-[#d7bd82] after:px-2 after:py-[3px] after:text-[8px] after:font-extrabold after:tracking-[.08em] after:text-[#33261c] after:content-['차례'] max-[760px]:after:hidden" : "border-[rgba(226,202,157,.14)] opacity-[.58]"}`}>
-          <span className="grid size-[46px] shrink-0 place-items-center rounded-full bg-[var(--blue)] text-[19px] font-extrabold text-[#f4e5c2] shadow-[inset_0_0_0_6px_rgba(255,255,255,.08),0_12px_28px_rgba(0,0,0,.25)] max-[760px]:size-[37px] max-[760px]:text-base">靑</span>
-          <div><small className="mb-[3px] block text-[10px] font-medium tracking-[.12em] text-[#9c8e76] max-[760px]:hidden">{mode === "ai" ? "플레이어" : "첫째 선수"}</small><strong className="text-[19px] max-[760px]:text-base">청군</strong></div>
-          <span className="ml-auto whitespace-nowrap text-[10px] font-semibold text-[#c9b997] max-[760px]:hidden">도착 {pieces[0].filter((piece) => piece.status === "finished").length}/4</span>
-        </aside>
+        <div className="pointer-events-auto absolute top-7 left-8 z-20 max-[760px]:top-4 max-[760px]:left-3">
+          <PlayerProgress
+            player={0}
+            role={mode === "ai" ? "플레이어" : "첫째 선수"}
+            finished={pieces[0].filter((piece) => piece.status === "finished").length}
+            active={current === 0 && phase !== "gameover"}
+          />
+        </div>
+
+        <div className="pointer-events-auto absolute top-7 right-8 z-20 flex items-start gap-7 max-[760px]:top-4 max-[760px]:right-3 max-[760px]:gap-3">
+          <PlayerProgress
+            player={1}
+            role={mode === "ai" ? "AI 상대" : "둘째 선수"}
+            finished={pieces[1].filter((piece) => piece.status === "finished").length}
+            active={current === 1 && phase !== "gameover"}
+          />
+          <div className="flex items-start gap-4 border-l border-[rgba(217,186,112,.34)] pl-5 max-[760px]:gap-2 max-[760px]:pl-3">
+            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={onExit} aria-label="로비로 돌아가기">
+              <DoorOpen size={21} weight="regular" aria-hidden="true" />
+              <span className="max-[760px]:hidden">로비로</span>
+            </button>
+            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={reset} aria-label="새 판 시작">
+              <Plus size={21} weight="regular" aria-hidden="true" />
+              <span className="max-[760px]:hidden">새 판</span>
+            </button>
+          </div>
+        </div>
 
         <div className="pointer-events-none absolute inset-0 z-[1] block min-w-0">
           <div className="pointer-events-auto absolute inset-0 h-full min-h-0 w-full [&_canvas]:touch-none">
@@ -376,22 +425,22 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
             </Canvas>
           </div>
 
-          <div className="pointer-events-auto absolute bottom-[22px] left-1/2 z-[14] flex min-h-[84px] w-[min(760px,calc(100%-36px))] -translate-x-1/2 items-center gap-5 rounded-[22px] border border-[rgba(227,204,161,.24)] bg-[rgba(13,20,16,.88)] py-[13px] pr-3.5 pl-[22px] shadow-[0_24px_70px_rgba(0,0,0,.45)] backdrop-blur-2xl max-[760px]:bottom-2 max-[760px]:min-h-[72px] max-[760px]:w-[calc(100%-16px)] max-[760px]:gap-2 max-[760px]:rounded-[17px] max-[760px]:py-2.5 max-[760px]:pr-2.5 max-[760px]:pl-3.5" style={{ "--turn-color": PLAYERS[current].color } as React.CSSProperties}>
-            <div className="flex min-w-0 flex-1 items-center gap-3 max-[760px]:gap-[9px]" aria-live="polite">
-              <span className="size-[9px] shrink-0 rounded-full bg-[var(--turn-color)] shadow-[0_0_0_5px_color-mix(in_srgb,var(--turn-color),transparent_78%)]" />
-              <div className="min-w-0"><small className="mb-0.5 block text-[10px] font-medium text-[#9f927b]">지금은</small><strong className="block overflow-hidden text-[clamp(14px,1.4vw,18px)] text-ellipsis whitespace-nowrap text-[#f0e2c5] max-[760px]:max-w-[42vw] max-[760px]:text-sm">{statusText}</strong></div>
+          <div className="pointer-events-auto absolute bottom-5 left-1/2 z-[14] flex min-h-[96px] w-[calc(100%-64px)] max-w-[1380px] -translate-x-1/2 items-stretch overflow-hidden rounded-[2px] border border-[rgba(217,186,112,.58)] bg-[rgba(7,15,12,.8)] shadow-[0_20px_60px_rgba(0,0,0,.34)] max-[760px]:bottom-2 max-[760px]:min-h-[108px] max-[760px]:w-[calc(100%-16px)] max-[760px]:flex-col max-[760px]:rounded-[3px]" style={{ "--turn-color": PLAYERS[current].color } as React.CSSProperties}>
+            <div className="flex min-w-[330px] flex-[1.05] items-center gap-4 border-r border-[rgba(217,186,112,.36)] px-8 py-4 max-[900px]:min-w-[270px] max-[760px]:min-h-[52px] max-[760px]:w-full max-[760px]:min-w-0 max-[760px]:flex-none max-[760px]:gap-2.5 max-[760px]:border-r-0 max-[760px]:border-b max-[760px]:px-3.5 max-[760px]:py-2" aria-live="polite">
+              <span className="size-[11px] shrink-0 rounded-full border border-[rgba(245,222,168,.66)] bg-[var(--turn-color)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--turn-color),transparent_80%)] max-[760px]:size-[9px]" />
+              <div className="min-w-0"><small className="mb-1 block text-[11px] font-medium text-[#a89b80] max-[760px]:mb-0 max-[760px]:text-[9px]">지금은</small><strong className="block overflow-hidden text-[clamp(16px,1.5vw,21px)] leading-[1.18] font-extrabold text-ellipsis whitespace-nowrap text-[#f0e2c5] max-[760px]:max-w-[calc(100vw-62px)] max-[760px]:text-[13px]">{statusText}</strong></div>
             </div>
 
             {phase === "move" && isAiTurn ? (
-              <div className="flex min-w-[250px] items-center gap-3 rounded-[13px] border border-[rgba(226,162,143,.2)] bg-[rgba(166,63,49,.11)] px-[13px] py-[9px] max-[760px]:min-w-0 max-[760px]:gap-2 max-[760px]:px-[9px] max-[760px]:py-[7px]" aria-live="polite">
-                <span className="grid size-[39px] shrink-0 place-items-center rounded-[11px] bg-[#8f352b] text-xs font-black text-[#ffe6dc] shadow-[inset_0_0_0_1px_rgba(255,255,255,.08)] max-[760px]:size-[34px]">AI</span>
+              <div className="flex min-w-[310px] flex-[1.35] items-center gap-4 px-8 py-4 max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:gap-2 max-[760px]:px-3.5 max-[760px]:py-2" aria-live="polite">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full border border-[rgba(226,162,143,.34)] text-[11px] font-black text-[#e2a294] max-[760px]:size-8">AI</span>
                 <div>
                   <small className="mb-1 block text-[9px] leading-none font-semibold tracking-[.1em] text-[#b99b91]">홍군의 선택</small>
-                  <strong className="block whitespace-nowrap text-[13px] leading-[1.2] font-extrabold text-[#efd6cb] max-[760px]:max-w-[32vw] max-[760px]:overflow-hidden max-[760px]:text-[11px] max-[760px]:text-ellipsis">{aiDecision?.reason ?? "수를 읽는 중"}</strong>
+                  <strong className="block whitespace-nowrap text-sm leading-[1.2] font-extrabold text-[#efd6cb] max-[760px]:max-w-[68vw] max-[760px]:overflow-hidden max-[760px]:text-[11px] max-[760px]:text-ellipsis">{aiDecision?.reason ?? "수를 읽는 중"}</strong>
                 </div>
               </div>
             ) : phase === "move" ? (
-              <div className="grid flex-[1.3] grid-cols-4 gap-1.5 max-[760px]:grid-cols-2" aria-label="움직일 말 선택">
+              <div className="grid flex-[1.55] grid-cols-4 max-[760px]:min-h-[58px] max-[760px]:grid-cols-4" aria-label="움직일 말 선택">
                 {pieces[current].map((piece, index) => {
                   const group = groupForPiece(pieces, current, index);
                   const leader = group[0];
@@ -401,7 +450,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
                     <button
                       key={index}
                       type="button"
-                      className="group min-w-[58px] cursor-pointer rounded-[10px] border border-[rgba(223,196,140,.2)] bg-white/[.055] px-[7px] py-2 text-xs font-extrabold text-[#eee0c3] transition-[transform,background-color,border-color,opacity] enabled:hover:-translate-y-0.5 enabled:hover:border-transparent enabled:hover:bg-[var(--turn-color)] disabled:cursor-not-allowed disabled:opacity-[.28] max-[760px]:py-[5px]"
+                      className="group min-w-[58px] cursor-pointer border-0 border-l border-[rgba(217,186,112,.28)] bg-transparent px-3 py-3 text-sm font-extrabold text-[#d7c8a8] transition-[background-color,color,opacity] enabled:hover:bg-[rgba(217,186,112,.1)] enabled:hover:text-[#f4dba1] disabled:cursor-not-allowed disabled:opacity-[.24] max-[760px]:min-w-0 max-[760px]:px-1 max-[760px]:py-1.5 max-[760px]:text-[11px]"
                       disabled={!movable}
                       onPointerEnter={() => setHoveredToken({ player: current, piece: index })}
                       onPointerLeave={() => setHoveredToken(null)}
@@ -412,16 +461,16 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
                       {group.length > 1 && !follower
                         ? group.map((member) => `말 ${member + 1}`).join(" + ")
                         : `말 ${index + 1}`}
-                      <span className="mt-[3px] block text-[9px] font-medium text-[#aa9b82] group-hover:text-white/75">{follower ? `${josa(`${leader + 1}번 말`, "와/과")} 업힘` : pieceProgressLabel(piece)}</span>
+                      <span className="mt-1.5 block text-[9px] font-medium text-[#817867] group-hover:text-[#c5b590] max-[760px]:mt-0.5 max-[760px]:text-[8px]">{follower ? `${josa(`${leader + 1}번 말`, "와/과")} 업힘` : pieceProgressLabel(piece)}</span>
                     </button>
                   );
                 })}
               </div>
             ) : phase === "route" ? (
-              <div className="grid flex-[1.35] grid-cols-2 gap-2 max-[760px]:gap-[5px]" aria-label="이동 경로 선택">
+              <div className="grid flex-[1.45] grid-cols-2 max-[760px]:min-h-[58px]" aria-label="이동 경로 선택">
                 <button
                   type="button"
-                  className="cursor-pointer rounded-xl border border-transparent bg-[color-mix(in_srgb,var(--turn-color)_68%,transparent)] px-[13px] py-[9px] text-[13px] font-extrabold text-[#f1dfb9] transition-[transform,filter] hover:-translate-y-0.5 hover:brightness-[1.13] max-[760px]:min-w-0 max-[760px]:px-1.5 max-[760px]:py-[7px] max-[760px]:text-[11px]"
+                  className="cursor-pointer border-0 border-r border-[rgba(217,186,112,.28)] bg-[rgba(217,186,112,.09)] px-5 py-3 text-sm font-extrabold text-[#efd49a] transition-colors hover:bg-[rgba(217,186,112,.15)] max-[760px]:min-w-0 max-[760px]:px-1.5 max-[760px]:py-[7px] max-[760px]:text-[11px]"
                   onPointerEnter={() => setHoveredRouteChoice("shortcut")}
                   onPointerLeave={() => setHoveredRouteChoice(null)}
                   onFocus={() => setHoveredRouteChoice("shortcut")}
@@ -433,7 +482,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
                 </button>
                 <button
                   type="button"
-                  className="cursor-pointer rounded-xl border border-[rgba(223,196,140,.24)] bg-white/[.055] px-[13px] py-[9px] text-[13px] font-extrabold text-[#f1dfb9] transition-[transform,filter] hover:-translate-y-0.5 hover:brightness-[1.13] max-[760px]:min-w-0 max-[760px]:px-1.5 max-[760px]:py-[7px] max-[760px]:text-[11px]"
+                  className="cursor-pointer border-0 bg-transparent px-5 py-3 text-sm font-extrabold text-[#cabea5] transition-colors hover:bg-white/[.04] hover:text-[#f1dfb9] max-[760px]:min-w-0 max-[760px]:px-1.5 max-[760px]:py-[7px] max-[760px]:text-[11px]"
                   onPointerEnter={() => setHoveredRouteChoice("outer")}
                   onPointerLeave={() => setHoveredRouteChoice(null)}
                   onFocus={() => setHoveredRouteChoice("outer")}
@@ -445,21 +494,16 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
                 </button>
               </div>
             ) : phase === "gameover" ? (
-              <button className="flex h-[54px] min-w-[155px] shrink-0 cursor-pointer items-center justify-center rounded-xl border-0 bg-[#d3b873] px-5 font-black text-[#251e16] shadow-[inset_0_1px_rgba(255,255,255,.35),0_8px_20px_rgba(0,0,0,.24)] transition-[transform,filter] enabled:hover:-translate-y-0.5 enabled:hover:brightness-[1.08] max-[760px]:h-[50px] max-[760px]:min-w-[126px]" type="button" onClick={reset}>한 판 더</button>
+              <button className="flex min-w-[240px] flex-[1.2] cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-[#d9ba70] transition-colors hover:bg-[rgba(217,186,112,.1)] hover:text-[#f4d99b] max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:text-sm" type="button" onClick={reset}>한 판 더 <ArrowRight size={21} weight="bold" aria-hidden="true" /></button>
             ) : (
-              <button className="flex h-[54px] min-w-[155px] shrink-0 cursor-pointer items-center justify-between gap-3 rounded-xl border-0 bg-[#d3b873] py-0 pr-2.5 pl-5 font-black text-[#251e16] shadow-[inset_0_1px_rgba(255,255,255,.35),0_8px_20px_rgba(0,0,0,.24)] transition-[transform,filter] enabled:hover:-translate-y-0.5 enabled:hover:brightness-[1.08] disabled:cursor-wait disabled:opacity-70 max-[760px]:h-[50px] max-[760px]:min-w-[126px] max-[760px]:pl-3.5" type="button" onClick={throwYut} disabled={isAiTurn || phase === "rolling" || phase === "moving"}>
+              <button className="flex min-w-[240px] flex-[1.2] cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-[#d9ba70] transition-colors enabled:hover:bg-[rgba(217,186,112,.1)] enabled:hover:text-[#f4d99b] disabled:cursor-wait disabled:opacity-45 max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:px-3 max-[760px]:text-sm" type="button" onClick={throwYut} disabled={isAiTurn || phase === "rolling" || phase === "moving"}>
                 <span>{isAiTurn && phase === "ready" ? "AI 자동 진행" : phase === "rolling" ? "물리 판정 중" : phase === "moving" ? "말 이동 중" : "윷 던지기"}</span>
-                <i className="grid size-[35px] place-items-center rounded-[9px] bg-[rgba(35,29,20,.12)] text-xl not-italic" aria-hidden="true">↗</i>
+                <ArrowRight size={22} weight="bold" aria-hidden="true" />
               </button>
             )}
           </div>
         </div>
 
-        <aside className={`pointer-events-auto absolute top-[72px] right-7 z-[12] flex w-56 items-center gap-3 rounded-[17px] border bg-[rgba(13,22,18,.78)] px-3.5 py-3 text-left shadow-[0_14px_38px_rgba(0,0,0,.28)] backdrop-blur-2xl transition-[opacity,border-color] max-[760px]:right-2.5 max-[760px]:w-[158px] max-[760px]:gap-2 max-[760px]:px-2.5 max-[760px]:py-[9px] ${current === 1 && phase !== "gameover" ? "border-[rgba(226,202,157,.32)] opacity-100 after:absolute after:top-[7px] after:right-2.5 after:rounded-full after:bg-[#d7bd82] after:px-2 after:py-[3px] after:text-[8px] after:font-extrabold after:tracking-[.08em] after:text-[#33261c] after:content-['차례'] max-[760px]:after:hidden" : "border-[rgba(226,202,157,.14)] opacity-[.58]"}`}>
-          <span className="grid size-[46px] shrink-0 place-items-center rounded-full bg-[var(--red)] text-[19px] font-extrabold text-[#f4e5c2] shadow-[inset_0_0_0_6px_rgba(255,255,255,.08),0_12px_28px_rgba(0,0,0,.25)] max-[760px]:size-[37px] max-[760px]:text-base">紅</span>
-          <div><small className="mb-[3px] block text-[10px] font-medium tracking-[.12em] text-[#9c8e76] max-[760px]:hidden">{mode === "ai" ? "AI 상대" : "둘째 선수"}</small><strong className="text-[19px] max-[760px]:text-base">홍군</strong></div>
-          <span className="ml-auto whitespace-nowrap text-[10px] font-semibold text-[#c9b997] max-[760px]:hidden">도착 {pieces[1].filter((piece) => piece.status === "finished").length}/4</span>
-        </aside>
       </section>
 
       <footer className="hidden">
