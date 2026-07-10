@@ -763,6 +763,14 @@ export default function YutnoriGame() {
   const otherPlayer = (current === 0 ? 1 : 0) as Player;
   const routeChoiceFromCenter = pendingRoute !== null
     && nodeForPiece(pieces[current][pendingRoute.piece]) === "C";
+  const previewWinner = useMemo<Player | null>(() => {
+    if (!import.meta.env.DEV) return null;
+    const value = new URLSearchParams(window.location.search).get("victory");
+    if (value === "blue" || value === "cheong" || value === "0") return 0;
+    if (value === "red" || value === "hong" || value === "1") return 1;
+    return null;
+  }, []);
+  const visibleWinner = phase === "gameover" ? winner : previewWinner;
 
   useEffect(() => {
     if (!throwResultEffect) return;
@@ -997,7 +1005,7 @@ export default function YutnoriGame() {
     <main className="game-shell">
       <div className="grain" aria-hidden="true" />
       {throwResultEffect && <ThrowResultEffect effect={throwResultEffect} />}
-      {phase === "gameover" && winner !== null && <VictoryEffect winner={winner} />}
+      {visibleWinner !== null && <VictoryEffect winner={visibleWinner} />}
       <header className="topbar">
         <div className="brand-mark" aria-hidden="true">윷</div>
         <div>
