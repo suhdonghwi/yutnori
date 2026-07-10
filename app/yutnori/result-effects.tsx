@@ -63,7 +63,7 @@ export function ThrowResultEffect({ effect }: { effect: NonNullable<ThrowResultE
         <span className="mb-5 block text-[10px] leading-none font-bold tracking-[.25em] text-[color-mix(in_srgb,var(--result-accent)_44%,#bbae91)]">윷 결과</span>
         <div className="flex items-center justify-center gap-6 max-[560px]:gap-3">
           <i className="h-px min-w-8 flex-1 bg-[linear-gradient(90deg,transparent,var(--result-accent))] opacity-70" aria-hidden="true" />
-          <strong className="block text-[clamp(64px,9vw,112px)] leading-[.9] font-black tracking-[-.055em] whitespace-nowrap text-[#fff0cf] [text-shadow:0_0_30px_color-mix(in_srgb,var(--result-accent)_58%,transparent)]">{effect.result.name}</strong>
+          <strong className={`block text-[clamp(64px,9vw,112px)] leading-[.9] font-black whitespace-nowrap text-[#fff0cf] [text-shadow:0_0_30px_color-mix(in_srgb,var(--result-accent)_58%,transparent)] ${effect.result.name === "빽도" ? "tracking-[.04em]" : "tracking-[-.055em]"}`}>{effect.result.name}</strong>
           <i className="h-px min-w-8 flex-1 bg-[linear-gradient(90deg,var(--result-accent),transparent)] opacity-70" aria-hidden="true" />
         </div>
         <small className="mt-6 block text-[13px] leading-none font-bold tracking-[.08em] text-[color-mix(in_srgb,var(--result-accent)_48%,#e8d9b8)]">{detail}</small>

@@ -2,7 +2,7 @@ import { ContactShadows, Float } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Suspense, useRef } from "react";
 import * as THREE from "three";
-import { BoardSurface } from "./board-scene";
+import { BoardSurface, LacquerTokenMesh } from "./board-scene";
 import { YutStickMesh } from "./yut-physics";
 
 export type LobbyPreviewMode = "local" | "online" | "ai";
@@ -33,27 +33,10 @@ function LobbyToken({
 
   return (
     <group ref={group} position={position}>
-      <mesh castShadow receiveShadow>
-        <cylinderGeometry args={[0.4, 0.4, 0.19, 48]} />
-        <meshStandardMaterial
-          color={color}
-          roughness={0.38}
-          metalness={0.12}
-          emissive={highlighted ? color : "#000000"}
-          emissiveIntensity={highlighted ? 0.72 : 0}
-        />
-      </mesh>
-      <mesh position={[0, 0.105, 0]}>
-        <cylinderGeometry args={[0.31, 0.31, 0.025, 48]} />
-        <meshStandardMaterial color={color} roughness={0.32} metalness={0.16} />
-      </mesh>
-      <mesh position={[0, 0.122, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.205, 0.23, 40]} />
-        <meshBasicMaterial color="#f7e7c1" transparent opacity={0.5} side={THREE.DoubleSide} />
-      </mesh>
+      <LacquerTokenMesh color={color} highlighted={highlighted} />
       {highlighted && (
         <>
-          <mesh position={[0, -0.105, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <mesh position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <ringGeometry args={[0.45, 0.56, 48]} />
             <meshBasicMaterial color="#e7c678" transparent opacity={0.75} depthWrite={false} />
           </mesh>
@@ -86,7 +69,7 @@ function FloatingYut({ index, highlighted }: { index: number; highlighted: boole
       floatingRange={[-0.06, 0.06]}
     >
       <group position={positions[index]} rotation={rotations[index]}>
-        <YutStickMesh backdo={index === 0} />
+        <YutStickMesh backdo={index === 0} variant={index} />
       </group>
     </Float>
   );
@@ -117,8 +100,8 @@ function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
 
       <group ref={rig} position={[0, -0.72, 0]} scale={0.78}>
         <BoardSurface />
-        <LobbyToken color="#174c6b" highlighted={previewMode === "local"} position={[-3.55, 0.2, 3.1]} />
-        <LobbyToken color="#a63f31" highlighted={previewMode === "ai"} position={[3.35, 0.2, 2.4]} />
+        <LobbyToken color="#174c6b" highlighted={previewMode === "local"} position={[-3.55, 0.06, 3.1]} />
+        <LobbyToken color="#a63f31" highlighted={previewMode === "ai"} position={[3.35, 0.06, 2.4]} />
         {[0, 1, 2, 3].map((index) => (
           <FloatingYut key={index} index={index} highlighted={previewMode !== "online"} />
         ))}

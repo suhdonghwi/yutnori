@@ -12,41 +12,51 @@ import { PHYSICS_THROW_TIMEOUT_MS } from "./game-config";
 
 function XMark({ z }: { z: number }) {
   return (
-    <group position={[0, 0.304, z]}>
-      <mesh rotation={[0, Math.PI / 4, 0]} castShadow>
-        <boxGeometry args={[0.052, 0.018, 0.32]} />
-        <meshStandardMaterial color="#17130f" roughness={0.82} />
+    <group position={[0, 0.291, z]}>
+      <mesh position={[0, -0.003, 0]} rotation={[0, Math.PI / 4, 0]}>
+        <boxGeometry args={[0.058, 0.004, 0.255]} />
+        <meshStandardMaterial color="#7b5838" roughness={1} />
       </mesh>
-      <mesh rotation={[0, -Math.PI / 4, 0]} castShadow>
-        <boxGeometry args={[0.052, 0.018, 0.32]} />
-        <meshStandardMaterial color="#17130f" roughness={0.82} />
+      <mesh position={[0, -0.003, 0]} rotation={[0, -Math.PI / 4, 0]}>
+        <boxGeometry args={[0.058, 0.004, 0.255]} />
+        <meshStandardMaterial color="#7b5838" roughness={1} />
+      </mesh>
+      <mesh rotation={[0, Math.PI / 4, 0]}>
+        <boxGeometry args={[0.035, 0.004, 0.225]} />
+        <meshStandardMaterial color="#2b211b" roughness={1} />
+      </mesh>
+      <mesh rotation={[0, -Math.PI / 4, 0]}>
+        <boxGeometry args={[0.035, 0.004, 0.225]} />
+        <meshStandardMaterial color="#2b211b" roughness={1} />
       </mesh>
     </group>
   );
 }
 
 function createYutGeometry() {
-  const radius = 0.29;
+  const radius = 0.26;
+  const depth = 2.4;
   const shape = new THREE.Shape();
   shape.moveTo(-radius, 0);
   shape.lineTo(radius, 0);
   shape.absarc(0, 0, radius, 0, Math.PI, false);
   shape.closePath();
   const geometry = new THREE.ExtrudeGeometry(shape, {
-    depth: 2.45,
+    depth,
     bevelEnabled: true,
-    bevelSegments: 3,
-    bevelSize: 0.018,
-    bevelThickness: 0.018,
-    curveSegments: 18,
+    bevelSegments: 5,
+    bevelSize: 0.025,
+    bevelThickness: 0.04,
+    curveSegments: 24,
   });
-  geometry.translate(0, 0, -1.225);
+  geometry.translate(0, 0, -depth / 2);
   geometry.computeVertexNormals();
   return geometry;
 }
 
 const YUT_GEOMETRY = createYutGeometry();
 const YUT_COLLIDER_VERTICES = new Float32Array(YUT_GEOMETRY.attributes.position.array);
+const YUT_WOOD_TONES = ["#d8b579", "#dfbd82", "#d4ad70", "#e1c18a"] as const;
 
 function YutImpactBurst({
   id,
@@ -122,14 +132,22 @@ function FlatBackdoX({ glowing }: { glowing: boolean }) {
   });
 
   return (
-    <group position={[0, -0.014, 0]}>
-      <mesh rotation={[0, Math.PI / 4, 0]} castShadow>
-        <boxGeometry args={[0.065, 0.018, 0.42]} />
-        <meshStandardMaterial color={glowing ? "#5d130f" : "#17130f"} roughness={0.82} emissive="#ff241c" emissiveIntensity={glowing ? 4.2 : 0} />
+    <group position={[0, -0.03, 0]}>
+      <mesh position={[0, 0.004, 0]} rotation={[0, Math.PI / 4, 0]}>
+        <boxGeometry args={[0.082, 0.004, 0.38]} />
+        <meshStandardMaterial color="#7b4738" roughness={1} />
       </mesh>
-      <mesh rotation={[0, -Math.PI / 4, 0]} castShadow>
-        <boxGeometry args={[0.065, 0.018, 0.42]} />
-        <meshStandardMaterial color={glowing ? "#5d130f" : "#17130f"} roughness={0.82} emissive="#ff241c" emissiveIntensity={glowing ? 4.2 : 0} />
+      <mesh position={[0, 0.004, 0]} rotation={[0, -Math.PI / 4, 0]}>
+        <boxGeometry args={[0.082, 0.004, 0.38]} />
+        <meshStandardMaterial color="#7b4738" roughness={1} />
+      </mesh>
+      <mesh rotation={[0, Math.PI / 4, 0]}>
+        <boxGeometry args={[0.052, 0.005, 0.34]} />
+        <meshStandardMaterial color="#2b211b" roughness={1} emissive="#ff241c" emissiveIntensity={glowing ? 4.2 : 0} />
+      </mesh>
+      <mesh rotation={[0, -Math.PI / 4, 0]}>
+        <boxGeometry args={[0.052, 0.005, 0.34]} />
+        <meshStandardMaterial color="#2b211b" roughness={1} emissive="#ff241c" emissiveIntensity={glowing ? 4.2 : 0} />
       </mesh>
       {glowing && (
         <>
@@ -144,11 +162,25 @@ function FlatBackdoX({ glowing }: { glowing: boolean }) {
   );
 }
 
-export function YutStickMesh({ backdo = false, backdoGlow = false }: { backdo?: boolean; backdoGlow?: boolean }) {
+export function YutStickMesh({
+  backdo = false,
+  backdoGlow = false,
+  variant = 0,
+}: {
+  backdo?: boolean;
+  backdoGlow?: boolean;
+  variant?: number;
+}) {
   return (
     <group>
       <mesh geometry={YUT_GEOMETRY} castShadow receiveShadow>
-        <meshStandardMaterial color="#d8aa65" roughness={0.6} />
+        <meshPhysicalMaterial
+          color={YUT_WOOD_TONES[variant % YUT_WOOD_TONES.length]}
+          roughness={0.64}
+          metalness={0}
+          clearcoat={0.055}
+          clearcoatRoughness={0.8}
+        />
       </mesh>
       <XMark z={-0.66} />
       <XMark z={0} />
@@ -183,7 +215,7 @@ function PhysicsYutStick({
   const launchAfterPrepare = useRef(false);
   const lastImpactAt = useRef(0);
   const idlePosition = useMemo(
-    () => [(index - 1.5) * 0.76, 0.325, 0] as [number, number, number],
+    () => [(index - 1.5) * 0.76, 0.38, 0] as [number, number, number],
     [index],
   );
 
@@ -288,7 +320,7 @@ function PhysicsYutStick({
       }}
     >
       <ConvexHullCollider args={[YUT_COLLIDER_VERTICES]} friction={0.92} restitution={0.34} contactSkin={0.028} />
-      <YutStickMesh backdo={index === 0} backdoGlow={backdoGlow} />
+      <YutStickMesh backdo={index === 0} backdoGlow={backdoGlow} variant={index} />
     </RigidBody>
   );
 }
@@ -368,9 +400,9 @@ export function YutPhysics({
   }, [onSettled, rolling]);
 
   return (
-    <Physics key="world-y0-v2" gravity={[0, -12.8, 0]} timeStep={1 / 60} paused={!rolling && nonce === 0}>
+    <Physics key="world-y0-v3" gravity={[0, -12.8, 0]} timeStep={1 / 60} paused={!rolling && nonce === 0}>
       <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider args={[5.74, 0.13, 5.54]} position={[0, -0.13, 0]} friction={0.95} restitution={0.2} />
+        <CuboidCollider args={[5.74, 0.13, 5.54]} position={[0, -0.05, 0]} friction={0.95} restitution={0.2} />
         <CuboidCollider args={[0.28, 5.5, 5.9]} position={[-5.72, 5.5, 0]} friction={0.72} restitution={0.2} />
         <CuboidCollider args={[0.28, 5.5, 5.9]} position={[5.72, 5.5, 0]} friction={0.72} restitution={0.2} />
         <CuboidCollider args={[5.95, 5.5, 0.28]} position={[0, 5.5, -5.52]} friction={0.72} restitution={0.2} />

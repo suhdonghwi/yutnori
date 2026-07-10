@@ -18,89 +18,141 @@ import { PLAYERS } from "./game-config";
 import type { ActiveMove, HoveredToken, MovePreview } from "./game-types";
 import { YutPhysics } from "./yut-physics";
 
-function BoardNode({ position, major = false }: { position: [number, number, number]; major?: boolean }) {
+const TOKEN_STACK_STEP = 0.17;
+const TOKEN_GEOMETRY = new THREE.LatheGeometry([
+  new THREE.Vector2(0, 0.016),
+  new THREE.Vector2(0.302, 0.016),
+  new THREE.Vector2(0.338, 0.025),
+  new THREE.Vector2(0.353, 0.045),
+  new THREE.Vector2(0.353, 0.132),
+  new THREE.Vector2(0.342, 0.153),
+  new THREE.Vector2(0.315, 0.169),
+  new THREE.Vector2(0, 0.174),
+], 64);
+TOKEN_GEOMETRY.computeVertexNormals();
+
+export function LacquerTokenMesh({ color, highlighted = false }: { color: string; highlighted?: boolean }) {
+  const grooveColor = useMemo(() => new THREE.Color(color).multiplyScalar(0.48), [color]);
+
   return (
-    <group position={position}>
-      <mesh castShadow receiveShadow>
-        <cylinderGeometry args={[major ? 0.47 : 0.31, major ? 0.51 : 0.35, 0.075, 32]} />
-        <meshStandardMaterial color={major ? "#2a1c16" : "#4b3024"} roughness={0.8} />
+    <group position={[0, 0.024, 0]}>
+      <mesh geometry={TOKEN_GEOMETRY} castShadow receiveShadow>
+        <meshPhysicalMaterial
+          color={color}
+          roughness={0.34}
+          metalness={0.025}
+          clearcoat={0.18}
+          clearcoatRoughness={0.58}
+          emissive={highlighted ? color : "#000000"}
+          emissiveIntensity={highlighted ? 0.58 : 0}
+        />
       </mesh>
-      <mesh position={[0, 0.042, 0]}>
-        <cylinderGeometry args={[major ? 0.3 : 0.17, major ? 0.3 : 0.17, 0.014, 24]} />
-        <meshBasicMaterial color={major ? "#dfc27e" : "#b78f54"} />
+      <mesh position={[0, 0.166, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.197, 0.007, 8, 48]} />
+        <meshStandardMaterial color={grooveColor} roughness={0.72} />
       </mesh>
     </group>
   );
 }
 
-function BoardPathSegment({ from, to }: { from: [number, number, number]; to: [number, number, number] }) {
+function BoardNode({ position, major = false }: { position: [number, number, number]; major?: boolean }) {
+  return (
+    <group position={position}>
+      {major && (
+        <>
+          <mesh position={[0, 0.026, 0]} receiveShadow>
+            <cylinderGeometry args={[0.505, 0.525, 0.024, 48]} />
+            <meshStandardMaterial color="#2b211c" roughness={0.86} metalness={0.02} />
+          </mesh>
+          <mesh position={[0, 0.044, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.48, 0.525, 48]} />
+            <meshBasicMaterial color="#2a201b" toneMapped={false} side={THREE.DoubleSide} />
+          </mesh>
+          <mesh position={[0, 0.047, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.39, 0.49, 48]} />
+            <meshBasicMaterial color="#e0b957" toneMapped={false} side={THREE.DoubleSide} />
+          </mesh>
+        </>
+      )}
+      <mesh position={[0, major ? 0.032 : 0.03, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[major ? 0.4 : 0.275, major ? 0.425 : 0.292, 0.018, 48]} />
+        <meshStandardMaterial color={major ? "#29231f" : "#3b2e28"} roughness={0.9} metalness={0.01} />
+      </mesh>
+      <mesh position={[0, major ? 0.042 : 0.04, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[major ? 0.325 : 0.21, 48]} />
+        <meshStandardMaterial color={major ? "#322923" : "#493930"} roughness={0.96} />
+      </mesh>
+    </group>
+  );
+}
+
+function boardEdgeKey(from: NodeId, to: NodeId) {
+  return from < to ? `${from}:${to}` : `${to}:${from}`;
+}
+
+function BoardPathSegment({
+  from,
+  to,
+  previewColor,
+}: {
+  from: [number, number, number];
+  to: [number, number, number];
+  previewColor?: string;
+}) {
+  const material = useRef<THREE.MeshStandardMaterial>(null);
   const dx = to[0] - from[0];
   const dz = to[2] - from[2];
   const length = Math.hypot(dx, dz);
   const angle = Math.atan2(dx, dz);
-  const center: [number, number, number] = [(from[0] + to[0]) / 2, 0, (from[2] + to[2]) / 2];
+  const center: [number, number, number] = [(from[0] + to[0]) / 2, 0.086, (from[2] + to[2]) / 2];
+
+  useFrame(({ clock }) => {
+    if (!material.current || !previewColor) return;
+    material.current.emissiveIntensity = 0.42 + Math.sin(clock.elapsedTime * 6.5) * 0.16;
+  });
 
   return (
     <group position={center} rotation={[0, angle, 0]}>
-      <mesh position={[0, 0.026, 0]} receiveShadow>
-        <boxGeometry args={[0.2, 0.04, length]} />
-        <meshStandardMaterial color="#322018" roughness={0.72} />
-      </mesh>
-      <mesh position={[0, 0.051, 0]}>
-        <boxGeometry args={[0.065, 0.012, Math.max(0.1, length - 0.08)]} />
-        <meshBasicMaterial color="#c39a5c" />
+      <mesh receiveShadow>
+        <boxGeometry args={[0.115, 0.014, Math.max(0.1, length - 0.06)]} />
+        <meshStandardMaterial
+          ref={material}
+          color={previewColor ?? "#3a2d27"}
+          emissive={previewColor ?? "#000000"}
+          emissiveIntensity={previewColor ? 0.5 : 0}
+          roughness={previewColor ? 0.66 : 0.92}
+          metalness={0.01}
+        />
       </mesh>
     </group>
   );
 }
 
-export function BoardSurface() {
+export function BoardSurface({ previewEdgeColors }: { previewEdgeColors?: ReadonlyMap<string, string> }) {
   return (
     <group>
-      <RoundedBox args={[12.2, 0.5, 11.8]} radius={0.18} smoothness={6} position={[0, -0.35, 0]} receiveShadow castShadow>
-        <meshStandardMaterial color="#563721" roughness={0.82} />
+      <RoundedBox args={[12.2, 0.44, 11.8]} radius={0.16} smoothness={8} position={[0, -0.22, 0]} receiveShadow castShadow>
+        <meshPhysicalMaterial color="#35251d" roughness={0.72} clearcoat={0.08} clearcoatRoughness={0.7} />
       </RoundedBox>
-      <mesh position={[0, -0.09, 0]} receiveShadow>
-        <boxGeometry args={[11.55, 0.18, 11.15]} />
-        <meshStandardMaterial color="#d2bc88" roughness={0.94} />
-      </mesh>
+      <RoundedBox args={[11.76, 0.1, 11.36]} radius={0.03} smoothness={6} position={[0, 0.025, 0]} receiveShadow>
+        <meshStandardMaterial color="#211914" roughness={0.84} />
+      </RoundedBox>
+      <RoundedBox args={[11.58, 0.07, 11.18]} radius={0.022} smoothness={6} position={[0, 0.045, 0]} receiveShadow>
+        <meshPhysicalMaterial color="#bdaa82" roughness={0.94} clearcoat={0.025} clearcoatRoughness={0.9} />
+      </RoundedBox>
 
       {BOARD_EDGES.map(([from, to]) => (
-        <BoardPathSegment key={`${from}-${to}`} from={NODE_POSITIONS[from]} to={NODE_POSITIONS[to]} />
+        <BoardPathSegment
+          key={`${from}-${to}`}
+          from={NODE_POSITIONS[from]}
+          to={NODE_POSITIONS[to]}
+          previewColor={previewEdgeColors?.get(boardEdgeKey(from, to))}
+        />
       ))}
 
       {BOARD_NODE_IDS.map((node) => (
         <BoardNode key={node} position={NODE_POSITIONS[node]} major={MAJOR_NODE_IDS.has(node)} />
       ))}
-    </group>
-  );
-}
-
-function PreviewPathSegment({ from, to, color }: { from: [number, number, number]; to: [number, number, number]; color: string }) {
-  const material = useRef<THREE.MeshBasicMaterial>(null);
-  const dx = to[0] - from[0];
-  const dz = to[2] - from[2];
-  const length = Math.hypot(dx, dz);
-  const angle = Math.atan2(dx, dz);
-  const center: [number, number, number] = [(from[0] + to[0]) / 2, 0.082, (from[2] + to[2]) / 2];
-
-  useFrame(({ clock }) => {
-    if (material.current) material.current.opacity = 0.68 + Math.sin(clock.elapsedTime * 7) * 0.16;
-  });
-
-  return (
-    <group position={center} rotation={[0, angle, 0]}>
-      <mesh>
-        <boxGeometry args={[0.18, 0.025, Math.max(0.12, length - 0.04)]} />
-        <meshBasicMaterial
-          ref={material}
-          color={color}
-          transparent
-          opacity={0.8}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
     </group>
   );
 }
@@ -188,7 +240,7 @@ export function tokenPlacement(pieces: BoardState, player: number, piece: number
   if (count <= 1) return { position: [base[0], base[1], base[2]] as [number, number, number], count: 1, slot: 0, members };
 
   return {
-    position: [base[0], base[1] + slot * 0.19, base[2]] as [number, number, number],
+    position: [base[0], base[1] + slot * TOKEN_STACK_STEP, base[2]] as [number, number, number],
     count,
     slot,
     members,
@@ -264,7 +316,7 @@ function Token({
       waypointQueue.current = (moveWaypoints ?? []).map((node, index) => {
         const point = NODE_POSITIONS[node];
         const clearance = moveWaypointClearances?.[index] ?? 0;
-        return new THREE.Vector3(point[0], point[1] + clearance + movingStackSlot * 0.19, point[2]);
+        return new THREE.Vector3(point[0], point[1] + clearance + movingStackSlot * TOKEN_STACK_STEP, point[2]);
       });
       const lastWaypoint = waypointQueue.current[waypointQueue.current.length - 1];
       const endsAtTargetXZ = lastWaypoint
@@ -307,25 +359,14 @@ function Token({
 
   return (
     <group ref={ref} position={initialPosition.current}>
-      <mesh castShadow receiveShadow position={[0, 0.105, 0]}>
-        <cylinderGeometry args={[0.35, 0.35, 0.19, 48]} />
-        <meshStandardMaterial color={color} roughness={0.5} metalness={0.08} emissive={highlighted ? color : "#000000"} emissiveIntensity={highlighted ? 0.55 : 0} />
-      </mesh>
-      <mesh castShadow position={[0, 0.208, 0]}>
-        <cylinderGeometry args={[0.275, 0.275, 0.026, 48]} />
-        <meshStandardMaterial color={color} roughness={0.38} metalness={0.12} emissive={highlighted ? color : "#000000"} emissiveIntensity={highlighted ? 0.7 : 0} />
-      </mesh>
-      <mesh position={[0, 0.224, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.19, 0.215, 36]} />
-        <meshBasicMaterial color="#f3dfb5" transparent opacity={0.45} side={THREE.DoubleSide} />
-      </mesh>
+      <LacquerTokenMesh color={color} highlighted={highlighted} />
       <mesh visible={highlighted} position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.38, 0.48, 36]} />
         <meshBasicMaterial color="#f4d283" transparent opacity={0.95} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
       <pointLight color={highlighted ? "#f4d283" : color} intensity={highlighted ? 2.1 : state.status === "finished" ? 1.3 : 0} distance={2.7} />
       {stackLabel && (
-        <Html center position={[0, 0.54, 0]} distanceFactor={8.5} style={{ pointerEvents: "none" }}>
+        <Html center position={[0, 0.49, 0]} distanceFactor={8.5} style={{ pointerEvents: "none" }}>
           <span className="block min-w-[76px] whitespace-nowrap rounded-full border-[1.5px] border-[rgba(244,210,131,.66)] bg-[rgba(16,22,18,.96)] px-[13px] py-2 text-center text-[clamp(15px,1.2vw,18px)] leading-[1.1] font-extrabold tracking-[-.02em] text-[#fff7df] shadow-[0_7px_20px_rgba(0,0,0,.42)]">{stackLabel}</span>
         </Html>
       )}
@@ -354,6 +395,16 @@ export function Scene({
   activeMove: ActiveMove;
   onMoveComplete: () => void;
 }) {
+  const previewEdgeColors = useMemo(() => {
+    const colors = new Map<string, string>();
+    movePreviews.forEach((preview) => {
+      preview.pathNodes.slice(1).forEach((node, index) => {
+        colors.set(boardEdgeKey(preview.pathNodes[index], node), preview.color);
+      });
+    });
+    return colors;
+  }, [movePreviews]);
+
   return (
     <>
       <color attach="background" args={["#0d1713"]} />
@@ -362,16 +413,7 @@ export function Scene({
       <pointLight position={[-6, 4, -4]} intensity={16} color="#87512d" distance={14} />
 
       <group>
-        <BoardSurface />
-
-        {movePreviews.flatMap((preview) => preview.pathNodes.slice(1).map((node, index) => (
-          <PreviewPathSegment
-            key={`preview-path-${preview.key}-${index}-${node}`}
-            from={NODE_POSITIONS[preview.pathNodes[index]]}
-            to={NODE_POSITIONS[node]}
-            color={preview.color}
-          />
-        )))}
+        <BoardSurface previewEdgeColors={previewEdgeColors} />
 
         {movePreviews.flatMap((preview) => preview.pathNodes.map((node, index) => (
           <PreviewPathNode
