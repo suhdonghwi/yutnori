@@ -2,16 +2,17 @@
   "name": "hanpan-yutnori",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.27.0",
   "engines": {
     "node": ">=22.13.0"
   },
   "scripts": {
     "dev": "vite",
     "clean": "node scripts/clean-dist.mjs",
-    "prebuild": "npm run clean",
+    "prebuild": "pnpm clean",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "npm run typecheck && npm run test:rules && npm run test:ai && npm run build",
+    "test": "pnpm typecheck && pnpm test:rules && pnpm test:ai && pnpm build",
     "test:ai": "node --test tests/ai-player.test.mjs",
     "test:rules": "node --experimental-strip-types --test tests/yutnori-rules.test.mjs",
     "typecheck": "tsc --noEmit"
