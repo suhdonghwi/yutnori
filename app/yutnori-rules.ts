@@ -123,6 +123,12 @@ function selectRoute(piece: PieceState, choice: RouteChoice): PieceState {
 
 function moveBackward(piece: PieceState): { piece: PieceState; waypoints: NodeId[] } {
   if (piece.status !== "board") return { piece: { ...piece }, waypoints: [] };
+  if (piece.route === "outer" && piece.index === 1) {
+    return {
+      piece: { status: "finished", route: "outer", index: ROUTES.outer.length },
+      waypoints: ["O0"],
+    };
+  }
   if (piece.index > 0) {
     const next = { status: "board", route: piece.route, index: piece.index - 1 } as PieceState;
     return { piece: next, waypoints: [nodeForPiece(next)!] };
