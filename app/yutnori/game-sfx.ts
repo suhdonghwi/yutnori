@@ -226,4 +226,15 @@ export const gameSfx = {
       woodKnock(context, at + 0.012, 0.038, 215 + steps * 18);
     });
   },
+
+  playVictory() {
+    withAudio((context) => {
+      const at = context.currentTime;
+      resultTone(context, at, 0.06, 392);
+      resultTone(context, at + 0.13, 0.068, 523.25);
+      resultTone(context, at + 0.27, 0.082, 659.25);
+      woodKnock(context, at + 0.02, 0.055, 250, -0.15);
+      woodKnock(context, at + 0.3, 0.085, 315, 0.15);
+    });
+  },
 };

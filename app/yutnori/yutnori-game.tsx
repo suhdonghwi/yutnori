@@ -219,6 +219,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
     if (move.arrivalEffect === "stack") gameSfx.playStack();
     setNotice(move.notice);
     if (move.winner !== null) {
+      gameSfx.playVictory();
       setWinner(move.winner);
       setPhase("gameover");
     } else {
