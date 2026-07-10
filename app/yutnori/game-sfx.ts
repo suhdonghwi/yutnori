@@ -1,4 +1,5 @@
 const STORAGE_KEY = "yutnori-sfx-enabled";
+const MASTER_LEVEL = 1.02;
 
 let audioContext: AudioContext | null = null;
 let masterGain: GainNode | null = null;
@@ -13,8 +14,15 @@ function ensureAudio() {
   if (!audioContext) {
     audioContext = new AudioContext();
     masterGain = audioContext.createGain();
-    masterGain.gain.value = 0.72;
-    masterGain.connect(audioContext.destination);
+    masterGain.gain.value = MASTER_LEVEL;
+    const limiter = audioContext.createDynamicsCompressor();
+    limiter.threshold.value = -8;
+    limiter.knee.value = 8;
+    limiter.ratio.value = 6;
+    limiter.attack.value = 0.003;
+    limiter.release.value = 0.14;
+    masterGain.connect(limiter);
+    limiter.connect(audioContext.destination);
   }
   return audioContext;
 }
@@ -130,7 +138,7 @@ export const gameSfx = {
     const context = ensureAudio();
     if (context && masterGain) {
       masterGain.gain.cancelScheduledValues(context.currentTime);
-      masterGain.gain.setTargetAtTime(0.72, context.currentTime, 0.02);
+      masterGain.gain.setTargetAtTime(MASTER_LEVEL, context.currentTime, 0.02);
       void context.resume();
     }
   },
