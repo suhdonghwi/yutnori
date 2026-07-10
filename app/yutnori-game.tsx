@@ -42,6 +42,7 @@ type ActiveMove = {
   pieces: number[];
   leader: number;
   waypoints: NodeId[];
+  waypointClearances: number[];
   nextPlayer: Player;
   winner: Player | null;
   notice: string;
@@ -204,6 +205,8 @@ function Token({
   stackLabel,
   activeMoveId,
   moveWaypoints,
+  moveWaypointClearances,
+  movingStackSlot,
   notifyOnMoveComplete,
   onMoveComplete,
 }: {
@@ -214,6 +217,8 @@ function Token({
   stackLabel: string | null;
   activeMoveId: number | null;
   moveWaypoints: NodeId[] | null;
+  moveWaypointClearances: number[] | null;
+  movingStackSlot: number;
   notifyOnMoveComplete: boolean;
   onMoveComplete: () => void;
 }) {
@@ -258,11 +263,16 @@ function Token({
     if (activeMoveId !== null && activeMoveId !== handledMoveId.current) {
       handledMoveId.current = activeMoveId;
       notifyWhenFinished.current = notifyOnMoveComplete;
-      waypointQueue.current = (moveWaypoints ?? []).map((node) => {
+      waypointQueue.current = (moveWaypoints ?? []).map((node, index) => {
         const point = NODE_POSITIONS[node];
-        return new THREE.Vector3(point[0], point[1], point[2]);
+        const clearance = moveWaypointClearances?.[index] ?? 0;
+        return new THREE.Vector3(point[0], point[1] + clearance + movingStackSlot * 0.19, point[2]);
       });
-      if (waypointQueue.current.length === 0 || !waypointQueue.current[waypointQueue.current.length - 1].equals(target)) {
+      const lastWaypoint = waypointQueue.current[waypointQueue.current.length - 1];
+      const endsAtTargetXZ = lastWaypoint
+        && Math.abs(lastWaypoint.x - target.x) < 0.01
+        && Math.abs(lastWaypoint.z - target.z) < 0.01;
+      if (!endsAtTargetXZ) {
         waypointQueue.current.push(target.clone());
       }
       beginNextSegment();
@@ -271,7 +281,7 @@ function Token({
     if (group.position.distanceTo(target) < 0.01) return;
     waypointQueue.current = [target.clone()];
     beginNextSegment();
-  }, [activeMoveId, beginNextSegment, moveWaypoints, notifyOnMoveComplete, state, target]);
+  }, [activeMoveId, beginNextSegment, moveWaypointClearances, moveWaypoints, movingStackSlot, notifyOnMoveComplete, state, target]);
 
   useFrame((_, delta) => {
     const group = ref.current;
@@ -554,6 +564,7 @@ function Scene({
             const highlighted = hoveredToken?.player === player
               && (hoveredToken.piece === piece || (hoveredState ? sameStack(state, hoveredState) : false));
             const isMovingPiece = activeMove?.player === player && activeMove.pieces.includes(piece);
+            const movingStackSlot = isMovingPiece ? activeMove.pieces.indexOf(piece) : 0;
             const stackLabel = placement.count > 1 && placement.slot === placement.count - 1
               ? placement.members.map((member) => `${player === 0 ? "청" : "홍"}${member + 1}`).join(" + ")
               : null;
@@ -567,6 +578,8 @@ function Scene({
                 stackLabel={stackLabel}
                 activeMoveId={isMovingPiece ? activeMove.id : null}
                 moveWaypoints={isMovingPiece ? activeMove.waypoints : null}
+                moveWaypointClearances={isMovingPiece ? activeMove.waypointClearances : null}
+                movingStackSlot={movingStackSlot}
                 notifyOnMoveComplete={isMovingPiece && activeMove.leader === piece}
                 onMoveComplete={onMoveComplete}
               />
@@ -708,6 +721,7 @@ export default function YutnoriGame() {
         pieces: capture.pieces,
         leader: Math.max(...capture.pieces),
         waypoints: [],
+        waypointClearances: [],
         captureReturn: null,
       };
       activeMoveRef.current = returnMove;
@@ -734,6 +748,16 @@ export default function YutnoriGame() {
     setPendingRoute(null);
 
     const resolution = resolveMove(pieces, current, pieceIndex, result.steps, routeChoice);
+    const waypointClearances = resolution.waypoints.map((node) => {
+      let occupants = 0;
+      pieces.forEach((playerPieces, player) => {
+        playerPieces.forEach((piece, index) => {
+          const isMovingPiece = player === current && resolution.movedPieces.includes(index);
+          if (!isMovingPiece && nodeForPiece(piece) === node) occupants += 1;
+        });
+      });
+      return occupants * 0.19;
+    });
     const capturePlayer = otherPlayer;
     let visibleBoard = resolution.board;
     let captureReturn: NonNullable<ActiveMove>["captureReturn"] = null;
@@ -770,6 +794,7 @@ export default function YutnoriGame() {
       pieces: resolution.movedPieces,
       leader: Math.max(...resolution.movedPieces),
       waypoints: resolution.waypoints,
+      waypointClearances,
       nextPlayer,
       winner: resolution.won ? current : null,
       notice: messages.join(" · "),
