@@ -11,6 +11,7 @@ import {
   MAJOR_NODE_IDS,
   NODE_POSITIONS,
   canChooseRoute,
+  cloneBoard,
   createInitialBoard,
   groupForPiece,
   groupLeader,
@@ -37,6 +38,7 @@ type MovePreview = {
 };
 type ActiveMove = {
   id: number;
+  stage: "advance" | "capture-return";
   player: Player;
   pieces: number[];
   leader: number;
@@ -44,6 +46,11 @@ type ActiveMove = {
   nextPlayer: Player;
   winner: Player | null;
   notice: string;
+  captureReturn: {
+    player: Player;
+    pieces: number[];
+    board: BoardState;
+  } | null;
 } | null;
 type PendingRoute = { piece: number } | null;
 
@@ -139,6 +146,7 @@ function tokenPlacement(pieces: BoardState, player: number, piece: number) {
   const node = nodeForPiece(state)!;
   const occupants: { player: number; piece: number }[] = [];
   pieces.forEach((side, occupantPlayer) => {
+    if (occupantPlayer !== player) return;
     side.forEach((occupantState, occupantPiece) => {
       if (nodeForPiece(occupantState) === node) occupants.push({ player: occupantPlayer, piece: occupantPiece });
     });
@@ -635,6 +643,26 @@ export default function YutnoriGame() {
   const handleMoveComplete = useCallback(() => {
     const move = activeMoveRef.current;
     if (!move) return;
+
+    if (move.captureReturn) {
+      const capture = move.captureReturn;
+      setPieces(capture.board);
+      moveId.current += 1;
+      const returnMove: NonNullable<ActiveMove> = {
+        ...move,
+        id: moveId.current,
+        stage: "capture-return",
+        player: capture.player,
+        pieces: capture.pieces,
+        leader: Math.min(...capture.pieces),
+        waypoints: [],
+        captureReturn: null,
+      };
+      activeMoveRef.current = returnMove;
+      setActiveMove(returnMove);
+      return;
+    }
+
     activeMoveRef.current = null;
     setActiveMove(null);
     setNotice(move.notice);
@@ -653,7 +681,21 @@ export default function YutnoriGame() {
     setPendingRoute(null);
 
     const resolution = resolveMove(pieces, current, pieceIndex, result.steps, routeChoice);
-    setPieces(resolution.board);
+    const capturePlayer = otherPlayer;
+    let visibleBoard = resolution.board;
+    let captureReturn: NonNullable<ActiveMove>["captureReturn"] = null;
+    if (resolution.capturedPieces.length > 0) {
+      visibleBoard = cloneBoard(resolution.board);
+      resolution.capturedPieces.forEach((capturedPiece) => {
+        visibleBoard[capturePlayer][capturedPiece] = { ...pieces[capturePlayer][capturedPiece] };
+      });
+      captureReturn = {
+        player: capturePlayer,
+        pieces: resolution.capturedPieces,
+        board: resolution.board,
+      };
+    }
+    setPieces(visibleBoard);
 
     const gotExtraThrow = result.extraThrow || resolution.capturedPieces.length > 0;
     const nextPlayer = gotExtraThrow ? current : otherPlayer;
@@ -670,6 +712,7 @@ export default function YutnoriGame() {
     moveId.current += 1;
     const move: NonNullable<ActiveMove> = {
       id: moveId.current,
+      stage: "advance",
       player: current,
       pieces: resolution.movedPieces,
       leader: Math.min(...resolution.movedPieces),
@@ -677,6 +720,7 @@ export default function YutnoriGame() {
       nextPlayer,
       winner: resolution.won ? current : null,
       notice: messages.join(" · "),
+      captureReturn,
     };
     activeMoveRef.current = move;
     setActiveMove(move);
@@ -724,7 +768,9 @@ export default function YutnoriGame() {
         : phase === "route"
           ? "이 갈림길에서 어느 길로 갈까요?"
           : phase === "moving"
-            ? "말이 한 칸씩 이동하는 중"
+            ? activeMove?.stage === "capture-return"
+              ? "잡힌 말이 대기석으로 돌아가는 중"
+              : "잡는 말이 도착 칸으로 이동하는 중"
             : `${PLAYERS[winner ?? 0].name}이 네 말을 모두 냈습니다`;
 
   return (
