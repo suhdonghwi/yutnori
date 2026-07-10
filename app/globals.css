@@ -329,6 +329,23 @@ footer p { margin: 0; }
 
 footer { display: none; }
 
+.token-id-badge {
+  display: block;
+  min-width: 30px;
+  padding: 4px 7px;
+  border: 1px solid rgba(255,255,255,.42);
+  border-radius: 999px;
+  color: #fff7df;
+  font: 800 11px/1 var(--font-geist-sans), sans-serif;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 5px 14px rgba(0,0,0,.34);
+  backdrop-filter: blur(5px);
+}
+
+.token-id-badge.blue { background: rgba(23, 76, 107, .94); }
+.token-id-badge.red { background: rgba(166, 63, 49, .94); }
+
 @media (max-width: 760px) {
   .topbar { padding: 14px 16px 22px; }
   .brand-mark { width: 39px; height: 39px; font-size: 18px; }
