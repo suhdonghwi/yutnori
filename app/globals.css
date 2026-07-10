@@ -4,8 +4,9 @@
   --night: #0d1713;
   --blue: #174c6b;
   --red: #a63f31;
-  --font-geist-sans: Inter, Pretendard, "Apple SD Gothic Neo", sans-serif;
-  --font-noto-serif-kr: "Noto Serif KR", "Nanum Myeongjo", "AppleMyungjo", serif;
+  --font-primary: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", sans-serif;
+  --font-geist-sans: var(--font-primary);
+  --font-noto-serif-kr: var(--font-primary);
 }
 
 * { box-sizing: border-box; }
