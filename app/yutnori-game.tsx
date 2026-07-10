@@ -1,5 +1,3 @@
-"use client";
-
 import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Html, OrbitControls, RoundedBox } from "@react-three/drei";
 import { ConvexHullCollider, CuboidCollider, Physics, RigidBody, type RapierRigidBody } from "@react-three/rapier";
