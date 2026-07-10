@@ -133,17 +133,25 @@ export function Lobby({ onStartLocal }: LobbyProps) {
         </div>
 
         <div className="lobby-visual" aria-hidden="true">
-          <div className="lobby-orbit orbit-one" />
-          <div className="lobby-orbit orbit-two" />
-          <div className="lobby-seal">
-            <small>우리 놀이</small>
-            <strong>윷</strong>
-            <span>YUTNORI</span>
+          <div className="lobby-board-art">
+            <svg className="lobby-board-map" viewBox="0 0 520 520" fill="none">
+              <rect className="art-frame" x="28" y="28" width="464" height="464" rx="34" />
+              <rect className="art-paper" x="43" y="43" width="434" height="434" rx="25" />
+              <path className="art-route" d="M92 92H428V428H92V92ZM92 92L428 428M428 92L92 428" />
+              <g className="art-nodes minor">
+                <circle cx="159" cy="92" r="8" /><circle cx="226" cy="92" r="8" /><circle cx="294" cy="92" r="8" /><circle cx="361" cy="92" r="8" />
+                <circle cx="428" cy="159" r="8" /><circle cx="428" cy="226" r="8" /><circle cx="428" cy="294" r="8" /><circle cx="428" cy="361" r="8" />
+                <circle cx="361" cy="428" r="8" /><circle cx="294" cy="428" r="8" /><circle cx="226" cy="428" r="8" /><circle cx="159" cy="428" r="8" />
+                <circle cx="92" cy="361" r="8" /><circle cx="92" cy="294" r="8" /><circle cx="92" cy="226" r="8" /><circle cx="92" cy="159" r="8" />
+                <circle cx="176" cy="176" r="7" /><circle cx="344" cy="176" r="7" /><circle cx="176" cy="344" r="7" /><circle cx="344" cy="344" r="7" />
+              </g>
+              <g className="art-nodes major">
+                <circle cx="92" cy="92" r="16" /><circle cx="428" cy="92" r="16" /><circle cx="428" cy="428" r="16" /><circle cx="92" cy="428" r="16" /><circle cx="260" cy="260" r="18" />
+              </g>
+            </svg>
+            <span className="art-piece blue-piece"><i /></span>
+            <span className="art-piece red-piece"><i /></span>
           </div>
-          <div className="lobby-yut yut-one"><i /><i /><i /></div>
-          <div className="lobby-yut yut-two"><i /><i /><i /></div>
-          <div className="lobby-yut yut-three"><i /><i /><i /></div>
-          <div className="lobby-yut yut-four"><i /><i /><i /></div>
         </div>
       </section>
 
