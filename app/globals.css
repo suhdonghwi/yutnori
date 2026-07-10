@@ -172,6 +172,11 @@ button { font: inherit; }
 .piece-actions button:disabled { opacity: .28; cursor: not-allowed; }
 .piece-actions span { display: block; margin-top: 3px; color: #aa9b82; font-size: 9px; font-weight: 500; }
 .piece-actions button:hover span { color: rgba(255,255,255,.75); }
+.route-actions { display: grid; grid-template-columns: repeat(2, minmax(126px, 1fr)); gap: 8px; flex: 1.35; }
+.route-actions button { padding: 9px 13px; border: 1px solid rgba(223,196,140,.24); border-radius: 12px; background: rgba(255,255,255,.055); color: #f1dfb9; font: 800 13px var(--font-geist-sans), sans-serif; cursor: pointer; transition: .16s ease; }
+.route-actions button:first-child { background: color-mix(in srgb, var(--turn-color) 68%, transparent); border-color: transparent; }
+.route-actions button:hover { transform: translateY(-2px); filter: brightness(1.13); }
+.route-actions span { display: block; margin-top: 3px; color: rgba(238,224,195,.65); font-size: 9px; font-weight: 500; }
 
 footer {
   width: min(1420px, calc(100% - 64px));
@@ -204,6 +209,8 @@ footer p { margin: 0; }
   .throw-button { min-width: 126px; height: 50px; padding-left: 14px; }
   .piece-actions { grid-template-columns: repeat(2, 1fr); }
   .piece-actions button { padding: 5px; }
+  .route-actions { grid-template-columns: 1fr 1fr; gap: 5px; }
+  .route-actions button { min-width: 0; padding: 7px 6px; font-size: 11px; }
   .player-card { min-height: 66px; padding: 9px 12px; }
   .player-card strong { font-size: 18px; }
   .player-card small { display: none; }
@@ -379,6 +386,8 @@ footer { display: none; }
   .throw-button { min-width: 126px; height: 50px; padding-left: 14px; }
   .piece-actions { grid-template-columns: repeat(2, 1fr); }
   .piece-actions button { padding: 5px; }
+  .route-actions { grid-template-columns: 1fr 1fr; gap: 5px; }
+  .route-actions button { min-width: 0; padding: 7px 6px; font-size: 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
