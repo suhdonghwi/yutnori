@@ -1,8 +1,9 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Line, OrbitControls, RoundedBox } from "@react-three/drei";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { ContactShadows, OrbitControls, RoundedBox } from "@react-three/drei";
+import { ConvexHullCollider, CuboidCollider, Physics, RigidBody, type RapierRigidBody } from "@react-three/rapier";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 type Phase = "ready" | "rolling" | "move" | "gameover";
@@ -15,11 +16,11 @@ const PLAYERS = [
 ] as const;
 
 const TRACK: [number, number, number][] = [
-  [4.35, 0.34, 4.35], [4.35, 0.34, 2.2], [4.35, 0.34, 0], [4.35, 0.34, -2.2],
-  [4.35, 0.34, -4.35], [2.2, 0.34, -4.35], [0, 0.34, -4.35], [-2.2, 0.34, -4.35],
-  [-4.35, 0.34, -4.35], [-4.35, 0.34, -2.2], [-4.35, 0.34, 0], [-4.35, 0.34, 2.2],
-  [-4.35, 0.34, 4.35], [-2.2, 0.34, 4.35], [0, 0.34, 4.35], [2.2, 0.34, 4.35],
-  [4.35, 0.34, 4.35], [4.35, 0.34, 2.2], [4.35, 0.34, 0], [4.35, 0.34, -2.2],
+  [4.35, 0.06, 4.35], [4.35, 0.06, 2.2], [4.35, 0.06, 0], [4.35, 0.06, -2.2],
+  [4.35, 0.06, -4.35], [2.2, 0.06, -4.35], [0, 0.06, -4.35], [-2.2, 0.06, -4.35],
+  [-4.35, 0.06, -4.35], [-4.35, 0.06, -2.2], [-4.35, 0.06, 0], [-4.35, 0.06, 2.2],
+  [-4.35, 0.06, 4.35], [-2.2, 0.06, 4.35], [0, 0.06, 4.35], [2.2, 0.06, 4.35],
+  [4.35, 0.06, 4.35], [4.35, 0.06, 2.2], [4.35, 0.06, 0], [4.35, 0.06, -2.2],
 ];
 
 const RESULT_BY_FLATS: Record<number, ThrowResult> = {
@@ -30,22 +31,37 @@ const RESULT_BY_FLATS: Record<number, ThrowResult> = {
   4: { name: "윷", steps: 4, flats: 4 },
 };
 
-function randomThrow() {
-  let flats = 0;
-  for (let i = 0; i < 4; i += 1) flats += Math.random() > 0.5 ? 1 : 0;
-  return RESULT_BY_FLATS[flats];
-}
-
 function BoardNode({ position, major = false }: { position: [number, number, number]; major?: boolean }) {
   return (
     <group position={position}>
       <mesh castShadow receiveShadow>
-        <cylinderGeometry args={[major ? 0.46 : 0.3, major ? 0.52 : 0.34, 0.13, 32]} />
-        <meshStandardMaterial color={major ? "#33241d" : "#5b4030"} roughness={0.8} />
+        <cylinderGeometry args={[major ? 0.47 : 0.31, major ? 0.51 : 0.35, 0.075, 32]} />
+        <meshStandardMaterial color={major ? "#2a1c16" : "#4b3024"} roughness={0.8} />
       </mesh>
-      <mesh position={[0, 0.075, 0]}>
-        <cylinderGeometry args={[major ? 0.31 : 0.18, major ? 0.31 : 0.18, 0.035, 24]} />
-        <meshStandardMaterial color={major ? "#cfb77c" : "#a98d5e"} roughness={0.7} />
+      <mesh position={[0, 0.042, 0]}>
+        <cylinderGeometry args={[major ? 0.3 : 0.17, major ? 0.3 : 0.17, 0.014, 24]} />
+        <meshBasicMaterial color={major ? "#dfc27e" : "#b78f54"} />
+      </mesh>
+    </group>
+  );
+}
+
+function BoardPathSegment({ from, to }: { from: [number, number, number]; to: [number, number, number] }) {
+  const dx = to[0] - from[0];
+  const dz = to[2] - from[2];
+  const length = Math.hypot(dx, dz);
+  const angle = Math.atan2(dx, dz);
+  const center: [number, number, number] = [(from[0] + to[0]) / 2, 0, (from[2] + to[2]) / 2];
+
+  return (
+    <group position={center} rotation={[0, angle, 0]}>
+      <mesh position={[0, 0.026, 0]} receiveShadow>
+        <boxGeometry args={[0.2, 0.04, length]} />
+        <meshStandardMaterial color="#322018" roughness={0.72} />
+      </mesh>
+      <mesh position={[0, 0.051, 0]}>
+        <boxGeometry args={[0.065, 0.012, Math.max(0.1, length - 0.08)]} />
+        <meshBasicMaterial color="#c39a5c" />
       </mesh>
     </group>
   );
@@ -80,81 +96,169 @@ function Token({ position, color, offset, finished }: { position: [number, numbe
   );
 }
 
-function YutStick({ index, rolling, nonce, flat }: { index: number; rolling: boolean; nonce: number; flat: boolean }) {
-  const ref = useRef<THREE.Group>(null);
-  const velocity = useRef(new THREE.Vector3());
-  const spin = useRef(new THREE.Vector3());
-  const elapsed = useRef(0);
-  const resting = useRef(true);
-
-  useEffect(() => {
-    if (!rolling || !ref.current) return;
-    const spread = (index - 1.5) * 0.7;
-    ref.current.position.set(spread, 4.5 + Math.random() * 0.8, (Math.random() - 0.5) * 1.4);
-    ref.current.rotation.set(Math.random() * 4, Math.random() * 4, Math.random() * 4);
-    velocity.current.set((Math.random() - 0.5) * 1.8, 1.6 + Math.random(), (Math.random() - 0.5) * 1.8);
-    spin.current.set(6 + Math.random() * 7, 3 + Math.random() * 8, 5 + Math.random() * 8);
-    elapsed.current = 0;
-    resting.current = false;
-  }, [rolling, nonce, index]);
-
-  useFrame((_, delta) => {
-    const group = ref.current;
-    if (!group || resting.current) return;
-    elapsed.current += delta;
-    velocity.current.y -= 13.5 * delta;
-    group.position.addScaledVector(velocity.current, delta);
-    group.rotation.x += spin.current.x * delta;
-    group.rotation.y += spin.current.y * delta;
-    group.rotation.z += spin.current.z * delta;
-
-    if (group.position.y < 0.43) {
-      group.position.y = 0.43;
-      velocity.current.y = Math.abs(velocity.current.y) * 0.35;
-      velocity.current.x *= 0.72;
-      velocity.current.z *= 0.72;
-      spin.current.multiplyScalar(0.62);
-    }
-
-    if (elapsed.current > 1.35) {
-      resting.current = true;
-      group.position.y = 0.43;
-      group.rotation.set(flat ? 0 : Math.PI, (index - 1.5) * 0.08, (index % 2 ? -1 : 1) * 0.035);
-    }
-  });
-
+function XMark({ z }: { z: number }) {
   return (
-    <group ref={ref} position={[(index - 1.5) * 0.72, 0.43, 0]} rotation={[flat ? 0 : Math.PI, 0, 0]}>
-      <RoundedBox args={[0.48, 0.24, 2.55]} radius={0.11} smoothness={5} castShadow>
-        <meshStandardMaterial color="#d7a85f" roughness={0.58} />
-      </RoundedBox>
-      <mesh position={[0, 0.128, -0.5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.1, 24]} />
-        <meshStandardMaterial color="#7e211c" roughness={0.65} />
+    <group position={[0, -0.018, z]}>
+      <mesh rotation={[0, Math.PI / 4, 0]} castShadow>
+        <boxGeometry args={[0.055, 0.025, 0.36]} />
+        <meshStandardMaterial color="#17130f" roughness={0.82} />
       </mesh>
-      <mesh position={[0, 0.128, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.1, 24]} />
-        <meshStandardMaterial color="#7e211c" roughness={0.65} />
+      <mesh rotation={[0, -Math.PI / 4, 0]} castShadow>
+        <boxGeometry args={[0.055, 0.025, 0.36]} />
+        <meshStandardMaterial color="#17130f" roughness={0.82} />
       </mesh>
     </group>
   );
 }
 
-function Scene({ pieces, rolling, nonce, result }: { pieces: number[][]; rolling: boolean; nonce: number; result: ThrowResult | null }) {
-  const linePoints = useMemo(() => {
-    const outline = TRACK.slice(0, 16).map(([x, y, z]) => [x, y + 0.02, z] as [number, number, number]);
-    outline.push(outline[0]);
-    return outline;
+function createYutGeometry() {
+  const radius = 0.29;
+  const shape = new THREE.Shape();
+  shape.moveTo(-radius, 0);
+  shape.lineTo(radius, 0);
+  shape.absarc(0, 0, radius, 0, Math.PI, false);
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: 2.45,
+    bevelEnabled: true,
+    bevelSegments: 3,
+    bevelSize: 0.018,
+    bevelThickness: 0.018,
+    curveSegments: 18,
+  });
+  geometry.translate(0, 0, -1.225);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+const YUT_GEOMETRY = createYutGeometry();
+const YUT_COLLIDER_VERTICES = new Float32Array(YUT_GEOMETRY.attributes.position.array);
+
+function YutStickMesh() {
+  return (
+    <group>
+      <mesh geometry={YUT_GEOMETRY} castShadow receiveShadow>
+        <meshStandardMaterial color="#d8aa65" roughness={0.6} />
+      </mesh>
+      <XMark z={-0.55} />
+      <XMark z={0.55} />
+    </group>
+  );
+}
+
+function PhysicsYutStick({
+  index,
+  nonce,
+  onSleep,
+}: {
+  index: number;
+  nonce: number;
+  onSleep: (index: number, body: RapierRigidBody) => void;
+}) {
+  const body = useRef<RapierRigidBody>(null);
+  const initial = useMemo(() => {
+    if (nonce === 0) {
+      return {
+        position: [(index - 1.5) * 0.76, 0.325, 0] as [number, number, number],
+        rotation: [Math.PI, 0, 0] as [number, number, number],
+        linearVelocity: [0, 0, 0] as [number, number, number],
+        angularVelocity: [0, 0, 0] as [number, number, number],
+      };
+    }
+    const direction = index - 1.5;
+    return {
+      position: [direction * 0.95, 1.18 + (index % 2) * 0.18, 0.78] as [number, number, number],
+      rotation: [(Math.random() - 0.5) * 0.28, (Math.random() - 0.5) * 0.08, (Math.random() - 0.5) * 0.16] as [number, number, number],
+      linearVelocity: [direction * 0.72 + (Math.random() - 0.5) * 0.65, 5.3 + Math.random() * 1.1, -1.15 + (Math.random() - 0.5) * 1.1] as [number, number, number],
+      angularVelocity: [(Math.random() - 0.5) * 18, (Math.random() - 0.5) * 12, (Math.random() - 0.5) * 18] as [number, number, number],
+    };
+  }, [index, nonce]);
+
+  return (
+    <RigidBody
+      ref={body}
+      type={nonce === 0 ? "fixed" : "dynamic"}
+      colliders={false}
+      position={initial.position}
+      rotation={initial.rotation}
+      linearVelocity={initial.linearVelocity}
+      angularVelocity={initial.angularVelocity}
+      friction={0.92}
+      restitution={0.28}
+      linearDamping={0.42}
+      angularDamping={0.62}
+      ccd
+      canSleep
+      onSleep={() => body.current && onSleep(index, body.current)}
+    >
+      <ConvexHullCollider args={[YUT_COLLIDER_VERTICES]} friction={0.92} restitution={0.28} contactSkin={0.028} />
+      <YutStickMesh />
+    </RigidBody>
+  );
+}
+
+function YutPhysics({ rolling, nonce, onSettled }: { rolling: boolean; nonce: number; onSettled: (flats: number) => void }) {
+  const outcomes = useRef<(boolean | null)[]>([null, null, null, null]);
+  const retries = useRef([0, 0, 0, 0]);
+  const completed = useRef(false);
+
+  useEffect(() => {
+    outcomes.current = [null, null, null, null];
+    retries.current = [0, 0, 0, 0];
+    completed.current = false;
+  }, [nonce]);
+
+  const handleSleep = useCallback((index: number, body: RapierRigidBody) => {
+    if (!rolling || completed.current) return;
+    const rotation = body.rotation();
+    const flatNormal = new THREE.Vector3(0, -1, 0).applyQuaternion(
+      new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w),
+    );
+
+    if (Math.abs(flatNormal.y) < 0.42 && retries.current[index] < 2) {
+      retries.current[index] += 1;
+      body.wakeUp();
+      body.applyTorqueImpulse({ x: 0.18 * (index % 2 ? 1 : -1), y: 0.03, z: 0.14 }, true);
+      return;
+    }
+
+    outcomes.current[index] = flatNormal.y > 0;
+    if (outcomes.current.every((value) => value !== null)) {
+      completed.current = true;
+      onSettled(outcomes.current.filter(Boolean).length);
+    }
+  }, [onSettled, rolling]);
+
+  return (
+    <Physics key="world-y0-v2" gravity={[0, -12.8, 0]} timeStep={1 / 60} paused={!rolling && nonce === 0}>
+      <RigidBody type="fixed" colliders={false}>
+        <CuboidCollider args={[5.74, 0.13, 5.54]} position={[0, -0.13, 0]} friction={0.95} restitution={0.2} />
+        <CuboidCollider args={[0.12, 0.65, 5.55]} position={[-5.72, 0.65, 0]} restitution={0.35} />
+        <CuboidCollider args={[0.12, 0.65, 5.55]} position={[5.72, 0.65, 0]} restitution={0.35} />
+        <CuboidCollider args={[5.55, 0.65, 0.12]} position={[0, 0.65, -5.52]} restitution={0.35} />
+        <CuboidCollider args={[5.55, 0.65, 0.12]} position={[0, 0.65, 5.52]} restitution={0.35} />
+      </RigidBody>
+      {[0, 1, 2, 3].map((index) => (
+        <PhysicsYutStick key={`${nonce}-${index}`} index={index} nonce={nonce} onSleep={handleSleep} />
+      ))}
+    </Physics>
+  );
+}
+
+function Scene({ pieces, rolling, nonce, onSettled }: { pieces: number[][]; rolling: boolean; nonce: number; onSettled: (flats: number) => void }) {
+  const boardSegments = useMemo(() => {
+    const outer = TRACK.slice(0, 16);
+    return outer.map((point, index) => [point, outer[(index + 1) % outer.length]] as const);
   }, []);
 
   function piecePosition(player: number, piece: number, step: number): [number, number, number] {
     if (step < 0) {
       const side = player === 0 ? -1 : 1;
-      return [side * (5.35 + (piece % 2) * 0.58), 0.38, 1.2 - Math.floor(piece / 2) * 0.68];
+      return [side * (5.35 + (piece % 2) * 0.58), 0.06, 1.2 - Math.floor(piece / 2) * 0.68];
     }
     if (step >= 20) {
       const side = player === 0 ? -1 : 1;
-      return [side * (5.35 + (piece % 2) * 0.58), 0.38, -1.4 - Math.floor(piece / 2) * 0.68];
+      return [side * (5.35 + (piece % 2) * 0.58), 0.06, -1.4 - Math.floor(piece / 2) * 0.68];
     }
     const base = TRACK[step];
     const occupiedBefore = pieces[player].slice(0, piece).filter((value) => value === step).length;
@@ -169,22 +273,25 @@ function Scene({ pieces, rolling, nonce, result }: { pieces: number[][]; rolling
       <directionalLight position={[5, 10, 7]} intensity={2.6} color="#ffe8bb" castShadow shadow-mapSize={[2048, 2048]} />
       <pointLight position={[-6, 4, -4]} intensity={16} color="#87512d" distance={14} />
 
-      <group position={[0, -0.2, 0]}>
-        <RoundedBox args={[12.2, 0.48, 11.8]} radius={0.36} smoothness={6} receiveShadow castShadow>
+      <group>
+        <RoundedBox args={[12.2, 0.5, 11.8]} radius={0.18} smoothness={6} position={[0, -0.35, 0]} receiveShadow castShadow>
           <meshStandardMaterial color="#563721" roughness={0.82} />
         </RoundedBox>
-        <RoundedBox args={[11.55, 0.2, 11.15]} radius={0.25} smoothness={5} position={[0, 0.31, 0]} receiveShadow>
+        <mesh position={[0, -0.09, 0]} receiveShadow>
+          <boxGeometry args={[11.55, 0.18, 11.15]} />
           <meshStandardMaterial color="#d2bc88" roughness={0.94} />
-        </RoundedBox>
+        </mesh>
 
-        <Line points={linePoints} color="#4b3327" lineWidth={3} />
-        <Line points={[TRACK[0], [0, 0.36, 0], TRACK[8]]} color="#765740" lineWidth={2} />
-        <Line points={[TRACK[4], [0, 0.36, 0], TRACK[12]]} color="#765740" lineWidth={2} />
+        {boardSegments.map(([from, to], index) => <BoardPathSegment key={index} from={from} to={to} />)}
+        <BoardPathSegment from={TRACK[0]} to={[0, 0.06, 0]} />
+        <BoardPathSegment from={[0, 0.06, 0]} to={TRACK[8]} />
+        <BoardPathSegment from={TRACK[4]} to={[0, 0.06, 0]} />
+        <BoardPathSegment from={[0, 0.06, 0]} to={TRACK[12]} />
 
         {TRACK.slice(0, 16).map((position, index) => (
           <BoardNode key={index} position={position} major={index % 4 === 0} />
         ))}
-        <BoardNode position={[0, 0.36, 0]} major />
+        <BoardNode position={[0, 0.06, 0]} major />
 
         {pieces.map((playerPieces, player) =>
           playerPieces.map((step, piece) => (
@@ -198,12 +305,9 @@ function Scene({ pieces, rolling, nonce, result }: { pieces: number[][]; rolling
           )),
         )}
 
-        <group position={[0, 0.55, 0]}>
-          {[0, 1, 2, 3].map((index) => (
-            <YutStick key={index} index={index} rolling={rolling} nonce={nonce} flat={(result?.flats ?? 2) > index} />
-          ))}
-        </group>
       </group>
+
+      <YutPhysics rolling={rolling} nonce={nonce} onSettled={onSettled} />
 
       <ContactShadows position={[0, -0.37, 0]} opacity={0.48} scale={18} blur={2.6} far={8} />
       <OrbitControls
@@ -230,12 +334,16 @@ export default function YutnoriGame() {
 
   const throwYut = () => {
     if (phase !== "ready") return;
-    const nextResult = randomThrow();
-    setResult(nextResult);
+    setResult(null);
     setNonce((value) => value + 1);
     setPhase("rolling");
-    window.setTimeout(() => setPhase("move"), 1650);
   };
+
+  const settleThrow = useCallback((flats: number) => {
+    const nextResult = RESULT_BY_FLATS[flats];
+    setResult(nextResult);
+    setPhase("move");
+  }, []);
 
   const movePiece = (pieceIndex: number) => {
     if (phase !== "move" || !result) return;
@@ -266,7 +374,7 @@ export default function YutnoriGame() {
   const statusText = phase === "ready"
     ? `${PLAYERS[current].name}의 차례입니다`
     : phase === "rolling"
-      ? "윷이 날아오릅니다"
+      ? "윷이 안정될 때까지 기다리는 중"
       : phase === "move"
         ? `${result?.name} · ${result?.steps}칸 움직이세요`
         : `${PLAYERS[winner ?? 0].name}이 이겼습니다`;
@@ -294,7 +402,7 @@ export default function YutnoriGame() {
           <div className="canvas-wrap">
             <Canvas shadows dpr={[1, 1.7]} camera={{ position: [0, 9.6, 10.4], fov: 43 }}>
               <Suspense fallback={null}>
-                <Scene pieces={pieces} rolling={phase === "rolling"} nonce={nonce} result={result} />
+                <Scene pieces={pieces} rolling={phase === "rolling"} nonce={nonce} onSettled={settleThrow} />
               </Suspense>
             </Canvas>
             <div className="board-caption" aria-hidden="true">외곽길 · 스무 걸음</div>
@@ -318,7 +426,7 @@ export default function YutnoriGame() {
               <button className="throw-button" type="button" onClick={reset}>한 판 더</button>
             ) : (
               <button className="throw-button" type="button" onClick={throwYut} disabled={phase === "rolling"}>
-                <span>{phase === "rolling" ? "던지는 중" : "윷 던지기"}</span>
+                <span>{phase === "rolling" ? "물리 판정 중" : "윷 던지기"}</span>
                 <i aria-hidden="true">↗</i>
               </button>
             )}
