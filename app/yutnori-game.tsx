@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Html, OrbitControls, RoundedBox } from "@react-three/drei";
-import { BallCollider, ConvexHullCollider, CuboidCollider, CylinderCollider, Physics, RigidBody, useRapier, type RapierRigidBody } from "@react-three/rapier";
+import { ConvexHullCollider, CuboidCollider, Physics, RigidBody, type RapierRigidBody } from "@react-three/rapier";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import {
@@ -29,6 +29,12 @@ import {
 type Phase = "ready" | "rolling" | "move" | "route" | "moving" | "gameover";
 type ThrowResult = { name: string; steps: number; flats: number; extraThrow: boolean };
 type HoveredToken = { player: Player; piece: number } | null;
+type MovePreview = {
+  key: string;
+  position: [number, number, number];
+  label: string;
+  color: string;
+};
 type ActiveMove = {
   id: number;
   player: Player;
@@ -92,15 +98,42 @@ function BoardPathSegment({ from, to }: { from: [number, number, number]; to: [n
   );
 }
 
+function MoveDestinationPreview({ preview }: { preview: MovePreview }) {
+  const ref = useRef<THREE.Group>(null);
+
+  useFrame(({ clock }) => {
+    if (!ref.current) return;
+    const pulse = 1 + Math.sin(clock.elapsedTime * 5.2) * 0.09;
+    ref.current.scale.setScalar(pulse);
+  });
+
+  return (
+    <group ref={ref} position={[preview.position[0], 0.13, preview.position[2]]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.46, 0.61, 40]} />
+        <meshBasicMaterial color={preview.color} transparent opacity={0.88} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.44, 40]} />
+        <meshBasicMaterial color={preview.color} transparent opacity={0.18} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      <pointLight color={preview.color} intensity={1.8} distance={2.1} position={[0, 0.42, 0]} />
+      <Html center position={[0, 0.72, 0]} distanceFactor={8.5} style={{ pointerEvents: "none" }}>
+        <span className="move-preview-badge">{preview.label}</span>
+      </Html>
+    </group>
+  );
+}
+
 function tokenPlacement(pieces: BoardState, player: number, piece: number) {
   const state = pieces[player][piece];
   if (state.status === "home") {
     const side = player === 0 ? -1 : 1;
-    return { position: [side * 5.05, 0.06, 1.35 - piece * 0.72] as [number, number, number], count: 1 };
+    return { position: [side * 6.5, 0.06, 1.5 - piece] as [number, number, number], count: 1 };
   }
   if (state.status === "finished") {
     const side = player === 0 ? -1 : 1;
-    return { position: [side * 5.05, 0.06, -1.35 - piece * 0.62] as [number, number, number], count: 1 };
+    return { position: [side * 5.32, 0.06, -1.35 - piece * 0.62] as [number, number, number], count: 1 };
   }
 
   const node = nodeForPiece(state)!;
@@ -231,17 +264,17 @@ function Token({
 
   return (
     <group ref={ref} position={initialPosition.current}>
-      <mesh castShadow position={[0, 0.18, 0]}>
-        <cylinderGeometry args={[0.28, 0.36, 0.34, 32]} />
-        <meshStandardMaterial color={color} roughness={0.48} metalness={0.1} emissive={highlighted ? color : "#000000"} emissiveIntensity={highlighted ? 0.65 : 0} />
+      <mesh castShadow receiveShadow position={[0, 0.105, 0]}>
+        <cylinderGeometry args={[0.35, 0.35, 0.19, 48]} />
+        <meshStandardMaterial color={color} roughness={0.5} metalness={0.08} emissive={highlighted ? color : "#000000"} emissiveIntensity={highlighted ? 0.55 : 0} />
       </mesh>
-      <mesh castShadow position={[0, 0.44, 0]}>
-        <sphereGeometry args={[0.2, 24, 16]} />
-        <meshStandardMaterial color={color} roughness={0.4} emissive={highlighted ? color : "#000000"} emissiveIntensity={highlighted ? 0.7 : 0} />
+      <mesh castShadow position={[0, 0.208, 0]}>
+        <cylinderGeometry args={[0.275, 0.275, 0.026, 48]} />
+        <meshStandardMaterial color={color} roughness={0.38} metalness={0.12} emissive={highlighted ? color : "#000000"} emissiveIntensity={highlighted ? 0.7 : 0} />
       </mesh>
-      <mesh position={[0, 0.455, 0.175]} rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.045, 0.075, 20]} />
-        <meshBasicMaterial color="#f3dfb5" />
+      <mesh position={[0, 0.224, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.19, 0.215, 36]} />
+        <meshBasicMaterial color="#f3dfb5" transparent opacity={0.45} side={THREE.DoubleSide} />
       </mesh>
       <mesh visible={highlighted} position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.38, 0.48, 36]} />
@@ -249,7 +282,7 @@ function Token({
       </mesh>
       <pointLight color={highlighted ? "#f4d283" : color} intensity={highlighted ? 2.1 : state.status === "finished" ? 1.3 : 0} distance={2.7} />
       {stackCount > 1 && (
-        <Html center position={[0, 0.78, 0]} distanceFactor={8.5} style={{ pointerEvents: "none" }}>
+        <Html center position={[0, 0.54, 0]} distanceFactor={8.5} style={{ pointerEvents: "none" }}>
           <span className={`token-id-badge ${player === 0 ? "blue" : "red"}`}>{player === 0 ? "청" : "홍"}{piece + 1}</span>
         </Html>
       )}
@@ -295,7 +328,22 @@ function createYutGeometry() {
 const YUT_GEOMETRY = createYutGeometry();
 const YUT_COLLIDER_VERTICES = new Float32Array(YUT_GEOMETRY.attributes.position.array);
 
-function YutStickMesh() {
+function FlatBackdoX() {
+  return (
+    <group position={[0, -0.014, 0]}>
+      <mesh rotation={[0, Math.PI / 4, 0]} castShadow>
+        <boxGeometry args={[0.065, 0.018, 0.42]} />
+        <meshStandardMaterial color="#17130f" roughness={0.82} />
+      </mesh>
+      <mesh rotation={[0, -Math.PI / 4, 0]} castShadow>
+        <boxGeometry args={[0.065, 0.018, 0.42]} />
+        <meshStandardMaterial color="#17130f" roughness={0.82} />
+      </mesh>
+    </group>
+  );
+}
+
+function YutStickMesh({ backdo = false }: { backdo?: boolean }) {
   return (
     <group>
       <mesh geometry={YUT_GEOMETRY} castShadow receiveShadow>
@@ -304,6 +352,7 @@ function YutStickMesh() {
       <XMark z={-0.66} />
       <XMark z={0} />
       <XMark z={0.66} />
+      {backdo && <FlatBackdoX />}
     </group>
   );
 }
@@ -311,24 +360,13 @@ function YutStickMesh() {
 function PhysicsYutStick({
   index,
   nonce,
-  arranged,
   onSleep,
 }: {
   index: number;
   nonce: number;
-  arranged: boolean;
   onSleep: (index: number, body: RapierRigidBody) => void;
 }) {
-  const { rapier } = useRapier();
   const body = useRef<RapierRigidBody>(null);
-  const arrangeFromPosition = useRef(new THREE.Vector3());
-  const arrangeFromRotation = useRef(new THREE.Quaternion());
-  const arrangeNextPosition = useRef(new THREE.Vector3());
-  const arrangeNextRotation = useRef(new THREE.Quaternion());
-  const arrangeTargetRotation = useRef(new THREE.Quaternion());
-  const arrangeProgress = useRef(1);
-  const arrangeReady = useRef(false);
-  const arrangeTarget = useMemo(() => new THREE.Vector3((index - 1.5) * 0.76, 0.035, 0), [index]);
   const initial = useMemo(() => {
     if (nonce === 0) {
       return {
@@ -347,44 +385,10 @@ function PhysicsYutStick({
     };
   }, [index, nonce]);
 
-  useEffect(() => {
-    const rigidBody = body.current;
-    if (!arranged || !rigidBody) {
-      arrangeReady.current = false;
-      return;
-    }
-
-    const translation = rigidBody.translation();
-    const rotation = rigidBody.rotation();
-    arrangeFromPosition.current.set(translation.x, translation.y, translation.z);
-    arrangeFromRotation.current.set(rotation.x, rotation.y, rotation.z, rotation.w);
-
-    rigidBody.setBodyType(rapier.RigidBodyType.KinematicPositionBased, true);
-    rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
-    rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
-    rigidBody.setNextKinematicTranslation(arrangeFromPosition.current);
-    rigidBody.setNextKinematicRotation(arrangeFromRotation.current);
-
-    arrangeProgress.current = 0;
-    arrangeReady.current = true;
-  }, [arranged, rapier]);
-
-  useFrame((_, delta) => {
-    if (!arranged || !arrangeReady.current || !body.current) return;
-    arrangeProgress.current = Math.min(1, arrangeProgress.current + delta / 0.72);
-    const t = arrangeProgress.current;
-    const eased = 1 - Math.pow(1 - t, 3);
-    arrangeNextPosition.current.lerpVectors(arrangeFromPosition.current, arrangeTarget, eased);
-    arrangeNextPosition.current.y += Math.sin(Math.PI * t) * 0.55;
-    arrangeNextRotation.current.copy(arrangeFromRotation.current).slerp(arrangeTargetRotation.current, eased);
-    body.current.setNextKinematicTranslation(arrangeNextPosition.current);
-    body.current.setNextKinematicRotation(arrangeNextRotation.current);
-  });
-
   return (
     <RigidBody
       ref={body}
-      type={nonce === 0 ? "fixed" : arranged ? "kinematicPosition" : "dynamic"}
+      type={nonce === 0 ? "fixed" : "dynamic"}
       colliders={false}
       position={initial.position}
       rotation={initial.rotation}
@@ -399,7 +403,7 @@ function PhysicsYutStick({
       onSleep={() => body.current && onSleep(index, body.current)}
     >
       <ConvexHullCollider args={[YUT_COLLIDER_VERTICES]} friction={0.92} restitution={0.28} contactSkin={0.028} />
-      <YutStickMesh />
+      <YutStickMesh backdo={index === 0} />
     </RigidBody>
   );
 }
@@ -407,16 +411,10 @@ function PhysicsYutStick({
 function YutPhysics({
   rolling,
   nonce,
-  pieces,
-  tokenCollisionsEnabled,
-  arranged,
   onSettled,
 }: {
   rolling: boolean;
   nonce: number;
-  pieces: BoardState;
-  tokenCollisionsEnabled: boolean;
-  arranged: boolean;
   onSettled: (flats: number, backdo: boolean) => void;
 }) {
   const outcomes = useRef<(boolean | null)[]>([null, null, null, null]);
@@ -460,32 +458,8 @@ function YutPhysics({
         <CuboidCollider args={[5.55, 0.65, 0.12]} position={[0, 0.65, -5.52]} restitution={0.35} />
         <CuboidCollider args={[5.55, 0.65, 0.12]} position={[0, 0.65, 5.52]} restitution={0.35} />
       </RigidBody>
-      {tokenCollisionsEnabled && pieces.map((playerPieces, player) =>
-        playerPieces.map((_, piece) => {
-          const placement = tokenPlacement(pieces, player, piece);
-          const scale = placement.count >= 4 ? 0.74 : placement.count > 1 ? 0.84 : 1;
-          return (
-            <RigidBody key={`token-collider-${player}-${piece}`} type="fixed" colliders={false} position={placement.position}>
-              <CylinderCollider
-                args={[0.17 * scale, 0.36 * scale]}
-                position={[0, 0.18 * scale, 0]}
-                friction={0.82}
-                restitution={0.3}
-                contactSkin={0.012}
-              />
-              <BallCollider
-                args={[0.21 * scale]}
-                position={[0, 0.44 * scale, 0]}
-                friction={0.78}
-                restitution={0.34}
-                contactSkin={0.012}
-              />
-            </RigidBody>
-          );
-        }),
-      )}
       {[0, 1, 2, 3].map((index) => (
-        <PhysicsYutStick key={`${nonce}-${index}`} index={index} nonce={nonce} arranged={arranged} onSleep={handleSleep} />
+        <PhysicsYutStick key={`${nonce}-${index}`} index={index} nonce={nonce} onSleep={handleSleep} />
       ))}
     </Physics>
   );
@@ -497,9 +471,8 @@ function Scene({
   nonce,
   onSettled,
   hoveredToken,
+  movePreviews,
   activeMove,
-  tokenCollisionsEnabled,
-  yutsArranged,
   onMoveComplete,
 }: {
   pieces: BoardState;
@@ -507,9 +480,8 @@ function Scene({
   nonce: number;
   onSettled: (flats: number, backdo: boolean) => void;
   hoveredToken: HoveredToken;
+  movePreviews: MovePreview[];
   activeMove: ActiveMove;
-  tokenCollisionsEnabled: boolean;
-  yutsArranged: boolean;
   onMoveComplete: () => void;
 }) {
   return (
@@ -534,6 +506,10 @@ function Scene({
 
         {BOARD_NODE_IDS.map((node) => (
           <BoardNode key={node} position={NODE_POSITIONS[node]} major={MAJOR_NODE_IDS.has(node)} />
+        ))}
+
+        {movePreviews.map((preview) => (
+          <MoveDestinationPreview key={preview.key} preview={preview} />
         ))}
 
         {pieces.map((playerPieces, player) =>
@@ -567,9 +543,6 @@ function Scene({
       <YutPhysics
         rolling={rolling}
         nonce={nonce}
-        pieces={pieces}
-        tokenCollisionsEnabled={tokenCollisionsEnabled}
-        arranged={yutsArranged}
         onSettled={onSettled}
       />
 
@@ -604,18 +577,45 @@ export default function YutnoriGame() {
   const [activeMove, setActiveMove] = useState<ActiveMove>(null);
   const [pendingRoute, setPendingRoute] = useState<PendingRoute>(null);
   const [notice, setNotice] = useState("");
-  const [tokenCollisionsEnabled, setTokenCollisionsEnabled] = useState(true);
-  const [yutsArranged, setYutsArranged] = useState(false);
   const activeMoveRef = useRef<ActiveMove>(null);
   const moveId = useRef(0);
   const otherPlayer = (current === 0 ? 1 : 0) as Player;
+
+  const movePreviews = useMemo<MovePreview[]>(() => {
+    if (phase !== "move" || !result || !hoveredToken || hoveredToken.player !== current) return [];
+    const pieceIndex = hoveredToken.piece;
+    const piece = pieces[current][pieceIndex];
+    if (!isMovable(piece, result.steps) || groupLeader(pieces, current, pieceIndex) !== pieceIndex) return [];
+
+    const choices: RouteChoice[] = canChooseRoute(piece, result.steps) ? ["shortcut", "outer"] : ["outer"];
+    return choices.map((choice) => {
+      const resolution = resolveMove(pieces, current, pieceIndex, result.steps, choice);
+      const destinationNode = nodeForPiece(resolution.destination);
+      const destinationPosition = destinationNode
+        ? NODE_POSITIONS[destinationNode]
+        : resolution.destination.status === "finished"
+          ? NODE_POSITIONS.O0
+          : tokenPlacement(resolution.board, current, pieceIndex).position;
+      const isBranchPreview = choices.length > 1;
+      return {
+        key: `${pieceIndex}-${choice}`,
+        position: destinationPosition,
+        label: resolution.destination.status === "finished"
+          ? "도착"
+          : resolution.destination.status === "home"
+            ? "대기석으로"
+            : isBranchPreview
+              ? choice === "shortcut" ? "지름길 도착" : "바깥길 도착"
+              : `${result.name} 도착`,
+        color: choice === "shortcut" ? "#f2cb72" : PLAYERS[current].glow,
+      };
+    });
+  }, [current, hoveredToken, phase, pieces, result]);
 
   const throwYut = () => {
     if (phase !== "ready") return;
     setResult(null);
     setNotice("");
-    setYutsArranged(false);
-    setTokenCollisionsEnabled(true);
     setNonce((value) => value + 1);
     setPhase("rolling");
   };
@@ -637,7 +637,6 @@ export default function YutnoriGame() {
     if (!move) return;
     activeMoveRef.current = null;
     setActiveMove(null);
-    setTokenCollisionsEnabled(true);
     setNotice(move.notice);
     if (move.winner !== null) {
       setWinner(move.winner);
@@ -681,8 +680,6 @@ export default function YutnoriGame() {
     };
     activeMoveRef.current = move;
     setActiveMove(move);
-    setTokenCollisionsEnabled(false);
-    setYutsArranged(true);
     setPhase("moving");
   };
 
@@ -716,8 +713,6 @@ export default function YutnoriGame() {
     setNotice("");
     activeMoveRef.current = null;
     setActiveMove(null);
-    setTokenCollisionsEnabled(true);
-    setYutsArranged(false);
   };
 
   const statusText = phase === "ready"
@@ -761,9 +756,8 @@ export default function YutnoriGame() {
                   nonce={nonce}
                   onSettled={settleThrow}
                   hoveredToken={hoveredToken}
+                  movePreviews={movePreviews}
                   activeMove={activeMove}
-                  tokenCollisionsEnabled={tokenCollisionsEnabled}
-                  yutsArranged={yutsArranged}
                   onMoveComplete={handleMoveComplete}
                 />
               </Suspense>
