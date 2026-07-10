@@ -123,22 +123,24 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
               return (
                 <button
                   key={mode.id}
-                  className={`group relative grid min-h-[86px] w-full grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-4 border-b border-[rgba(224,199,148,.12)] bg-transparent px-2 text-left transition-[background-color,border-color,padding] duration-200 last:border-b-0 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#d6b667] max-[560px]:min-h-[78px] max-[560px]:grid-cols-[42px_minmax(0,1fr)_auto] max-[560px]:gap-3 ${mode.available ? "cursor-pointer hover:px-3" : "cursor-not-allowed opacity-[.42]"} ${active && mode.available ? "border-b-[rgba(224,199,148,.28)] bg-[linear-gradient(90deg,rgba(205,166,86,.12),transparent_76%)]" : ""}`}
+                  className={`group relative grid min-h-[86px] w-full grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-4 border-b border-[rgba(224,199,148,.12)] bg-transparent px-2 text-left transition-[background-color,border-color] duration-200 last:border-b-0 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#d6b667] max-[560px]:min-h-[78px] max-[560px]:grid-cols-[42px_minmax(0,1fr)_auto] max-[560px]:gap-3 ${mode.available ? "cursor-pointer" : "cursor-not-allowed opacity-[.42]"} ${active && mode.available ? "border-b-[rgba(224,199,148,.28)] bg-[linear-gradient(90deg,rgba(205,166,86,.12),transparent_76%)]" : ""}`}
                   type="button"
                   disabled={!mode.available}
                   onPointerEnter={() => setPreviewMode(mode.id)}
                   onFocus={() => setPreviewMode(mode.id)}
                   onClick={mode.id === "local" ? onStartLocal : mode.id === "ai" ? onStartAi : undefined}
                 >
-                  <span className={`grid size-11 place-items-center rounded-full border transition-[color,border-color,background-color,box-shadow] max-[560px]:size-10 ${active && mode.available ? "border-[#d9b96f] bg-[rgba(215,185,111,.12)] text-[#f3dcaa] shadow-[0_0_24px_rgba(215,185,111,.12)]" : "border-[rgba(224,199,148,.2)] text-[#8d8473]"}`} aria-hidden="true">
-                    <Icon size={21} weight={active ? "bold" : "regular"} />
+                  <span className={`transition-transform duration-200 ease-out ${mode.available ? "group-hover:translate-x-1" : ""}`} aria-hidden="true">
+                    <span className={`grid size-11 place-items-center rounded-full border transition-[color,border-color,background-color,box-shadow] duration-200 max-[560px]:size-10 ${active && mode.available ? "border-[#d9b96f] bg-[rgba(215,185,111,.12)] text-[#f3dcaa] shadow-[0_0_24px_rgba(215,185,111,.12)]" : "border-[rgba(224,199,148,.2)] text-[#8d8473]"}`}>
+                      <Icon size={21} weight="regular" />
+                    </span>
                   </span>
-                  <span className="min-w-0">
+                  <span className={`min-w-0 transition-transform duration-200 ${mode.available ? "group-hover:translate-x-1" : ""}`}>
                     <strong className={`mb-1.5 block text-[19px] leading-none font-extrabold tracking-[-.025em] transition-colors max-[560px]:text-[17px] ${active && mode.available ? "text-[#f5e3bd]" : "text-[#c7baa0]"}`}>{mode.title}</strong>
                     <small className="block overflow-hidden text-xs leading-[1.35] font-medium text-ellipsis whitespace-nowrap text-[#827a6b] max-[560px]:max-w-[210px] max-[560px]:text-[10px]">{mode.description}</small>
                   </span>
                   {mode.available
-                    ? <span className={`flex items-center gap-2 text-xs font-bold whitespace-nowrap transition-[color,transform] group-hover:translate-x-1 max-[560px]:text-[0px] ${active ? "text-[#d9bd7c]" : "text-[#716b5f]"}`} aria-hidden="true">시작하기 <ArrowRight className="max-[560px]:size-[18px]" size={20} weight="bold" /></span>
+                    ? <span className={`flex items-center gap-2 text-xs font-bold whitespace-nowrap transition-colors duration-200 max-[560px]:text-[0px] ${active ? "text-[#d9bd7c]" : "text-[#716b5f]"}`} aria-hidden="true">시작하기 <ArrowRight className="max-[560px]:size-[18px]" size={20} weight="bold" /></span>
                     : <span className="rounded-full border border-[rgba(210,193,158,.2)] px-[9px] py-1.5 text-[10px] leading-none font-bold whitespace-nowrap text-[#a59a83]">준비 중</span>}
                 </button>
               );
