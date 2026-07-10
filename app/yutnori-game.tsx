@@ -1,6 +1,7 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Html, OrbitControls, RoundedBox } from "@react-three/drei";
 import { ConvexHullCollider, CuboidCollider, Physics, RigidBody, type RapierRigidBody } from "@react-three/rapier";
+import { josa, susa } from "es-hangul";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import {
@@ -33,6 +34,7 @@ type MovePreview = {
   key: string;
   position: [number, number, number];
   label: string;
+  action: "잡기!" | "업기!" | null;
   color: string;
 };
 type ActiveMove = {
@@ -68,6 +70,7 @@ const RESULT_BY_FLATS: Record<number, ThrowResult> = {
 };
 
 const BACKDO_RESULT: ThrowResult = { name: "빽도", steps: -1, flats: 1, extraThrow: false };
+const PHYSICS_THROW_TIMEOUT_MS = 15000;
 
 function ThrowResultEffect({ effect }: { effect: NonNullable<ThrowResultEffectState> }) {
   const accent = effect.result.steps < 0
@@ -158,7 +161,14 @@ function MoveDestinationPreview({ preview }: { preview: MovePreview }) {
       </mesh>
       <pointLight color={preview.color} intensity={1.8} distance={2.1} position={[0, 0.42, 0]} />
       <Html center position={[0, 0.72, 0]} distanceFactor={8.5} style={{ pointerEvents: "none" }}>
-        <span className="move-preview-badge">{preview.label}</span>
+        <div className="move-preview-labels">
+          <span className="move-preview-badge">{preview.label}</span>
+          {preview.action && (
+            <span className={`move-preview-action ${preview.action === "잡기!" ? "capture" : "stack"}`}>
+              {preview.action}
+            </span>
+          )}
+        </div>
       </Html>
     </group>
   );
@@ -412,40 +422,105 @@ function PhysicsYutStick({
   onSleep: (index: number, body: RapierRigidBody) => void;
 }) {
   const body = useRef<RapierRigidBody>(null);
-  const initial = useMemo(() => {
+  const preparing = useRef(false);
+  const prepareElapsed = useRef(0);
+  const prepareStart = useRef(new THREE.Vector3());
+  const prepareEnd = useRef(new THREE.Vector3());
+  const prepareStartRotation = useRef(new THREE.Quaternion());
+  const prepareEndRotation = useRef(new THREE.Quaternion());
+  const launchVelocity = useRef(new THREE.Vector3());
+  const launchAngularVelocity = useRef(new THREE.Vector3());
+  const launchAfterPrepare = useRef(false);
+  const idlePosition = useMemo(
+    () => [(index - 1.5) * 0.76, 0.325, 0] as [number, number, number],
+    [index],
+  );
+
+  useEffect(() => {
+    const rigidBody = body.current;
+    if (!rigidBody) return;
+
+    const translation = rigidBody.translation();
+    const rotation = rigidBody.rotation();
+    prepareStart.current.set(translation.x, translation.y, translation.z);
+    prepareStartRotation.current.set(rotation.x, rotation.y, rotation.z, rotation.w);
+    launchAfterPrepare.current = nonce > 0;
+
     if (nonce === 0) {
-      return {
-        position: [(index - 1.5) * 0.76, 0.325, 0] as [number, number, number],
-        rotation: [Math.PI, 0, 0] as [number, number, number],
-        linearVelocity: [0, 0, 0] as [number, number, number],
-        angularVelocity: [0, 0, 0] as [number, number, number],
-      };
+      prepareEnd.current.set(...idlePosition);
+      prepareEndRotation.current.setFromEuler(new THREE.Euler(Math.PI, 0, 0));
+      launchVelocity.current.set(0, 0, 0);
+      launchAngularVelocity.current.set(0, 0, 0);
+    } else {
+      const direction = index - 1.5;
+      prepareEnd.current.set(direction * 0.95, 1.32 + (index % 2) * 0.22, 1.15);
+      prepareEndRotation.current.setFromEuler(new THREE.Euler(
+        (Math.random() - 0.5) * 0.34,
+        (Math.random() - 0.5) * 0.12,
+        (Math.random() - 0.5) * 0.22,
+      ));
+      launchVelocity.current.set(
+        direction * 1.02 + (Math.random() - 0.5) * 0.95,
+        9.1 + Math.random() * 1.7,
+        -1.75 + (Math.random() - 0.5) * 1.6,
+      );
+      launchAngularVelocity.current.set(
+        (Math.random() - 0.5) * 36,
+        (Math.random() - 0.5) * 26,
+        (Math.random() - 0.5) * 36,
+      );
     }
-    const direction = index - 1.5;
-    return {
-      position: [direction * 0.95, 1.32 + (index % 2) * 0.22, 1.15] as [number, number, number],
-      rotation: [(Math.random() - 0.5) * 0.34, (Math.random() - 0.5) * 0.12, (Math.random() - 0.5) * 0.22] as [number, number, number],
-      linearVelocity: [direction * 0.95 + (Math.random() - 0.5) * 0.9, 7.8 + Math.random() * 1.4, -1.6 + (Math.random() - 0.5) * 1.5] as [number, number, number],
-      angularVelocity: [(Math.random() - 0.5) * 26, (Math.random() - 0.5) * 18, (Math.random() - 0.5) * 26] as [number, number, number],
-    };
-  }, [index, nonce]);
+
+    preparing.current = true;
+    prepareElapsed.current = 0;
+    rigidBody.setGravityScale(0, true);
+    rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    rigidBody.wakeUp();
+  }, [idlePosition, index, nonce]);
+
+  useFrame((_, delta) => {
+    const rigidBody = body.current;
+    if (!rigidBody || !preparing.current) return;
+
+    prepareElapsed.current = Math.min(0.58, prepareElapsed.current + delta);
+    const t = prepareElapsed.current / 0.58;
+    const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const position = prepareStart.current.clone().lerp(prepareEnd.current, eased);
+    position.y += Math.sin(Math.PI * t) * 0.52;
+    const rotation = prepareStartRotation.current.clone().slerp(prepareEndRotation.current, eased);
+    rigidBody.setTranslation(position, true);
+    rigidBody.setRotation(rotation, true);
+    rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
+    rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
+
+    if (t < 1) return;
+    preparing.current = false;
+    rigidBody.setTranslation(prepareEnd.current, true);
+    rigidBody.setRotation(prepareEndRotation.current, true);
+    if (launchAfterPrepare.current) {
+      rigidBody.setGravityScale(1, true);
+      rigidBody.setLinvel(launchVelocity.current, true);
+      rigidBody.setAngvel(launchAngularVelocity.current, true);
+    } else {
+      rigidBody.sleep();
+    }
+  });
 
   return (
     <RigidBody
       ref={body}
-      type={nonce === 0 ? "fixed" : "dynamic"}
+      type="dynamic"
       colliders={false}
-      position={initial.position}
-      rotation={initial.rotation}
-      linearVelocity={initial.linearVelocity}
-      angularVelocity={initial.angularVelocity}
+      position={idlePosition}
+      rotation={[Math.PI, 0, 0]}
       friction={0.92}
       restitution={0.34}
       linearDamping={0.3}
       angularDamping={0.48}
       ccd
       canSleep
-      onSleep={() => body.current && onSleep(index, body.current)}
+      onSleep={() => !preparing.current && body.current && onSleep(index, body.current)}
     >
       <ConvexHullCollider args={[YUT_COLLIDER_VERTICES]} friction={0.92} restitution={0.34} contactSkin={0.028} />
       <YutStickMesh backdo={index === 0} />
@@ -457,10 +532,12 @@ function YutPhysics({
   rolling,
   nonce,
   onSettled,
+  onTimeout,
 }: {
   rolling: boolean;
   nonce: number;
   onSettled: (flats: number, backdo: boolean) => void;
+  onTimeout: () => void;
 }) {
   const outcomes = useRef<(boolean | null)[]>([null, null, null, null]);
   const retries = useRef([0, 0, 0, 0]);
@@ -471,6 +548,14 @@ function YutPhysics({
     retries.current = [0, 0, 0, 0];
     completed.current = false;
   }, [nonce]);
+
+  useEffect(() => {
+    if (!rolling || nonce === 0) return;
+    const timeout = window.setTimeout(() => {
+      if (!completed.current) onTimeout();
+    }, PHYSICS_THROW_TIMEOUT_MS);
+    return () => window.clearTimeout(timeout);
+  }, [nonce, onTimeout, rolling]);
 
   const handleSleep = useCallback((index: number, body: RapierRigidBody) => {
     if (!rolling || completed.current) return;
@@ -498,13 +583,13 @@ function YutPhysics({
     <Physics key="world-y0-v2" gravity={[0, -12.8, 0]} timeStep={1 / 60} paused={!rolling && nonce === 0}>
       <RigidBody type="fixed" colliders={false}>
         <CuboidCollider args={[5.74, 0.13, 5.54]} position={[0, -0.13, 0]} friction={0.95} restitution={0.2} />
-        <CuboidCollider args={[0.2, 3.2, 5.75]} position={[-5.72, 3.2, 0]} friction={0.72} restitution={0.22} />
-        <CuboidCollider args={[0.2, 3.2, 5.75]} position={[5.72, 3.2, 0]} friction={0.72} restitution={0.22} />
-        <CuboidCollider args={[5.75, 3.2, 0.2]} position={[0, 3.2, -5.52]} friction={0.72} restitution={0.22} />
-        <CuboidCollider args={[5.75, 3.2, 0.2]} position={[0, 3.2, 5.52]} friction={0.72} restitution={0.22} />
+        <CuboidCollider args={[0.28, 5.5, 5.9]} position={[-5.72, 5.5, 0]} friction={0.72} restitution={0.2} />
+        <CuboidCollider args={[0.28, 5.5, 5.9]} position={[5.72, 5.5, 0]} friction={0.72} restitution={0.2} />
+        <CuboidCollider args={[5.95, 5.5, 0.28]} position={[0, 5.5, -5.52]} friction={0.72} restitution={0.2} />
+        <CuboidCollider args={[5.95, 5.5, 0.28]} position={[0, 5.5, 5.52]} friction={0.72} restitution={0.2} />
       </RigidBody>
       {[0, 1, 2, 3].map((index) => (
-        <PhysicsYutStick key={`${nonce}-${index}`} index={index} nonce={nonce} onSleep={handleSleep} />
+        <PhysicsYutStick key={index} index={index} nonce={nonce} onSleep={handleSleep} />
       ))}
     </Physics>
   );
@@ -515,6 +600,7 @@ function Scene({
   rolling,
   nonce,
   onSettled,
+  onRollTimeout,
   hoveredToken,
   movePreviews,
   activeMove,
@@ -524,6 +610,7 @@ function Scene({
   rolling: boolean;
   nonce: number;
   onSettled: (flats: number, backdo: boolean) => void;
+  onRollTimeout: () => void;
   hoveredToken: HoveredToken;
   movePreviews: MovePreview[];
   activeMove: ActiveMove;
@@ -565,7 +652,11 @@ function Scene({
               && (hoveredToken.piece === piece || (hoveredState ? sameStack(state, hoveredState) : false));
             const isMovingPiece = activeMove?.player === player && activeMove.pieces.includes(piece);
             const movingStackSlot = isMovingPiece ? activeMove.pieces.indexOf(piece) : 0;
-            const stackLabel = placement.count > 1 && placement.slot === placement.count - 1
+            const hasMovePreviewAtPosition = movePreviews.some((preview) => (
+              Math.abs(preview.position[0] - placement.position[0]) < 0.1
+              && Math.abs(preview.position[2] - placement.position[2]) < 0.1
+            ));
+            const stackLabel = !hasMovePreviewAtPosition && placement.count > 1 && placement.slot === placement.count - 1
               ? placement.members.map((member) => `${player === 0 ? "청" : "홍"}${member + 1}`).join(" + ")
               : null;
             return (
@@ -593,6 +684,7 @@ function Scene({
         rolling={rolling}
         nonce={nonce}
         onSettled={onSettled}
+        onTimeout={onRollTimeout}
       />
 
       <ContactShadows position={[0, -0.37, 0]} opacity={0.48} scale={18} blur={2.6} far={8} />
@@ -678,6 +770,11 @@ export default function YutnoriGame() {
                 ? choice === "shortcut" ? "빠른 길 도착" : "돌아가는 길 도착"
                 : choice === "shortcut" ? "지름길 도착" : "바깥길 도착"
               : `${result.name} 도착`,
+        action: resolution.capturedPieces.length > 0
+          ? "잡기!"
+          : resolution.stackedPieces.length > 0
+            ? "업기!"
+            : null,
         color: choice === "shortcut" ? "#f2cb72" : PLAYERS[current].glow,
       };
     });
@@ -690,6 +787,10 @@ export default function YutnoriGame() {
     setNonce((value) => value + 1);
     setPhase("rolling");
   };
+
+  const retryTimedOutThrow = useCallback(() => {
+    setNonce((value) => value + 1);
+  }, []);
 
   const settleThrow = useCallback((flats: number, backdo: boolean) => {
     const nextResult = backdo ? BACKDO_RESULT : RESULT_BY_FLATS[flats];
@@ -778,12 +879,13 @@ export default function YutnoriGame() {
     const nextPlayer = gotExtraThrow ? current : otherPlayer;
     const messages: string[] = [];
     if (resolution.stackedPieces.length > 0) {
-      messages.push(`같은 편 ${resolution.stackedPieces.length + resolution.movedPieces.length}말을 업었습니다`);
+      const stackedCount = resolution.stackedPieces.length + resolution.movedPieces.length;
+      messages.push(`같은 편 ${josa(`${susa(stackedCount, true)} 말`, "을/를")} 업었습니다`);
     }
     if (resolution.capturedPieces.length > 0) {
-      messages.push(`상대 ${resolution.capturedPieces.length}말을 잡아 한 번 더 던집니다`);
+      messages.push(`상대 ${josa(`${susa(resolution.capturedPieces.length, true)} 말`, "을/를")} 잡아 한 번 더 던집니다`);
     } else if (result.extraThrow) {
-      messages.push(`${result.name}이 나와 한 번 더 던집니다`);
+      messages.push(`${josa(result.name, "이/가")} 나와 한 번 더 던집니다`);
     }
 
     moveId.current += 1;
@@ -852,7 +954,7 @@ export default function YutnoriGame() {
             ? activeMove?.stage === "capture-return"
               ? "잡힌 말이 대기석으로 돌아가는 중"
               : "잡는 말이 도착 칸으로 이동하는 중"
-            : `${PLAYERS[winner ?? 0].name}이 네 말을 모두 냈습니다`;
+            : `${josa(PLAYERS[winner ?? 0].name, "이/가")} 네 말을 모두 냈습니다`;
 
   return (
     <main className="game-shell">
@@ -883,6 +985,7 @@ export default function YutnoriGame() {
                   rolling={phase === "rolling"}
                   nonce={nonce}
                   onSettled={settleThrow}
+                  onRollTimeout={retryTimedOutThrow}
                   hoveredToken={hoveredToken}
                   movePreviews={movePreviews}
                   activeMove={activeMove}
@@ -920,7 +1023,7 @@ export default function YutnoriGame() {
                       {group.length > 1 && !follower
                         ? group.map((member) => `말 ${member + 1}`).join(" + ")
                         : `말 ${index + 1}`}
-                      <span>{follower ? `말 ${leader + 1}과 업힘` : pieceProgressLabel(piece)}</span>
+                      <span>{follower ? `${josa(`${leader + 1}번 말`, "와/과")} 업힘` : pieceProgressLabel(piece)}</span>
                     </button>
                   );
                 })}
