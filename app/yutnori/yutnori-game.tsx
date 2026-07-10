@@ -374,10 +374,10 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
 
   const statusText = phase === "ready"
     ? isAiTurn
-      ? notice || "홍군 AI가 윷을 준비하는 중"
+      ? notice || "홍팀 AI가 윷을 준비하는 중"
       : notice || `${PLAYERS[current].name}의 차례입니다`
     : phase === "rolling"
-      ? isAiTurn ? "홍군 AI가 던진 윷을 판정하는 중" : "윷이 안정될 때까지 기다리는 중"
+      ? isAiTurn ? "홍팀 AI가 던진 윷을 판정하는 중" : "윷이 안정될 때까지 기다리는 중"
       : phase === "move"
         ? isAiTurn
           ? aiDecision ? `AI 판단 · ${aiDecision.reason}` : "AI가 최선의 수를 계산하는 중"
@@ -460,7 +460,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
               <div className="flex min-w-[310px] flex-[1.35] items-center gap-4 px-8 py-4 max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:gap-2 max-[760px]:px-3.5 max-[760px]:py-2" aria-live="polite">
                 <span className="grid size-10 shrink-0 place-items-center rounded-full border border-[rgba(226,162,143,.34)] text-[11px] font-black text-[#e2a294] max-[760px]:size-8">AI</span>
                 <div>
-                  <small className="mb-1 block text-[9px] leading-none font-semibold tracking-[.1em] text-[#b99b91]">홍군의 선택</small>
+                  <small className="mb-1 block text-[9px] leading-none font-semibold tracking-[.1em] text-[#b99b91]">홍팀의 선택</small>
                   <strong className="block whitespace-nowrap text-sm leading-[1.2] font-extrabold text-[#efd6cb] max-[760px]:max-w-[68vw] max-[760px]:overflow-hidden max-[760px]:text-[11px] max-[760px]:text-ellipsis">{aiDecision?.reason ?? "수를 읽는 중"}</strong>
                 </div>
               </div>

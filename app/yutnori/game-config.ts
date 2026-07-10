@@ -1,8 +1,8 @@
 import type { ThrowResult } from "./game-types";
 
 export const PLAYERS = [
-  { name: "청군", color: "#174c6b", glow: "#8bc0d4" },
-  { name: "홍군", color: "#a63f31", glow: "#e6a28f" },
+  { name: "청팀", color: "#174c6b", glow: "#8bc0d4" },
+  { name: "홍팀", color: "#a63f31", glow: "#e6a28f" },
 ] as const;
 
 export const RESULT_BY_FLATS: Record<number, ThrowResult> = {
