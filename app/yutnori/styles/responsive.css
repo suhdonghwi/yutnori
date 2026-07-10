@@ -1,0 +1,42 @@
+@media (max-width: 760px) {
+  .topbar { padding: 8px 12px 10px; }
+  .topbar .brand-mark { width: 32px; height: 32px; font-size: 15px; }
+  .topbar h1 { font-size: 20px; }
+  .eyebrow { display: none; }
+  .topbar .reset-button { padding: 6px 11px; font-size: 12px; }
+
+  .player-card {
+    top: 72px;
+    width: 158px;
+    padding: 9px 10px;
+    gap: 8px;
+  }
+  .player-card.blue { left: 10px; }
+  .player-card.red { right: 10px; }
+  .player-seal { width: 37px; height: 37px; font-size: 16px; }
+  .player-card strong { font-size: 16px; }
+  .player-card small, .finished-count { display: none; }
+  .player-card.active::after { display: none; }
+
+  .control-panel {
+    bottom: 8px;
+    width: calc(100% - 16px);
+    min-height: 72px;
+    padding: 10px 10px 10px 14px;
+    gap: 8px;
+    border-radius: 17px;
+  }
+  .turn-copy { gap: 9px; }
+  .turn-copy strong { max-width: 42vw; font-size: 14px; }
+  .throw-button { min-width: 126px; height: 50px; padding-left: 14px; }
+  .piece-actions { grid-template-columns: repeat(2, 1fr); }
+  .piece-actions button { padding: 5px; }
+  .route-actions { grid-template-columns: 1fr 1fr; gap: 5px; }
+  .route-actions button { min-width: 0; padding: 7px 6px; font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  .throw-result-effect, .throw-result-effect::before, .throw-result-seal { animation: none !important; opacity: 1; }
+  .throw-result-rays { display: none; }
+}

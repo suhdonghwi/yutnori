@@ -1,0 +1,44 @@
+:root {
+  --ink: #201a15;
+  --paper: #e5d3a8;
+  --night: #0d1713;
+  --blue: #174c6b;
+  --red: #a63f31;
+  --font-primary: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", sans-serif;
+  --font-geist-sans: var(--font-primary);
+  --font-noto-serif-kr: var(--font-primary);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  background: var(--night);
+  color: #f3e6c8;
+  font-family: var(--font-noto-serif-kr), "Apple SD Gothic Neo", serif;
+}
+
+button { font: inherit; }
+
+.game-shell {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(102, 75, 44, .24), transparent 38%),
+    linear-gradient(135deg, #13221b 0%, #0a120f 48%, #111b17 100%);
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+}
+
