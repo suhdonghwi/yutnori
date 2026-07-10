@@ -98,13 +98,13 @@ function Token({ position, color, offset, finished }: { position: [number, numbe
 
 function XMark({ z }: { z: number }) {
   return (
-    <group position={[0, -0.018, z]}>
+    <group position={[0, 0.304, z]}>
       <mesh rotation={[0, Math.PI / 4, 0]} castShadow>
-        <boxGeometry args={[0.055, 0.025, 0.36]} />
+        <boxGeometry args={[0.052, 0.018, 0.32]} />
         <meshStandardMaterial color="#17130f" roughness={0.82} />
       </mesh>
       <mesh rotation={[0, -Math.PI / 4, 0]} castShadow>
-        <boxGeometry args={[0.055, 0.025, 0.36]} />
+        <boxGeometry args={[0.052, 0.018, 0.32]} />
         <meshStandardMaterial color="#17130f" roughness={0.82} />
       </mesh>
     </group>
@@ -254,11 +254,11 @@ function Scene({ pieces, rolling, nonce, onSettled }: { pieces: number[][]; roll
   function piecePosition(player: number, piece: number, step: number): [number, number, number] {
     if (step < 0) {
       const side = player === 0 ? -1 : 1;
-      return [side * (5.35 + (piece % 2) * 0.58), 0.06, 1.2 - Math.floor(piece / 2) * 0.68];
+      return [side * 5.05, 0.06, 1.35 - piece * 0.72];
     }
     if (step >= 20) {
       const side = player === 0 ? -1 : 1;
-      return [side * (5.35 + (piece % 2) * 0.58), 0.06, -1.4 - Math.floor(piece / 2) * 0.68];
+      return [side * 5.05, 0.06, -1.35 - piece * 0.62];
     }
     const base = TRACK[step];
     const occupiedBefore = pieces[player].slice(0, piece).filter((value) => value === step).length;
@@ -400,7 +400,7 @@ export default function YutnoriGame() {
 
         <div className="board-wrap">
           <div className="canvas-wrap">
-            <Canvas shadows dpr={[1, 1.7]} camera={{ position: [0, 9.6, 10.4], fov: 43 }}>
+            <Canvas shadows dpr={[1, 1.6]} camera={{ position: [0, 10.8, 11.8], fov: 44 }}>
               <Suspense fallback={null}>
                 <Scene pieces={pieces} rolling={phase === "rolling"} nonce={nonce} onSettled={settleThrow} />
               </Suspense>

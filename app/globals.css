@@ -213,6 +213,157 @@ footer p { margin: 0; }
   footer span { display: none; }
 }
 
+/* Full-screen game surface: the canvas fills the viewport and UI floats above it. */
+.game-shell {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100svh;
+  min-height: 0;
+  display: block;
+}
+
+.topbar {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  margin: 0;
+  padding: 20px 28px 18px;
+  pointer-events: none;
+  border-bottom-color: rgba(227, 204, 158, .12);
+  background: linear-gradient(180deg, rgba(8, 15, 12, .92), rgba(8, 15, 12, .48) 72%, transparent);
+}
+
+.topbar > * { pointer-events: auto; }
+
+.game-layout {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.board-wrap {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  min-width: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.canvas-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  pointer-events: auto;
+}
+
+.canvas-wrap canvas { touch-action: none; }
+.board-caption { display: none; }
+
+.player-card {
+  position: absolute;
+  z-index: 12;
+  top: 94px;
+  width: 224px;
+  min-height: 0;
+  padding: 12px 14px;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 12px;
+  text-align: left;
+  border-radius: 17px;
+  background: rgba(13, 22, 18, .78);
+  box-shadow: 0 14px 38px rgba(0,0,0,.28);
+  backdrop-filter: blur(16px);
+  pointer-events: auto;
+  transform: none;
+}
+
+.player-card.blue { left: 28px; }
+.player-card.red { right: 28px; }
+.player-card.active { transform: none; }
+
+.player-seal {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 19px;
+}
+
+.player-card strong { font-size: 19px; }
+.finished-count {
+  width: auto;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  white-space: nowrap;
+  font-size: 10px;
+}
+
+.control-panel {
+  position: absolute;
+  z-index: 14;
+  left: 50%;
+  bottom: 22px;
+  width: min(760px, calc(100% - 36px));
+  min-height: 84px;
+  margin: 0;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  border-radius: 22px;
+  background: rgba(13, 20, 16, .88);
+  box-shadow: 0 24px 70px rgba(0,0,0,.45);
+}
+
+footer { display: none; }
+
+@media (max-width: 760px) {
+  .topbar { padding: 14px 16px 22px; }
+  .brand-mark { width: 39px; height: 39px; font-size: 18px; }
+  .topbar h1 { font-size: 23px; }
+  .eyebrow { display: none; }
+  .reset-button { padding: 8px 13px; }
+
+  .player-card {
+    top: 72px;
+    width: 158px;
+    padding: 9px 10px;
+    gap: 8px;
+  }
+  .player-card.blue { left: 10px; }
+  .player-card.red { right: 10px; }
+  .player-seal { width: 37px; height: 37px; font-size: 16px; }
+  .player-card strong { font-size: 16px; }
+  .player-card small, .finished-count { display: none; }
+  .player-card.active::after { display: none; }
+
+  .control-panel {
+    bottom: 8px;
+    width: calc(100% - 16px);
+    min-height: 72px;
+    padding: 10px 10px 10px 14px;
+    gap: 8px;
+    border-radius: 17px;
+  }
+  .turn-copy { gap: 9px; }
+  .turn-copy strong { max-width: 42vw; font-size: 14px; }
+  .throw-button { min-width: 126px; height: 50px; padding-left: 14px; }
+  .piece-actions { grid-template-columns: repeat(2, 1fr); }
+  .piece-actions button { padding: 5px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
