@@ -144,7 +144,7 @@ function FlatBackdoX({ glowing }: { glowing: boolean }) {
   );
 }
 
-function YutStickMesh({ backdo = false, backdoGlow = false }: { backdo?: boolean; backdoGlow?: boolean }) {
+export function YutStickMesh({ backdo = false, backdoGlow = false }: { backdo?: boolean; backdoGlow?: boolean }) {
   return (
     <group>
       <mesh geometry={YUT_GEOMETRY} castShadow receiveShadow>

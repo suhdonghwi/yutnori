@@ -54,6 +54,28 @@ function BoardPathSegment({ from, to }: { from: [number, number, number]; to: [n
   );
 }
 
+export function BoardSurface() {
+  return (
+    <group>
+      <RoundedBox args={[12.2, 0.5, 11.8]} radius={0.18} smoothness={6} position={[0, -0.35, 0]} receiveShadow castShadow>
+        <meshStandardMaterial color="#563721" roughness={0.82} />
+      </RoundedBox>
+      <mesh position={[0, -0.09, 0]} receiveShadow>
+        <boxGeometry args={[11.55, 0.18, 11.15]} />
+        <meshStandardMaterial color="#d2bc88" roughness={0.94} />
+      </mesh>
+
+      {BOARD_EDGES.map(([from, to]) => (
+        <BoardPathSegment key={`${from}-${to}`} from={NODE_POSITIONS[from]} to={NODE_POSITIONS[to]} />
+      ))}
+
+      {BOARD_NODE_IDS.map((node) => (
+        <BoardNode key={node} position={NODE_POSITIONS[node]} major={MAJOR_NODE_IDS.has(node)} />
+      ))}
+    </group>
+  );
+}
+
 function PreviewPathSegment({ from, to, color }: { from: [number, number, number]; to: [number, number, number]; color: string }) {
   const material = useRef<THREE.MeshBasicMaterial>(null);
   const dx = to[0] - from[0];
@@ -340,17 +362,7 @@ export function Scene({
       <pointLight position={[-6, 4, -4]} intensity={16} color="#87512d" distance={14} />
 
       <group>
-        <RoundedBox args={[12.2, 0.5, 11.8]} radius={0.18} smoothness={6} position={[0, -0.35, 0]} receiveShadow castShadow>
-          <meshStandardMaterial color="#563721" roughness={0.82} />
-        </RoundedBox>
-        <mesh position={[0, -0.09, 0]} receiveShadow>
-          <boxGeometry args={[11.55, 0.18, 11.15]} />
-          <meshStandardMaterial color="#d2bc88" roughness={0.94} />
-        </mesh>
-
-        {BOARD_EDGES.map(([from, to]) => (
-          <BoardPathSegment key={`${from}-${to}`} from={NODE_POSITIONS[from]} to={NODE_POSITIONS[to]} />
-        ))}
+        <BoardSurface />
 
         {movePreviews.flatMap((preview) => preview.pathNodes.slice(1).map((node, index) => (
           <PreviewPathSegment
@@ -368,10 +380,6 @@ export function Scene({
             color={preview.color}
           />
         )))}
-
-        {BOARD_NODE_IDS.map((node) => (
-          <BoardNode key={node} position={NODE_POSITIONS[node]} major={MAJOR_NODE_IDS.has(node)} />
-        ))}
 
         {movePreviews.map((preview) => (
           <MoveDestinationPreview key={preview.key} preview={preview} />

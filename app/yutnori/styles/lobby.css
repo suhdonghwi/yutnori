@@ -1,23 +1,9 @@
 .lobby-shell {
   background:
-    radial-gradient(circle at 76% 45%, rgba(104, 62, 34, .28), transparent 31%),
-    radial-gradient(circle at 22% 12%, rgba(31, 82, 70, .24), transparent 34%),
+    radial-gradient(circle at 76% 44%, rgba(104, 62, 34, .22), transparent 35%),
+    radial-gradient(circle at 19% 14%, rgba(31, 82, 70, .2), transparent 36%),
     linear-gradient(135deg, #14231c 0%, #09110e 55%, #121a16 100%);
 }
-
-.lobby-visual::before { content: ""; position: absolute; width: min(480px, 42vw); height: 190px; bottom: 60px; border-radius: 50%; background: radial-gradient(ellipse, rgba(0,0,0,.55), transparent 68%); }
-.lobby-board-art { position: relative; width: min(470px, 42vw); aspect-ratio: 1; transform-style: preserve-3d; transform: rotateX(54deg) rotateZ(-8deg) translateY(-12px); filter: drop-shadow(0 34px 35px rgba(0,0,0,.34)); }
-.lobby-board-art::after { content: ""; position: absolute; z-index: -1; inset: 4%; border-radius: 30px; background: #3e281b; transform: translateZ(-14px); box-shadow: 0 0 0 1px rgba(237,201,127,.12); }
-.lobby-board-map { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.art-frame { fill: #563822; stroke: rgba(238,205,138,.22); stroke-width: 2; }
-.art-paper { fill: #cdbb88; stroke: rgba(255,239,194,.28); stroke-width: 2; }
-.art-route { stroke: #3c281e; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; opacity: .88; }
-.art-nodes circle { fill: #79502f; stroke: #3b281e; stroke-width: 4; }
-.art-nodes.major circle { fill: #d7be7f; stroke-width: 8; }
-.art-piece { position: absolute; z-index: 3; width: 46px; height: 46px; border-radius: 50%; transform: translateZ(26px); box-shadow: inset 0 0 0 7px rgba(255,255,255,.09), 7px 12px 15px rgba(0,0,0,.28); }
-.art-piece i { position: absolute; inset: 11px; border: 2px solid rgba(255,255,255,.18); border-radius: 50%; }
-.blue-piece { left: 25%; top: 58%; background: #174c6b; }
-.red-piece { right: 22%; top: 30%; background: #a63f31; }
 
 .rules-backdrop { animation: rules-in .18s ease-out both; }
 @keyframes rules-in { from { opacity: 0; } }

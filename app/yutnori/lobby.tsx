@@ -1,4 +1,6 @@
+import { ArrowRight, BookOpen, GlobeHemisphereWest, Robot, UsersThree } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
+import { LobbyScene, type LobbyPreviewMode } from "./lobby-scene";
 
 type LobbyProps = {
   onStartLocal: () => void;
@@ -8,21 +10,21 @@ type LobbyProps = {
 const PLAY_MODES = [
   {
     id: "local",
-    badge: "2P",
+    icon: UsersThree,
     title: "로컬 대전",
     description: "한 기기에서 두 사람이 번갈아 플레이합니다.",
     available: true,
   },
   {
     id: "online",
-    badge: "ON",
+    icon: GlobeHemisphereWest,
     title: "온라인 대전",
     description: "친구를 초대하거나 다른 플레이어와 대전합니다.",
     available: false,
   },
   {
     id: "ai",
-    badge: "AI",
+    icon: Robot,
     title: "AI 대전",
     description: "컴퓨터 상대와 혼자서 대전합니다.",
     available: true,
@@ -99,60 +101,54 @@ function RulesDialog({ onClose }: { onClose: () => void }) {
 
 export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
   const [showRules, setShowRules] = useState(false);
+  const [previewMode, setPreviewMode] = useState<LobbyPreviewMode>("local");
 
   return (
-    <main className="lobby-shell relative min-h-svh overflow-hidden text-[#f3e6c8] max-[900px]:overflow-auto">
+    <main className="lobby-shell relative min-h-svh overflow-hidden text-[#f3e6c8] max-[820px]:overflow-auto">
       <div className="grain" aria-hidden="true" />
-      <section className="relative z-2 mx-auto grid min-h-svh w-[min(1240px,calc(100%-48px))] grid-cols-[minmax(430px,.95fr)_minmax(420px,1.05fr)] items-center gap-[clamp(28px,6vw,92px)] py-[42px] pb-[68px] max-[900px]:w-[min(680px,calc(100%-36px))] max-[900px]:grid-cols-1 max-[900px]:pt-[54px] max-[560px]:w-[calc(100%-28px)] max-[560px]:py-[38px] max-[560px]:pb-[74px]">
-        <div className="max-w-[610px] max-[900px]:max-w-none">
-          <h1 className="m-0 text-[clamp(46px,5.2vw,76px)] leading-[1.04] font-black tracking-[-.015em] text-[#fff0cf] text-balance max-[560px]:text-[clamp(40px,12vw,56px)]">한 판 윷놀이</h1>
-
-          <div className="mt-[30px] grid gap-2.5" aria-label="플레이 모드 선택">
-            {PLAY_MODES.map((mode) => (
-              <button
-                key={mode.id}
-                className={`relative grid min-h-[88px] w-full grid-cols-[58px_minmax(0,1fr)_auto] items-center gap-3.5 rounded-[17px] border px-[18px] py-3.5 pl-3.5 text-left text-[#e9dabc] transition duration-200 max-[560px]:min-h-[82px] max-[560px]:grid-cols-[50px_minmax(0,1fr)_auto] max-[560px]:gap-[11px] max-[560px]:p-3 ${mode.available ? "cursor-pointer border-[rgba(222,190,121,.42)] bg-[linear-gradient(110deg,rgba(167,122,49,.22),rgba(255,255,255,.045))] shadow-[inset_3px_0_#d6b667] hover:translate-x-[5px] hover:border-[rgba(233,204,137,.78)] hover:bg-[linear-gradient(110deg,rgba(167,122,49,.34),rgba(255,255,255,.07))]" : "cursor-not-allowed border-[rgba(224,199,148,.16)] bg-white/[.035] opacity-48"}`}
-                type="button"
-                disabled={!mode.available}
-                onClick={mode.id === "local" ? onStartLocal : mode.id === "ai" ? onStartAi : undefined}
-              >
-                <span className="grid size-[58px] place-items-center rounded-[14px] bg-[rgba(209,173,94,.12)] text-[15px] leading-none font-black tracking-[-.03em] text-[#f3dfaf] max-[560px]:size-[50px] max-[560px]:rounded-xl max-[560px]:text-[13px]" aria-hidden="true">{mode.badge}</span>
-                <span className="min-w-0">
-                  <strong className="mb-1.5 block text-[19px] leading-none font-extrabold tracking-[-.03em] text-[#f4e5c5] max-[560px]:text-[17px]">{mode.title}</strong>
-                  <small className="block overflow-hidden text-xs leading-[1.35] font-medium text-ellipsis whitespace-nowrap text-[#9e9480] max-[560px]:max-w-[190px] max-[560px]:text-[10px]">{mode.description}</small>
-                </span>
-                {mode.available
-                  ? <span className="flex items-center gap-[9px] text-xs leading-none font-extrabold whitespace-nowrap text-[#e0c47e] max-[560px]:text-[0px]" aria-hidden="true">시작하기 <i className="grid size-[30px] place-items-center rounded-full bg-[#d4b66e] text-[17px] leading-none font-black text-[#231c13] max-[560px]:text-base">→</i></span>
-                  : <span className="rounded-full border border-[rgba(210,193,158,.2)] px-[9px] py-1.5 text-[10px] leading-none font-bold whitespace-nowrap text-[#a59a83]">준비 중</span>}
-              </button>
-            ))}
-          </div>
-          <button className="mt-[18px] flex w-max cursor-pointer items-center gap-2 rounded-full border border-[rgba(224,199,148,.25)] bg-white/4 py-[9px] pr-[15px] pl-2.5 text-[13px] leading-none font-bold text-[#d7c8a9] transition duration-200 hover:-translate-y-px hover:border-[rgba(224,199,148,.55)] hover:bg-white/7 max-[560px]:pr-[11px] max-[560px]:text-[11px]" type="button" onClick={() => setShowRules(true)}>
-            <span className="grid size-[25px] place-items-center rounded-full bg-[rgba(215,189,130,.14)] text-sm text-[#e1c98f]" aria-hidden="true">?</span>
-            게임 방법
-          </button>
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-0 w-[64vw] [mask-image:linear-gradient(90deg,transparent_0%,#000_18%,#000_100%)] max-[820px]:top-[76px] max-[820px]:h-[330px] max-[820px]:w-full max-[820px]:opacity-80 max-[820px]:[mask-image:linear-gradient(180deg,#000_0%,#000_72%,transparent_100%)] max-[560px]:h-[285px]" aria-hidden="true">
+        <div className="pointer-events-auto size-full max-[820px]:pointer-events-none">
+          <LobbyScene previewMode={previewMode} />
         </div>
+      </div>
 
-        <div className="lobby-visual relative grid min-h-[590px] place-items-center [perspective:1100px] max-[900px]:hidden" aria-hidden="true">
-          <div className="lobby-board-art">
-            <svg className="lobby-board-map" viewBox="0 0 520 520" fill="none">
-              <rect className="art-frame" x="28" y="28" width="464" height="464" rx="34" />
-              <rect className="art-paper" x="43" y="43" width="434" height="434" rx="25" />
-              <path className="art-route" d="M92 92H428V428H92V92ZM92 92L428 428M428 92L92 428" />
-              <g className="art-nodes minor">
-                <circle cx="159" cy="92" r="8" /><circle cx="226" cy="92" r="8" /><circle cx="294" cy="92" r="8" /><circle cx="361" cy="92" r="8" />
-                <circle cx="428" cy="159" r="8" /><circle cx="428" cy="226" r="8" /><circle cx="428" cy="294" r="8" /><circle cx="428" cy="361" r="8" />
-                <circle cx="361" cy="428" r="8" /><circle cx="294" cy="428" r="8" /><circle cx="226" cy="428" r="8" /><circle cx="159" cy="428" r="8" />
-                <circle cx="92" cy="361" r="8" /><circle cx="92" cy="294" r="8" /><circle cx="92" cy="226" r="8" /><circle cx="92" cy="159" r="8" />
-                <circle cx="176" cy="176" r="7" /><circle cx="344" cy="176" r="7" /><circle cx="176" cy="344" r="7" /><circle cx="344" cy="344" r="7" />
-              </g>
-              <g className="art-nodes major">
-                <circle cx="92" cy="92" r="16" /><circle cx="428" cy="92" r="16" /><circle cx="428" cy="428" r="16" /><circle cx="92" cy="428" r="16" /><circle cx="260" cy="260" r="18" />
-              </g>
-            </svg>
-            <span className="art-piece blue-piece"><i /></span>
-            <span className="art-piece red-piece"><i /></span>
+      <section className="relative z-[2] mx-auto flex min-h-svh w-[min(1240px,calc(100%-64px))] items-center py-12 max-[820px]:w-[min(620px,calc(100%-36px))] max-[820px]:items-start max-[820px]:pt-10 max-[820px]:pb-16 max-[560px]:w-[calc(100%-28px)]">
+        <div className="w-[min(520px,43vw)] max-[820px]:w-full">
+          <h1 className="m-0 text-[clamp(54px,5.5vw,78px)] leading-[1.04] font-black tracking-[.025em] text-[#fff0cf] text-balance max-[820px]:text-[clamp(42px,11vw,60px)]">한 판 윷놀이</h1>
+
+          <div className="mt-10 border-y border-[rgba(224,199,148,.18)] max-[820px]:mt-[305px] max-[560px]:mt-[260px]" aria-label="플레이 모드 선택" onPointerLeave={() => setPreviewMode("local")}>
+            {PLAY_MODES.map((mode) => {
+              const Icon = mode.icon;
+              const active = previewMode === mode.id;
+              return (
+                <button
+                  key={mode.id}
+                  className={`group relative grid min-h-[86px] w-full grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-4 border-b border-[rgba(224,199,148,.12)] bg-transparent px-2 text-left transition-[background-color,border-color,padding] duration-200 last:border-b-0 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#d6b667] max-[560px]:min-h-[78px] max-[560px]:grid-cols-[42px_minmax(0,1fr)_auto] max-[560px]:gap-3 ${mode.available ? "cursor-pointer hover:px-3" : "cursor-not-allowed opacity-[.42]"} ${active && mode.available ? "border-b-[rgba(224,199,148,.28)] bg-[linear-gradient(90deg,rgba(205,166,86,.12),transparent_76%)]" : ""}`}
+                  type="button"
+                  disabled={!mode.available}
+                  onPointerEnter={() => setPreviewMode(mode.id)}
+                  onFocus={() => setPreviewMode(mode.id)}
+                  onClick={mode.id === "local" ? onStartLocal : mode.id === "ai" ? onStartAi : undefined}
+                >
+                  <span className={`grid size-11 place-items-center rounded-full border transition-[color,border-color,background-color,box-shadow] max-[560px]:size-10 ${active && mode.available ? "border-[#d9b96f] bg-[rgba(215,185,111,.12)] text-[#f3dcaa] shadow-[0_0_24px_rgba(215,185,111,.12)]" : "border-[rgba(224,199,148,.2)] text-[#8d8473]"}`} aria-hidden="true">
+                    <Icon size={21} weight={active ? "bold" : "regular"} />
+                  </span>
+                  <span className="min-w-0">
+                    <strong className={`mb-1.5 block text-[19px] leading-none font-extrabold tracking-[-.025em] transition-colors max-[560px]:text-[17px] ${active && mode.available ? "text-[#f5e3bd]" : "text-[#c7baa0]"}`}>{mode.title}</strong>
+                    <small className="block overflow-hidden text-xs leading-[1.35] font-medium text-ellipsis whitespace-nowrap text-[#827a6b] max-[560px]:max-w-[210px] max-[560px]:text-[10px]">{mode.description}</small>
+                  </span>
+                  {mode.available
+                    ? <span className={`flex items-center gap-2 text-xs font-bold whitespace-nowrap transition-[color,transform] group-hover:translate-x-1 max-[560px]:text-[0px] ${active ? "text-[#d9bd7c]" : "text-[#716b5f]"}`} aria-hidden="true">시작하기 <ArrowRight className="max-[560px]:size-[18px]" size={20} weight="bold" /></span>
+                    : <span className="rounded-full border border-[rgba(210,193,158,.2)] px-[9px] py-1.5 text-[10px] leading-none font-bold whitespace-nowrap text-[#a59a83]">준비 중</span>}
+                </button>
+              );
+            })}
           </div>
+
+          <button className="mt-5 flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-[13px] font-bold text-[#aaa087] transition-colors hover:text-[#ead7ad]" type="button" onClick={() => setShowRules(true)}>
+            <BookOpen size={20} weight="regular" aria-hidden="true" />
+            <span className="border-b border-[rgba(224,199,148,.32)] pb-0.5">게임 방법</span>
+          </button>
         </div>
       </section>
 
