@@ -19,5 +19,3 @@ export const BACKDO_RESULT: ThrowResult = {
   flats: 1,
   extraThrow: false,
 };
-
-export const PHYSICS_THROW_TIMEOUT_MS = 15_000;

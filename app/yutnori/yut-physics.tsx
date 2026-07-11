@@ -8,7 +8,6 @@ import {
 } from "@react-three/rapier";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { PHYSICS_THROW_TIMEOUT_MS } from "./game-config";
 import { gameSfx } from "./game-sfx";
 
 function XMark({ z }: { z: number }) {
@@ -331,12 +330,10 @@ export function YutPhysics({
   rolling,
   nonce,
   onSettled,
-  onTimeout,
 }: {
   rolling: boolean;
   nonce: number;
   onSettled: (flats: number, backdo: boolean) => void;
-  onTimeout: () => void;
 }) {
   const outcomes = useRef<(boolean | null)[]>([null, null, null, null]);
   const retries = useRef([0, 0, 0, 0]);
@@ -358,14 +355,6 @@ export function YutPhysics({
     const timeout = window.setTimeout(() => setBackdoGlow(false), 2200);
     return () => window.clearTimeout(timeout);
   }, [backdoGlow]);
-
-  useEffect(() => {
-    if (!rolling || nonce === 0) return;
-    const timeout = window.setTimeout(() => {
-      if (!completed.current) onTimeout();
-    }, PHYSICS_THROW_TIMEOUT_MS);
-    return () => window.clearTimeout(timeout);
-  }, [nonce, onTimeout, rolling]);
 
   const handleImpact = useCallback((position: [number, number, number], intensity: number) => {
     gameSfx.playYutImpact(intensity, THREE.MathUtils.clamp(position[0] / 5.7, -1, 1));

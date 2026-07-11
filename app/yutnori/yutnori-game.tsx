@@ -169,10 +169,6 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
     setPhase("rolling");
   }, [phase]);
 
-  const retryTimedOutThrow = useCallback(() => {
-    setNonce((value) => value + 1);
-  }, []);
-
   const settleThrow = useCallback((flats: number, backdo: boolean) => {
     const nextResult = backdo ? BACKDO_RESULT : RESULT_BY_FLATS[flats];
     gameSfx.playResult(nextResult.steps);
@@ -440,7 +436,6 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
                   rolling={phase === "rolling"}
                   nonce={nonce}
                   onSettled={settleThrow}
-                  onRollTimeout={retryTimedOutThrow}
                   hoveredToken={hoveredToken}
                   movePreviews={movePreviews}
                   activeMove={activeMove}

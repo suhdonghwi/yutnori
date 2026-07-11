@@ -381,7 +381,6 @@ export function Scene({
   rolling,
   nonce,
   onSettled,
-  onRollTimeout,
   hoveredToken,
   movePreviews,
   activeMove,
@@ -391,7 +390,6 @@ export function Scene({
   rolling: boolean;
   nonce: number;
   onSettled: (flats: number, backdo: boolean) => void;
-  onRollTimeout: () => void;
   hoveredToken: HoveredToken;
   movePreviews: MovePreview[];
   activeMove: ActiveMove;
@@ -469,7 +467,6 @@ export function Scene({
         rolling={rolling}
         nonce={nonce}
         onSettled={onSettled}
-        onTimeout={onRollTimeout}
       />
 
       <ContactShadows position={[0, -0.37, 0]} opacity={0.48} scale={18} blur={2.6} far={8} />
