@@ -70,11 +70,11 @@ PostgreSQL
 
 Use two isolated edge networks rather than one common application network:
 
-- `orirang_edge`: gateway plus Orirang HTTP upstreams
+- `orirang_edge`: gateway plus the single Orirang-owned ingress
 - `yutnori_edge`: gateway plus Yutnori HTTP upstreams
 - Orirang's database remains on an Orirang-only backend network.
 
-The gateway is the only container attached to both edge networks. Consequently, a Yutnori container cannot resolve or directly connect to an Orirang container, and vice versa.
+The gateway is the only container attached to both edge networks. On the Orirang side it can resolve only `orirang-ingress`, not the client, API replicas, or PostgreSQL. Consequently, a Yutnori container cannot resolve or directly connect to an Orirang container, and vice versa.
 
 ## 4. Ownership and repository boundaries
 
@@ -193,19 +193,24 @@ The outer gateway intentionally does **not** strip `/yut/` for the static servic
 
 ### 5.3 Orirang route adapter
 
-Move the existing Orirang hostname and upstream routing into its own short adapter. Preserve existing behavior during migration. The cutover must not be used as an opportunity to redesign Orirang behavior.
+Orirang retains its existing Caddy behavior in an internal, application-owned
+`orirang-ingress`. That container owns maintenance mode, `/api/*` and
+`/healthz` dispatch, client fallback, security headers, and API replica health
+checks/load balancing. It joins the private Orirang network plus
+`orirang_edge`, while the underlying client, servers, and database remain off
+the edge network.
 
-The adapter may select a generic static maintenance response through an infrastructure flag or mounted marker. The gateway does not make business decisions about when maintenance is appropriate; the operator controls the flag as part of an approved runbook. The maintenance response contains no application logic and must include HTTP 503 and `Retry-After`.
+The shared gateway adapter is deliberately limited to one transport mapping:
 
-Before cutover, compare the rendered new route with the current production Caddyfile and verify parity for:
+```caddyfile
+orirang.com {
+    reverse_proxy orirang-ingress:80
+}
+```
 
-- `orirang.com`
-- `/api/*`
-- `/healthz`
-- client fallback
-- security headers
-- current maintenance behavior
-- upstream health/load-balancing behavior
+Before cutover, verify behavior parity through `orirang-ingress`, including
+maintenance on/off, API and client routing, security headers, and replica
+health behavior. The gateway must not duplicate any of those rules.
 
 ## 6. Yutnori application changes
 
@@ -443,7 +448,7 @@ The following work is safe to prepare before requesting cutover permission, prov
    docker compose run --rm caddy caddy validate --config /etc/caddy/Caddyfile
    ```
 
-12. Exercise host-based routing against the candidate gateway using explicit `Host` headers, once with maintenance disabled and once with maintenance enabled.
+12. Exercise host-based routing against the candidate gateway using explicit `Host` headers. Toggle maintenance through Orirang's existing command and prove the candidate gateway passes through both states without its own configuration changing.
 13. Record current container IDs, images, networks, Caddy configuration, volume names, and health states for rollback.
 14. Confirm that the current Orirang deployment remains healthy throughout preparation.
 
@@ -458,7 +463,7 @@ Pre-cutover acceptance checks:
 - No Yutnori application port is published on the host.
 - Caddy data has a verified preservation/rollback strategy.
 - Gateway volumes were created by the gateway Compose project and contain the verified restored Caddy state.
-- Candidate maintenance mode returns HTTP 503 with the intended `Retry-After` header, while its disable path restores normal candidate routing.
+- Orirang ingress maintenance returns HTTP 503 with the intended `Retry-After` header through the unchanged candidate gateway, while disabling it restores normal routing.
 - GitHub Actions uses pinned host keys rather than disabling host verification.
 
 ## 11. Mandatory production cutover checkpoint
@@ -484,13 +489,13 @@ Only after approval:
 
 1. Reconfirm Orirang health and capture the current production state.
 2. Ensure the candidate gateway configuration validates and the rollback command has been reviewed.
-3. Enable maintenance mode on the current Orirang proxy.
-4. Verify externally that Orirang returns HTTP 503 with the intended `Retry-After` header. Record the start of the maintenance window.
-5. Ensure the standalone gateway is configured to start with Orirang maintenance mode enabled. This prevents an unverified public interval during the ownership transfer.
-6. Stop only the existing Orirang-owned proxy container, leaving Orirang client, servers, and PostgreSQL running.
-7. Start the standalone gateway on ports 80/443 using the restored, gateway-owned Caddy volumes.
-8. Verify that public Orirang still returns the maintenance response through the new gateway.
-9. Test the Orirang client, API health, representative read behavior, upstream health, TLS, and routing internally while public maintenance remains enabled.
+3. Enable maintenance through Orirang's existing command. The shared maintenance file is read by both the legacy proxy and the internal ingress, and the command reloads both running Orirang Caddy services.
+4. Verify externally that the legacy proxy returns HTTP 503 with the intended `Retry-After` header, and verify `orirang-ingress` returns the same response internally. Record the start of the maintenance window.
+5. Stop only the existing Orirang-owned public proxy container, leaving Orirang ingress, client, servers, and PostgreSQL running.
+6. Start the standalone gateway on ports 80/443 using the restored, gateway-owned Caddy volumes.
+7. Verify that public Orirang still returns the Orirang-owned maintenance response through `orirang-ingress` and the new gateway.
+8. Verify the gateway cannot resolve or reach the Orirang client, servers, or database directly.
+9. Test the Orirang client, API health, representative read behavior, upstream health, TLS, headers, and routing through the internal ingress while public maintenance remains enabled.
 10. If Orirang verification fails, execute rollback while keeping maintenance enabled and before touching DNS.
 11. Start or verify the Yutnori web container.
 12. Replace the Porkbun parking records with the records in section 8.
@@ -506,7 +511,7 @@ Only after approval:
     ```
 
 15. Check certificate issuance and Caddy logs.
-16. Disable Orirang maintenance mode only after the new gateway and internal Orirang checks have passed.
+16. Disable maintenance through Orirang's existing command only after the new gateway and internal Orirang checks have passed. This reloads `orirang-ingress`; it does not change or reload the shared gateway.
 17. Verify normal public Orirang behavior, `/healthz`, a representative read, and a representative write after maintenance is disabled. Record the end of the maintenance window.
 18. Observe both services, container health, memory, and error logs for at least 15 minutes.
 19. Mark the migration complete only after both applications remain healthy.
@@ -570,6 +575,7 @@ The migration is complete when:
 
 - `orirang.com` retains its existing production behavior.
 - Orirang maintenance mode spans the live proxy transition and is disabled only after post-cutover health checks pass.
+- Orirang, not the shared gateway, owns maintenance mode, API routing, headers, load balancing, and client fallback.
 - `jammy.fun` and `www.jammy.fun` canonicalize to `https://jammy.fun/yut/`.
 - Yutnori assets and SPA refreshes work under `/yut/`.
 - TLS is valid for both domains.
