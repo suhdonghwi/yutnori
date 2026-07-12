@@ -27,7 +27,7 @@ jobs:
           docker run -d --name yutnori-ci yutnori:ci
           trap 'docker rm -f yutnori-ci >/dev/null 2>&1 || true' EXIT
           for attempt in 1 2 3 4 5; do
-            if docker exec yutnori-ci wget -qO- http://127.0.0.1/healthz >/dev/null; then
+            if docker exec yutnori-ci wget -qO- http://127.0.0.1:2019/config/ >/dev/null; then
               break
             fi
             sleep 1

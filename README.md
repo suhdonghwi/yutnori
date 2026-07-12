@@ -31,7 +31,7 @@ pnpm preview
 
 ## 컨테이너 배포
 
-프로덕션 컨테이너는 `/yut/`에서 정적 클라이언트를 제공하고 `/healthz`를 컨테이너 상태 확인에 사용합니다. 공개 포트는 컨테이너에서 직접 열지 않으며 독립 게이트웨이가 `yutnori_edge` 네트워크의 `yutnori-web:80`으로 요청을 전달합니다.
+프로덕션 web 컨테이너는 루트와 `/yut`을 `/yut/`으로 canonicalize하고 `/yut/`에서 정적 클라이언트를 제공합니다. 향후 multiplayer API routing도 이 application-owned Caddy가 담당합니다. 공개 포트는 컨테이너에서 직접 열지 않으며 독립 게이트웨이는 도메인만 보고 `yutnori_edge` 네트워크의 `yutnori-web:80`으로 모든 요청을 전달합니다.
 
 ```bash
 docker build -t yutnori:local .
