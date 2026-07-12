@@ -1,0 +1,10 @@
+:80 {
+	handle /yut/* {
+		root * /srv
+		try_files {path} /yut/index.html
+		file_server
+	}
+
+	respond /healthz 200
+	respond 404
+}

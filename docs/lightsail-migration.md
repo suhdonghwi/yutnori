@@ -108,7 +108,7 @@ Do not edit application source directly in `/home/ubuntu/orirang` or another pro
 
 ### 5.1 Gateway Compose project
 
-The gateway project creates the two named edge networks and preserves Caddy state in named volumes:
+Each application Compose project creates and owns its named edge network. The gateway joins both as external networks and preserves Caddy state in gateway-owned named volumes:
 
 ```yaml
 name: gateway
@@ -132,8 +132,10 @@ services:
 
 networks:
   orirang_edge:
+    external: true
     name: orirang_edge
   yutnori_edge:
+    external: true
     name: yutnori_edge
 
 volumes:
@@ -278,7 +280,6 @@ services:
 
 networks:
   yutnori_edge:
-    external: true
     name: yutnori_edge
 ```
 

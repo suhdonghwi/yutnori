@@ -1,0 +1,141 @@
+name: Deploy to Lightsail
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - app/**
+      - public/**
+      - src/**
+      - tests/**
+      - deploy/**
+      - .dockerignore
+      - Dockerfile
+      - docker-compose.yml
+      - index.html
+      - package.json
+      - pnpm-lock.yaml
+      - tsconfig.json
+      - vite.config.ts
+      - .github/workflows/deploy.yml
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy the published image to production
+        required: true
+        type: boolean
+        default: true
+
+concurrency:
+  group: yutnori-production
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.metadata.outputs.image }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - id: metadata
+        env:
+          OWNER: ${{ github.repository_owner }}
+          SHA: ${{ github.sha }}
+        run: |
+          owner="$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')"
+          echo "image=ghcr.io/$owner/yutnori:$SHA" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.metadata.outputs.image }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.deploy }}
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      packages: read
+    steps:
+      - name: Configure SSH
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_KNOWN_HOSTS: ${{ secrets.LIGHTSAIL_KNOWN_HOSTS }}
+          LIGHTSAIL_SSH_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$LIGHTSAIL_HOST"
+          test -n "$LIGHTSAIL_KNOWN_HOSTS"
+          test -n "$LIGHTSAIL_SSH_KEY"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$LIGHTSAIL_SSH_KEY" > ~/.ssh/lightsail
+          chmod 600 ~/.ssh/lightsail
+          printf '%s\n' "$LIGHTSAIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Deploy immutable image
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+          GHCR_TOKEN: ${{ github.token }}
+          GHCR_USER: ${{ github.repository_owner }}
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
+          YUTNORI_IMAGE: ${{ needs.build.outputs.image }}
+        run: |
+          set -euo pipefail
+          user="${LIGHTSAIL_USER:-ubuntu}"
+          printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/lightsail "$user@$LIGHTSAIL_HOST" \
+            "docker login ghcr.io -u '$GHCR_USER' --password-stdin"
+          ssh -i ~/.ssh/lightsail "$user@$LIGHTSAIL_HOST" \
+            "DEPLOY_SHA='$DEPLOY_SHA' YUTNORI_IMAGE='$YUTNORI_IMAGE' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd /home/ubuntu/yutnori
+          test -z "$(git status --porcelain)"
+          git fetch origin main
+          git checkout --detach "$DEPLOY_SHA"
+          YUTNORI_IMAGE="$YUTNORI_IMAGE" docker compose config --quiet
+          YUTNORI_IMAGE="$YUTNORI_IMAGE" docker compose pull web
+          YUTNORI_IMAGE="$YUTNORI_IMAGE" docker compose up -d --no-deps --wait web
+          REMOTE
+
+      - name: Verify container health
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
+          YUTNORI_IMAGE: ${{ needs.build.outputs.image }}
+        run: |
+          set -euo pipefail
+          user="${LIGHTSAIL_USER:-ubuntu}"
+          ssh -i ~/.ssh/lightsail "$user@$LIGHTSAIL_HOST" \
+            "cd /home/ubuntu/yutnori && YUTNORI_IMAGE='$YUTNORI_IMAGE' docker compose ps web"
+
+      - name: Logout from GHCR on Lightsail
+        if: always()
+        env:
+          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
+          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
+        run: |
+          user="${LIGHTSAIL_USER:-ubuntu}"
+          ssh -i ~/.ssh/lightsail "$user@$LIGHTSAIL_HOST" "docker logout ghcr.io || true" || true

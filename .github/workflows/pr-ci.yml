@@ -1,0 +1,36 @@
+name: PR checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v5
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: docker build --tag yutnori:ci .
+      - name: Verify production routes
+        run: |
+          set -euo pipefail
+          docker run -d --name yutnori-ci yutnori:ci
+          trap 'docker rm -f yutnori-ci >/dev/null 2>&1 || true' EXIT
+          for attempt in 1 2 3 4 5; do
+            if docker exec yutnori-ci wget -qO- http://127.0.0.1/healthz >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          docker exec yutnori-ci wget -qO- http://127.0.0.1/yut/ | grep -q '/yut/assets/'
+          docker exec yutnori-ci wget -qO- http://127.0.0.1/yut/room/test | grep -q '<div id="root"></div>'

@@ -1,0 +1,21 @@
+name: yutnori
+
+services:
+  web:
+    image: ${YUTNORI_IMAGE:?YUTNORI_IMAGE is required}
+    restart: unless-stopped
+    expose:
+      - '80'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1/healthz >/dev/null || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    networks:
+      yutnori_edge:
+        aliases:
+          - yutnori-web
+
+networks:
+  yutnori_edge:
+    name: yutnori_edge
