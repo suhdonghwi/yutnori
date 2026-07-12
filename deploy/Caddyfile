@@ -1,0 +1,31 @@
+:80 {
+	encode zstd gzip
+
+	@www host www.jammy.fun
+	@root path /
+	@bare_yut path /yut
+
+	route {
+		handle @www {
+			redir https://jammy.fun{uri} 308
+		}
+
+		handle @root {
+			redir * /yut/ 308
+		}
+
+		handle @bare_yut {
+			redir * /yut/ 308
+		}
+
+		handle /yut/* {
+			root * /srv
+			try_files {path} /yut/index.html
+			file_server
+		}
+
+		handle {
+			respond "Not found" 404
+		}
+	}
+}

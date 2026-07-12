@@ -70,11 +70,11 @@ PostgreSQL
 
 Use two isolated edge networks rather than one common application network:
 
-- `orirang_edge`: gateway plus Orirang HTTP upstreams
+- `orirang_edge`: gateway plus the single Orirang-owned web front door
 - `yutnori_edge`: gateway plus Yutnori HTTP upstreams
 - Orirang's database remains on an Orirang-only backend network.
 
-The gateway is the only container attached to both edge networks. Consequently, a Yutnori container cannot resolve or directly connect to an Orirang container, and vice versa.
+The gateway is the only container attached to both edge networks. On the Orirang side it can resolve only `orirang-web`, not the API replicas or PostgreSQL. Consequently, a Yutnori container cannot resolve or directly connect to an Orirang container, and vice versa.
 
 ## 4. Ownership and repository boundaries
 
@@ -108,7 +108,7 @@ Do not edit application source directly in `/home/ubuntu/orirang` or another pro
 
 ### 5.1 Gateway Compose project
 
-The gateway project creates the two named edge networks and preserves Caddy state in named volumes:
+Each application Compose project creates and owns its named edge network. The gateway joins both as external networks and preserves Caddy state in gateway-owned named volumes:
 
 ```yaml
 name: gateway
@@ -132,8 +132,10 @@ services:
 
 networks:
   orirang_edge:
+    external: true
     name: orirang_edge
   yutnori_edge:
+    external: true
     name: yutnori_edge
 
 volumes:
@@ -158,52 +160,35 @@ The route files are infrastructure adapters. They contain routing contracts only
 ### 5.2 Yutnori route adapter
 
 ```caddyfile
-www.jammy.fun {
-    redir https://jammy.fun{uri} 308
-}
-
-jammy.fun {
-    encode zstd gzip
-
-    redir / /yut/ 308
-    redir /yut /yut/ 308
-
-    # Reserve these same-origin routes for the future multiplayer server.
-    # Do not enable them until yutnori-server exists and has a health check.
-    # handle_path /yut/api/* {
-    #     reverse_proxy yutnori-server:3000
-    # }
-    # handle_path /yut/socket.io/* {
-    #     reverse_proxy yutnori-server:3000
-    # }
-
-    handle /yut/* {
-        reverse_proxy yutnori-web:80
-    }
-
-    handle {
-        respond "Not found" 404
-    }
+jammy.fun, www.jammy.fun {
+    reverse_proxy yutnori-web:80
 }
 ```
 
-The outer gateway intentionally does **not** strip `/yut/` for the static service. The Yutnori web container is configured to serve that prefix explicitly. This makes its health checks and browser-visible paths agree and avoids ambiguous URI rewriting.
+The Yutnori-owned web Caddy handles `www` canonicalization, `/` and `/yut`
+redirects, `/yut/` static files, SPA fallback, and the future multiplayer API
+routes. The shared gateway does not inspect or rewrite Yutnori paths.
 
 ### 5.3 Orirang route adapter
 
-Move the existing Orirang hostname and upstream routing into its own short adapter. Preserve existing behavior during migration. The cutover must not be used as an opportunity to redesign Orirang behavior.
+Orirang extends its existing client Caddy into an application-owned web front
+door named `orirang-web`. The same container serves static files and owns
+maintenance mode, `/api/*` and `/healthz` dispatch, client fallback, security
+headers, and API replica health checks/load balancing. It joins the private
+Orirang network plus `orirang_edge`, while the servers and database remain off
+the edge network.
 
-The adapter may select a generic static maintenance response through an infrastructure flag or mounted marker. The gateway does not make business decisions about when maintenance is appropriate; the operator controls the flag as part of an approved runbook. The maintenance response contains no application logic and must include HTTP 503 and `Retry-After`.
+The shared gateway adapter is deliberately limited to one transport mapping:
 
-Before cutover, compare the rendered new route with the current production Caddyfile and verify parity for:
+```caddyfile
+orirang.com {
+    reverse_proxy orirang-web:80
+}
+```
 
-- `orirang.com`
-- `/api/*`
-- `/healthz`
-- client fallback
-- security headers
-- current maintenance behavior
-- upstream health/load-balancing behavior
+Before cutover, verify behavior parity through `orirang-web`, including
+maintenance on/off, API and client routing, security headers, and replica
+health behavior. The gateway must not duplicate any of those rules.
 
 ## 6. Yutnori application changes
 
@@ -238,18 +223,34 @@ COPY deploy/Caddyfile /etc/caddy/Caddyfile
 COPY --from=build /app/dist /srv/yut
 ```
 
-The application-owned static Caddyfile handles only static application delivery:
+The application-owned Caddyfile handles canonical URLs and static delivery now,
+and remains the home for future multiplayer routing:
 
 ```caddyfile
 :80 {
-    handle /yut/* {
-        root * /srv
-        try_files {path} /yut/index.html
-        file_server
-    }
+    @www host www.jammy.fun
+    @root path /
+    @bare_yut path /yut
 
-    respond /healthz 200
-    respond 404
+    route {
+        handle @www {
+            redir https://jammy.fun{uri} 308
+        }
+        handle @root {
+            redir * /yut/ 308
+        }
+        handle @bare_yut {
+            redir * /yut/ 308
+        }
+        handle /yut/* {
+            root * /srv
+            try_files {path} /yut/index.html
+            file_server
+        }
+        handle {
+            respond "Not found" 404
+        }
+    }
 }
 ```
 
@@ -267,7 +268,7 @@ services:
     expose:
       - "80"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:2019/config/ >/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 6
@@ -278,7 +279,6 @@ services:
 
 networks:
   yutnori_edge:
-    external: true
     name: yutnori_edge
 ```
 
@@ -314,7 +314,7 @@ services:
           - yutnori-server
 ```
 
-Then enable the reserved `/yut/api/*` and `/yut/socket.io/*` gateway routes. Caddy proxies WebSocket upgrades automatically. The browser uses same-origin URLs, so ordinary multiplayer traffic requires no cross-origin setup.
+Then enable the reserved `/yut/api/*` and `/yut/socket.io/*` routes in the Yutnori-owned web Caddy. Caddy proxies WebSocket upgrades automatically. The browser uses same-origin URLs, so ordinary multiplayer traffic requires no cross-origin setup. The shared gateway remains unchanged.
 
 The API must be written with the chosen prefix contract in mind. Because `handle_path` strips the matched prefix, the server receives `/...` rather than `/yut/api/...`. Document and test that contract when the server is introduced.
 
@@ -427,7 +427,7 @@ Pin third-party actions to reviewed commit SHAs before implementation. The versi
 The following work is safe to prepare before requesting cutover permission, provided it does not bind production ports or alter live DNS:
 
 1. Add and test the Yutnori base-path change locally.
-2. Build the static container and verify `/healthz`, `/yut/`, assets, refresh behavior, and 404 behavior.
+2. Build the web container and verify its Caddy admin health check, canonical redirects, `/yut/`, assets, refresh behavior, and 404 behavior.
 3. Add the Yutnori Compose and GitHub Actions files.
 4. Prepare the gateway repository and route adapters.
 5. Create isolated Docker networks if desired; this does not affect live routing.
@@ -442,7 +442,7 @@ The following work is safe to prepare before requesting cutover permission, prov
    docker compose run --rm caddy caddy validate --config /etc/caddy/Caddyfile
    ```
 
-12. Exercise host-based routing against the candidate gateway using explicit `Host` headers, once with maintenance disabled and once with maintenance enabled.
+12. Exercise host-based routing against the candidate gateway using explicit `Host` headers. Toggle maintenance through Orirang's existing command and prove the candidate gateway passes through both states without its own configuration changing.
 13. Record current container IDs, images, networks, Caddy configuration, volume names, and health states for rollback.
 14. Confirm that the current Orirang deployment remains healthy throughout preparation.
 
@@ -457,7 +457,7 @@ Pre-cutover acceptance checks:
 - No Yutnori application port is published on the host.
 - Caddy data has a verified preservation/rollback strategy.
 - Gateway volumes were created by the gateway Compose project and contain the verified restored Caddy state.
-- Candidate maintenance mode returns HTTP 503 with the intended `Retry-After` header, while its disable path restores normal candidate routing.
+- Orirang web maintenance returns HTTP 503 with the intended `Retry-After` header through the unchanged candidate gateway, while disabling it restores normal routing.
 - GitHub Actions uses pinned host keys rather than disabling host verification.
 
 ## 11. Mandatory production cutover checkpoint
@@ -483,13 +483,13 @@ Only after approval:
 
 1. Reconfirm Orirang health and capture the current production state.
 2. Ensure the candidate gateway configuration validates and the rollback command has been reviewed.
-3. Enable maintenance mode on the current Orirang proxy.
-4. Verify externally that Orirang returns HTTP 503 with the intended `Retry-After` header. Record the start of the maintenance window.
-5. Ensure the standalone gateway is configured to start with Orirang maintenance mode enabled. This prevents an unverified public interval during the ownership transfer.
-6. Stop only the existing Orirang-owned proxy container, leaving Orirang client, servers, and PostgreSQL running.
-7. Start the standalone gateway on ports 80/443 using the restored, gateway-owned Caddy volumes.
-8. Verify that public Orirang still returns the maintenance response through the new gateway.
-9. Test the Orirang client, API health, representative read behavior, upstream health, TLS, and routing internally while public maintenance remains enabled.
+3. Enable maintenance through Orirang's existing command. The shared maintenance file is read by both the legacy proxy and the Orirang web Caddy, and the command reloads both running Orirang Caddy services.
+4. Verify externally that the legacy proxy returns HTTP 503 with the intended `Retry-After` header, and verify `orirang-web` returns the same response internally. Record the start of the maintenance window.
+5. Stop only the existing Orirang-owned public proxy container, leaving Orirang web, servers, and PostgreSQL running.
+6. Start the standalone gateway on ports 80/443 using the restored, gateway-owned Caddy volumes.
+7. Verify that public Orirang still returns the Orirang-owned maintenance response through `orirang-web` and the new gateway.
+8. Verify the gateway cannot resolve or reach the Orirang client, servers, or database directly.
+9. Test Orirang static files, API health, representative read behavior, upstream health, TLS, headers, and routing through `orirang-web` while public maintenance remains enabled.
 10. If Orirang verification fails, execute rollback while keeping maintenance enabled and before touching DNS.
 11. Start or verify the Yutnori web container.
 12. Replace the Porkbun parking records with the records in section 8.
@@ -505,7 +505,7 @@ Only after approval:
     ```
 
 15. Check certificate issuance and Caddy logs.
-16. Disable Orirang maintenance mode only after the new gateway and internal Orirang checks have passed.
+16. Disable maintenance through Orirang's existing command only after the new gateway and internal Orirang checks have passed. This reloads `orirang-web`; it does not change or reload the shared gateway.
 17. Verify normal public Orirang behavior, `/healthz`, a representative read, and a representative write after maintenance is disabled. Record the end of the maintenance window.
 18. Observe both services, container health, memory, and error logs for at least 15 minutes.
 19. Mark the migration complete only after both applications remain healthy.
@@ -569,6 +569,7 @@ The migration is complete when:
 
 - `orirang.com` retains its existing production behavior.
 - Orirang maintenance mode spans the live proxy transition and is disabled only after post-cutover health checks pass.
+- Orirang, not the shared gateway, owns maintenance mode, API routing, headers, load balancing, and client fallback.
 - `jammy.fun` and `www.jammy.fun` canonicalize to `https://jammy.fun/yut/`.
 - Yutnori assets and SPA refreshes work under `/yut/`.
 - TLS is valid for both domains.

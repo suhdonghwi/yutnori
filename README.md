@@ -19,7 +19,7 @@ pnpm dev
 pnpm build
 ```
 
-빌드 결과는 `dist/`에 생성됩니다. 배포할 때는 `dist/` 폴더 안의 파일 전체를 정적 웹 호스팅에 올리면 됩니다. 하위 경로에서도 동작하도록 자산 경로가 상대 경로로 생성됩니다.
+빌드 결과는 `dist/`에 생성됩니다. 프로덕션 빌드는 `https://jammy.fun/yut/`에 배포되도록 `/yut/` 자산 경로를 사용합니다.
 
 로컬에서 빌드 결과를 확인하려면 다음 명령을 사용합니다.
 
@@ -28,6 +28,15 @@ pnpm preview
 ```
 
 `dist/index.html`을 `file://`로 직접 여는 방식은 브라우저의 ES 모듈 보안 제한 때문에 권장하지 않습니다. 별도 서버 기능은 필요 없지만, 확인할 때는 `pnpm preview` 또는 간단한 정적 파일 서버를 사용하세요.
+
+## 컨테이너 배포
+
+프로덕션 web 컨테이너는 루트와 `/yut`을 `/yut/`으로 canonicalize하고 `/yut/`에서 정적 클라이언트를 제공합니다. 향후 multiplayer API routing도 이 application-owned Caddy가 담당합니다. 공개 포트는 컨테이너에서 직접 열지 않으며 독립 게이트웨이는 도메인만 보고 `yutnori_edge` 네트워크의 `yutnori-web:80`으로 모든 요청을 전달합니다.
+
+```bash
+docker build -t yutnori:local .
+YUTNORI_IMAGE=yutnori:local docker compose up -d --wait
+```
 
 ## 확인 명령
 
