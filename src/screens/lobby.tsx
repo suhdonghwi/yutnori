@@ -5,7 +5,7 @@ import {
   Robot,
   UsersThree,
 } from "@phosphor-icons/react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { LobbyScene, type LobbyPreviewMode } from "../scene/lobby-scene";
 import { useI18n } from "../i18n";
 import { LanguageSwitcher } from "../i18n/language-switcher";
@@ -13,6 +13,7 @@ import { LanguageSwitcher } from "../i18n/language-switcher";
 type LobbyProps = {
   onStartLocal: () => void;
   onStartAi: () => void;
+  onOpenTutorial: () => void;
 };
 
 const PLAY_MODES = [
@@ -21,165 +22,8 @@ const PLAY_MODES = [
   { id: "ai", icon: Robot, available: true },
 ] as const;
 
-function RulesDialog({ onClose }: { onClose: () => void }) {
+export function Lobby({ onStartLocal, onStartAi, onOpenTutorial }: LobbyProps) {
   const { t } = useI18n();
-  const closeButton = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    closeButton.current?.focus();
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  return (
-    <div
-      className="rules-backdrop fixed inset-0 z-80 grid place-items-center bg-[rgba(5,10,8,.82)] p-6 max-[560px]:p-2.5"
-      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
-    >
-      <section
-        className="max-h-[min(820px,calc(100svh-48px))] w-[min(760px,100%)] overflow-auto rounded-[25px] border border-[rgba(226,196,132,.32)] bg-[linear-gradient(145deg,#17211b,#0d1511)] text-[#eee0c2] shadow-[0_35px_110px_rgba(0,0,0,.72)] max-[560px]:max-h-[calc(100svh-20px)] max-[560px]:rounded-[19px]"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="rules-title"
-      >
-        <div className="sticky top-0 z-2 flex items-center justify-between gap-5 border-b border-[rgba(226,196,132,.15)] bg-[#141e18] px-[26px] pt-6 pb-5 max-[560px]:p-[18px]">
-          <div>
-            <span className="mb-1.5 block text-[9px] leading-none font-bold tracking-[.18em] text-[#9e8c68]">
-              {t.rules.tag}
-            </span>
-            <h2
-              className="m-0 text-[26px] leading-none font-black tracking-[-.04em] text-[#f3e2bd] max-[560px]:text-[22px]"
-              id="rules-title"
-            >
-              {t.rules.title}
-            </h2>
-          </div>
-          <button
-            className="grid size-[38px] cursor-pointer place-items-center rounded-full border border-[rgba(226,196,132,.2)] bg-white/4 text-[27px] leading-none font-light text-[#d9c8a4] hover:bg-white/9"
-            ref={closeButton}
-            type="button"
-            onClick={onClose}
-            aria-label={t.rules.close}
-          >
-            ×
-          </button>
-        </div>
-
-        <div className="grid gap-2.5 px-[26px] pt-5 pb-[27px] max-[560px]:p-3.5">
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-[15px] border border-[rgba(214,177,94,.28)] bg-[rgba(173,126,47,.09)] p-[18px] max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-[13px] max-[560px]:py-[15px]">
-            <span className="text-xs leading-none font-black tracking-[.08em] text-[#b89c5e]">
-              01
-            </span>
-            <div>
-              <h3 className="mt-[-2px] mb-[7px] text-base leading-[1.2] font-extrabold text-[#ebd8af]">
-                {t.rules.goal.title}
-              </h3>
-              <p className="m-0 text-[13px] leading-[1.65] font-medium text-[#a69b84]">
-                {t.rules.goal.body}
-              </p>
-            </div>
-          </article>
-
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-[15px] border border-[rgba(226,196,132,.12)] bg-white/[.025] p-[18px] max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-[13px] max-[560px]:py-[15px]">
-            <span className="text-xs leading-none font-black tracking-[.08em] text-[#b89c5e]">
-              02
-            </span>
-            <div>
-              <h3 className="mt-[-2px] mb-[7px] text-base leading-[1.2] font-extrabold text-[#ebd8af]">
-                {t.rules.throws.title}
-              </h3>
-              <dl className="mt-[11px] grid grid-cols-3 gap-[7px] max-[560px]:grid-cols-2">
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-white/4 px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-[#ead8b2]">
-                    {t.yut.do}
-                  </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-[#928873]">
-                    {t.rules.throws.steps(1)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-white/4 px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-[#ead8b2]">
-                    {t.yut.gae}
-                  </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-[#928873]">
-                    {t.rules.throws.steps(2)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-white/4 px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-[#ead8b2]">
-                    {t.yut.geol}
-                  </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-[#928873]">
-                    {t.rules.throws.steps(3)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-[rgba(190,143,51,.13)] px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-[#ead8b2]">
-                    {t.yut.yut}
-                  </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-[#d6b66c]">
-                    {t.rules.throws.stepsExtra(4)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-[rgba(190,143,51,.13)] px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-[#ead8b2]">
-                    {t.yut.mo}
-                  </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-[#d6b66c]">
-                    {t.rules.throws.stepsExtra(5)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-[rgba(164,61,47,.13)] px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-[#ead8b2]">
-                    {t.yut.backdo}
-                  </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-[#d98a7c]">
-                    {t.rules.throws.backdo}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </article>
-
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-[15px] border border-[rgba(226,196,132,.12)] bg-white/[.025] p-[18px] max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-[13px] max-[560px]:py-[15px]">
-            <span className="text-xs leading-none font-black tracking-[.08em] text-[#b89c5e]">
-              03
-            </span>
-            <div>
-              <h3 className="mt-[-2px] mb-[7px] text-base leading-[1.2] font-extrabold text-[#ebd8af]">
-                {t.rules.carryCapture.title}
-              </h3>
-              <p className="m-0 text-[13px] leading-[1.65] font-medium text-[#a69b84]">
-                {t.rules.carryCapture.body}
-              </p>
-            </div>
-          </article>
-
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-[15px] border border-[rgba(226,196,132,.12)] bg-white/[.025] p-[18px] max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-[13px] max-[560px]:py-[15px]">
-            <span className="text-xs leading-none font-black tracking-[.08em] text-[#b89c5e]">
-              04
-            </span>
-            <div>
-              <h3 className="mt-[-2px] mb-[7px] text-base leading-[1.2] font-extrabold text-[#ebd8af]">
-                {t.rules.shortcut.title}
-              </h3>
-              <p className="m-0 text-[13px] leading-[1.65] font-medium text-[#a69b84]">
-                {t.rules.shortcut.body}
-              </p>
-            </div>
-          </article>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
-  const { t } = useI18n();
-  const [showRules, setShowRules] = useState(false);
   const [previewMode, setPreviewMode] = useState<LobbyPreviewMode | null>(null);
 
   return (
@@ -274,7 +118,7 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
           <button
             className="mt-5 flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-[13px] font-bold text-[#aaa087] transition-colors hover:text-[#ead7ad]"
             type="button"
-            onClick={() => setShowRules(true)}
+            onClick={onOpenTutorial}
           >
             <BookOpen size={20} weight="regular" aria-hidden="true" />
             <span className="border-b border-[rgba(224,199,148,.32)] pb-0.5">
@@ -283,8 +127,6 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
           </button>
         </div>
       </section>
-
-      {showRules && <RulesDialog onClose={() => setShowRules(false)} />}
     </main>
   );
 }

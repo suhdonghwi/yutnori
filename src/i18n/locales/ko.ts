@@ -41,28 +41,47 @@ export const ko = {
     howToPlay: "게임 방법",
   },
 
-  rules: {
-    tag: "HOW TO PLAY",
-    title: "윷놀이 게임 방법",
-    close: "게임 방법 닫기",
-    goal: {
-      title: "말 4개를 먼저 완주시키세요",
-      body: "윷을 던져 나온 수만큼 말을 움직이고, 자기 팀의 말 4개를 모두 도착시키면 승리합니다.",
+  tutorial: {
+    title: "게임 방법",
+    canvasLabel: "윷놀이 게임 방법 3D 시연",
+    navigationLabel: "게임 방법 단계 이동",
+    skip: "건너뛰기",
+    back: "이전",
+    next: "다음",
+    done: "알겠어요 · 로비로",
+    stepLabel: (current: number, total: number) => `${current} / ${total} 단계`,
+    steps: {
+      goal: {
+        title: "말을 한 바퀴 돌려 도착시키세요",
+        body: "윷 결과만큼 말을 움직여 판을 돌아옵니다. 말 4개를 모두 먼저 도착시키는 팀이 승리합니다.",
+      },
+      throw: {
+        title: "평평한 면을 세어 이동 수를 읽으세요",
+        body: "윷가락 네 개를 던지고 위를 향한 평평한 면의 수를 셉니다. 결과가 말이 움직일 칸 수가 됩니다.",
+      },
+      shortcut: {
+        title: "모서리에 정확히 서면 지름길이 열립니다",
+        body: "갈림길에 도착한 뒤 다음 이동에서 가운데를 가로지르는 길을 고르면 더 빨리 도착할 수 있습니다.",
+      },
+      "capture-stack": {
+        title: "상대는 잡고, 같은 편은 업으세요",
+        body: "상대 말이 있는 칸에 도착하면 대기석으로 돌려보내고 한 번 더 던집니다. 같은 편 말은 업어서 함께 움직입니다.",
+      },
+      win: {
+        title: "말 4개를 먼저 완주시키면 승리합니다",
+        body: "마지막 말까지 도착선을 넘으면 즉시 승리합니다. 지름길과 업기, 잡기를 활용해 먼저 완주하세요.",
+      },
     },
-    throws: {
-      title: "윷의 결과",
-      steps: (steps: number) => `${steps}칸`,
-      stepsExtra: (steps: number) => `${steps}칸 · 한 번 더`,
-      backdo: "뒤로 1칸",
-    },
-    carryCapture: {
-      title: "업기와 잡기",
-      body: "같은 편 말이 있는 칸에 도착하면 함께 업고 이동합니다. 상대 말을 잡으면 그 말을 대기석으로 보내고 한 번 더 던집니다.",
-    },
-    shortcut: {
-      title: "지름길을 선택하세요",
-      body: "갈림길과 중앙에 정확히 도착하면 다음 이동에서 지름길을 선택할 수 있습니다. 예상 경로를 확인하고 유리한 길을 고르세요.",
-    },
+    movePreview: (steps: number) => `${steps}칸 이동`,
+    throwWaiting: "윷 결과를 확인하는 중…",
+    throwReading: (flats: number, name: string, steps: number) =>
+      steps < 0
+        ? `평평한 면 ${flats}개 → ${name} · 1칸 뒤로`
+        : `평평한 면 ${flats}개 → ${name} · ${steps}칸 이동`,
+    throwAgainBadge: "한 번 더 던지기!",
+    finishedBadge: "완주!",
+    backdoFootnote: "빽도는 한 칸 뒤로",
+    extraThrowFootnote: "윷·모는 한 번 더",
   },
 
   game: {

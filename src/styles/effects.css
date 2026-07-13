@@ -52,6 +52,24 @@
   animation: result-lockup 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+.tutorial-extra-badge {
+  animation: tutorial-badge-in 0.42s cubic-bezier(0.18, 0.82, 0.22, 1.15) both;
+}
+
+.tutorial-celebration {
+  background: radial-gradient(
+    ellipse 24% 22% at center,
+    rgba(4, 10, 7, 0.54) 0,
+    rgba(4, 10, 7, 0.18) 58%,
+    transparent 100%
+  );
+  animation: victory-layer-in 0.28s ease-out both;
+}
+
+.tutorial-finished-stamp {
+  animation: tutorial-finished-in 0.58s cubic-bezier(0.18, 0.82, 0.2, 1.18) both;
+}
+
 @keyframes victory-layer-in {
   from {
     opacity: 0;
@@ -150,6 +168,32 @@
   }
 }
 
+@keyframes tutorial-badge-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tutorial-finished-in {
+  0% {
+    opacity: 0;
+    transform: translateY(15px) scale(0.72) rotate(-2deg);
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.08) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -162,6 +206,13 @@
   .throw-result-effect,
   .throw-result-effect::before,
   .throw-result-lockup {
+    animation: none !important;
+    opacity: 1;
+  }
+
+  .tutorial-extra-badge,
+  .tutorial-celebration,
+  .tutorial-finished-stamp {
     animation: none !important;
     opacity: 1;
   }

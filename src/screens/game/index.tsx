@@ -15,6 +15,7 @@ import { useGameSession } from "./use-game-session";
 import { PlayerProgress } from "./player-progress";
 import { ControlDock } from "./control-dock";
 import { useI18n } from "../../i18n";
+import { Tutorial } from "../tutorial";
 
 function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
   const { t } = useI18n();
@@ -144,17 +145,29 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
 }
 
 export default function YutnoriGame() {
-  const [screen, setScreen] = useState<"lobby" | GameMode>("lobby");
+  const [screen, setScreen] = useState<"lobby" | "tutorial" | GameMode>(
+    "lobby",
+  );
 
   const startGame = (mode: GameMode) => {
     gameSfx.unlock();
     setScreen(mode);
   };
 
+  const openTutorial = () => {
+    gameSfx.unlock();
+    setScreen("tutorial");
+  };
+
+  if (screen === "tutorial") {
+    return <Tutorial onExit={() => setScreen("lobby")} />;
+  }
+
   return screen === "lobby" ? (
     <Lobby
       onStartLocal={() => startGame("local")}
       onStartAi={() => startGame("ai")}
+      onOpenTutorial={openTutorial}
     />
   ) : (
     <GameSession mode={screen} onExit={() => setScreen("lobby")} />

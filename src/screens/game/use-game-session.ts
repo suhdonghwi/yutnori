@@ -8,6 +8,7 @@ import {
   isMovable,
   nodeForPiece,
   resolveMove,
+  waypointClearances,
   type BoardState,
   type Player,
   type RouteChoice,
@@ -226,17 +227,12 @@ export function useGameSession(mode: GameMode) {
       result.steps,
       routeChoice,
     );
-    const waypointClearances = resolution.waypoints.map((node) => {
-      let occupants = 0;
-      pieces.forEach((playerPieces, player) => {
-        playerPieces.forEach((piece, index) => {
-          const isMovingPiece =
-            player === current && resolution.movedPieces.includes(index);
-          if (!isMovingPiece && nodeForPiece(piece) === node) occupants += 1;
-        });
-      });
-      return occupants * 0.19;
-    });
+    const clearances = waypointClearances(
+      pieces,
+      current,
+      resolution.movedPieces,
+      resolution.waypoints,
+    );
     const capturePlayer = otherPlayer;
     let visibleBoard = resolution.board;
     let captureReturn: NonNullable<ActiveMove>["captureReturn"] = null;
@@ -281,7 +277,7 @@ export function useGameSession(mode: GameMode) {
       pieces: resolution.movedPieces,
       leader: resolution.movedPieces[resolution.movedPieces.length - 1],
       waypoints: resolution.waypoints,
-      waypointClearances,
+      waypointClearances: clearances,
       nextPlayer,
       winner: resolution.won ? current : null,
       notice:

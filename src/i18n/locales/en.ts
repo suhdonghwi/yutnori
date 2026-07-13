@@ -36,28 +36,48 @@ export const en: Messages = {
     howToPlay: "How to Play",
   },
 
-  rules: {
-    tag: "HOW TO PLAY",
-    title: "How to Play Yutnori",
-    close: "Close how to play",
-    goal: {
-      title: "Finish all 4 pieces first",
-      body: "Throw the yut sticks and move a piece by the number shown. The first team to bring all 4 pieces across the finish wins.",
+  tutorial: {
+    title: "How to Play",
+    canvasLabel: "3D Yutnori how-to-play demonstration",
+    navigationLabel: "Tutorial step navigation",
+    skip: "Skip",
+    back: "Back",
+    next: "Next",
+    done: "Got it · back to lobby",
+    stepLabel: (current, total) => `Step ${current} of ${total}`,
+    steps: {
+      goal: {
+        title: "Race around the board and home",
+        body: "Move a piece by your throw and follow the route around the board. The first team to finish all 4 pieces wins.",
+      },
+      throw: {
+        title: "Count the flat sides to read your throw",
+        body: "Throw all four yut sticks and count the flat sides facing up. The result tells you how many steps to move.",
+      },
+      shortcut: {
+        title: "Land on a corner to unlock a shortcut",
+        body: "After landing exactly on a junction, choose the diagonal route on your next move to cut across the center.",
+      },
+      "capture-stack": {
+        title: "Capture rivals and stack allies",
+        body: "Land on a rival to send it back to the bench and throw again. Land on your own piece to stack and move together.",
+      },
+      win: {
+        title: "Finish all 4 pieces first to win",
+        body: "Cross the finish with your final piece to win immediately. Use shortcuts, stacks, and captures to get there first.",
+      },
     },
-    throws: {
-      title: "Yut throws",
-      steps: (steps) => (steps === 1 ? "1 step" : `${steps} steps`),
-      stepsExtra: (steps) => `${steps} steps · throw again`,
-      backdo: "1 step back",
-    },
-    carryCapture: {
-      title: "Stacking and capturing",
-      body: "Land on your own piece to stack up and move together. Capture an opponent's piece to send it back to the bench and throw again.",
-    },
-    shortcut: {
-      title: "Choose your shortcut",
-      body: "Land exactly on a junction or the center to unlock a shortcut on your next move. Check the preview path and pick the better route.",
-    },
+    movePreview: (steps) =>
+      steps === 1 ? "Move 1 step" : `Move ${steps} steps`,
+    throwWaiting: "Reading the sticks…",
+    throwReading: (flats, name, steps) =>
+      steps < 0
+        ? `${flats} flat ${flats === 1 ? "side" : "sides"} → ${name} · move 1 step back`
+        : `${flats} flat ${flats === 1 ? "side" : "sides"} → ${name} · move ${steps}`,
+    throwAgainBadge: "Throw again!",
+    finishedBadge: "Finished!",
+    backdoFootnote: "Backdo moves one step back",
+    extraThrowFootnote: "Yut and Mo earn another throw",
   },
 
   game: {
