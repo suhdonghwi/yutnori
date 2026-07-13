@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { ko } from "./locales/ko";
 import { en } from "./locales/en";
+import { bn } from "./locales/bn";
 
 export type Messages = typeof ko;
 
@@ -13,6 +14,7 @@ export type MessageRef = (t: Messages) => string;
 export const LOCALES = {
   ko: { label: "한국어", messages: ko },
   en: { label: "English", messages: en },
+  bn: { label: "বাংলা", messages: bn },
 } as const satisfies Record<string, { label: string; messages: Messages }>;
 
 export type LocaleId = keyof typeof LOCALES;
