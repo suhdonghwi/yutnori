@@ -9,7 +9,7 @@ import type { YutResultId } from "../../game/types";
 export const ko = {
   appTitle: "윷놀이",
 
-  team: (player: Player) => (player === 0 ? "청팀" : "홍팀"),
+  team: (player: Player): string => (player === 0 ? "청팀" : "홍팀"),
   tokenTag: (player: Player, piece: number) =>
     `${player === 0 ? "청" : "홍"}${piece + 1}`,
 
@@ -71,7 +71,7 @@ export const ko = {
     sfx: "효과음",
     sfxOn: "효과음 켜기",
     sfxOff: "효과음 끄기",
-    toLobby: "로비로",
+    toLobby: "로비",
     toLobbyLabel: "로비로 돌아가기",
     newGame: "새 판",
     newGameLabel: "새 판 시작",

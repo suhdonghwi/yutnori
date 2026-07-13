@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { ko } from "./locales/ko";
+import { en } from "./locales/en";
 
 export type Messages = typeof ko;
 
@@ -11,6 +12,7 @@ export type MessageRef = (t: Messages) => string;
 // 언어 선택 UI와 브라우저 언어 감지에 자동으로 포함됩니다.
 export const LOCALES = {
   ko: { label: "한국어", messages: ko },
+  en: { label: "English", messages: en },
 } as const satisfies Record<string, { label: string; messages: Messages }>;
 
 export type LocaleId = keyof typeof LOCALES;
