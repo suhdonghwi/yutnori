@@ -6,7 +6,7 @@ import {
   RigidBody,
   type RapierRigidBody,
 } from "@react-three/rapier";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { gameSfx } from "../audio/game-sfx";
 
@@ -73,27 +73,22 @@ function YutImpactBurst({
 }) {
   const meshes = useRef<(THREE.Mesh | null)[]>([]);
   const elapsed = useRef(0);
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 12 }, (_, index) => {
-        const angle = (index / 12) * Math.PI * 2 + Math.random() * 0.28;
-        const speed = (0.8 + Math.random() * 0.9) * intensity;
-        return {
-          velocity: new THREE.Vector3(
-            Math.cos(angle) * speed,
-            1.2 + Math.random() * 1.7,
-            Math.sin(angle) * speed,
-          ),
-          size: 0.045 + Math.random() * 0.055,
-          color:
-            index % 3 === 0
-              ? "#fff0b8"
-              : index % 2 === 0
-                ? "#d9ad64"
-                : "#9b7041",
-        };
-      }),
-    [intensity],
+  // 파편의 무작위 궤적은 버스트가 생길 때 한 번만 정해져야 합니다.
+  const [particles] = useState(() =>
+    Array.from({ length: 12 }, (_, index) => {
+      const angle = (index / 12) * Math.PI * 2 + Math.random() * 0.28;
+      const speed = (0.8 + Math.random() * 0.9) * intensity;
+      return {
+        velocity: new THREE.Vector3(
+          Math.cos(angle) * speed,
+          1.2 + Math.random() * 1.7,
+          Math.sin(angle) * speed,
+        ),
+        size: 0.045 + Math.random() * 0.055,
+        color:
+          index % 3 === 0 ? "#fff0b8" : index % 2 === 0 ? "#d9ad64" : "#9b7041",
+      };
+    }),
   );
 
   useEffect(() => {
@@ -215,10 +210,11 @@ function FlatBackdoX({ glowing }: { glowing: boolean }) {
   );
 }
 
+// 구조 분해 기본값은 React Compiler v1이 컴파일하지 못해 쓰지 않습니다.
 export function YutStickMesh({
-  backdo = false,
-  backdoGlow = false,
-  variant = 0,
+  backdo,
+  backdoGlow,
+  variant,
 }: {
   backdo?: boolean;
   backdoGlow?: boolean;
@@ -228,7 +224,7 @@ export function YutStickMesh({
     <group>
       <mesh geometry={YUT_GEOMETRY} castShadow receiveShadow>
         <meshPhysicalMaterial
-          color={YUT_WOOD_TONES[variant % YUT_WOOD_TONES.length]}
+          color={YUT_WOOD_TONES[(variant ?? 0) % YUT_WOOD_TONES.length]}
           roughness={0.64}
           metalness={0}
           clearcoat={0.055}
@@ -238,7 +234,7 @@ export function YutStickMesh({
       <XMark z={-0.66} />
       <XMark z={0} />
       <XMark z={0.66} />
-      {backdo && <FlatBackdoX glowing={backdoGlow} />}
+      {backdo && <FlatBackdoX glowing={backdoGlow ?? false} />}
     </group>
   );
 }
@@ -267,10 +263,11 @@ function PhysicsYutStick({
   const launchAngularVelocity = useRef(new THREE.Vector3());
   const launchAfterPrepare = useRef(false);
   const lastImpactAt = useRef(0);
-  const idlePosition = useMemo(
-    () => [(index - 1.5) * 0.76, 0.38, 0] as [number, number, number],
-    [index],
-  );
+  const idlePosition = [(index - 1.5) * 0.76, 0.38, 0] as [
+    number,
+    number,
+    number,
+  ];
 
   useEffect(() => {
     const rigidBody = body.current;
@@ -438,52 +435,49 @@ export function YutPhysics({
     return () => window.clearTimeout(timeout);
   }, [backdoGlow]);
 
-  const handleImpact = useCallback(
-    (position: [number, number, number], intensity: number) => {
-      gameSfx.playYutImpact(
-        intensity,
-        THREE.MathUtils.clamp(position[0] / 5.7, -1, 1),
-      );
-      burstId.current += 1;
-      const burst = { id: burstId.current, position, intensity };
-      setImpactBursts((bursts) => [...bursts.slice(-7), burst]);
-    },
-    [],
-  );
+  const handleImpact = (
+    position: [number, number, number],
+    intensity: number,
+  ) => {
+    gameSfx.playYutImpact(
+      intensity,
+      THREE.MathUtils.clamp(position[0] / 5.7, -1, 1),
+    );
+    burstId.current += 1;
+    const burst = { id: burstId.current, position, intensity };
+    setImpactBursts((bursts) => [...bursts.slice(-7), burst]);
+  };
 
-  const removeImpactBurst = useCallback((id: number) => {
+  const removeImpactBurst = (id: number) => {
     setImpactBursts((bursts) => bursts.filter((burst) => burst.id !== id));
-  }, []);
+  };
 
-  const handleSleep = useCallback(
-    (index: number, body: RapierRigidBody) => {
-      if (!rolling || completed.current) return;
-      const rotation = body.rotation();
-      const flatNormal = new THREE.Vector3(0, -1, 0).applyQuaternion(
-        new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w),
+  const handleSleep = (index: number, body: RapierRigidBody) => {
+    if (!rolling || completed.current) return;
+    const rotation = body.rotation();
+    const flatNormal = new THREE.Vector3(0, -1, 0).applyQuaternion(
+      new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w),
+    );
+
+    if (Math.abs(flatNormal.y) < 0.42 && retries.current[index] < 2) {
+      retries.current[index] += 1;
+      body.wakeUp();
+      body.applyTorqueImpulse(
+        { x: 0.18 * (index % 2 ? 1 : -1), y: 0.03, z: 0.14 },
+        true,
       );
+      return;
+    }
 
-      if (Math.abs(flatNormal.y) < 0.42 && retries.current[index] < 2) {
-        retries.current[index] += 1;
-        body.wakeUp();
-        body.applyTorqueImpulse(
-          { x: 0.18 * (index % 2 ? 1 : -1), y: 0.03, z: 0.14 },
-          true,
-        );
-        return;
-      }
-
-      outcomes.current[index] = flatNormal.y > 0;
-      if (outcomes.current.every((value) => value !== null)) {
-        completed.current = true;
-        const flats = outcomes.current.filter(Boolean).length;
-        const isBackdo = flats === 1 && outcomes.current[0] === true;
-        setBackdoGlow(isBackdo);
-        onSettled(flats, isBackdo);
-      }
-    },
-    [onSettled, rolling],
-  );
+    outcomes.current[index] = flatNormal.y > 0;
+    if (outcomes.current.every((value) => value !== null)) {
+      completed.current = true;
+      const flats = outcomes.current.filter(Boolean).length;
+      const isBackdo = flats === 1 && outcomes.current[0] === true;
+      setBackdoGlow(isBackdo);
+      onSettled(flats, isBackdo);
+    }
+  };
 
   return (
     <Physics

@@ -14,9 +14,10 @@ export function boardEdgeKey(from: NodeId, to: NodeId) {
   return from < to ? `${from}:${to}` : `${to}:${from}`;
 }
 
+// 구조 분해 기본값은 React Compiler v1이 컴파일하지 못해 쓰지 않습니다.
 function BoardNode({
   position,
-  major = false,
+  major,
 }: {
   position: [number, number, number];
   major?: boolean;

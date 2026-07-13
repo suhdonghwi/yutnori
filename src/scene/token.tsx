@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import {
   NODE_POSITIONS,
@@ -27,17 +27,15 @@ const TOKEN_GEOMETRY = new THREE.LatheGeometry(
 );
 TOKEN_GEOMETRY.computeVertexNormals();
 
+// 구조 분해 기본값은 React Compiler v1이 컴파일하지 못해 쓰지 않습니다.
 export function LacquerTokenMesh({
   color,
-  highlighted = false,
+  highlighted,
 }: {
   color: string;
   highlighted?: boolean;
 }) {
-  const grooveColor = useMemo(
-    () => new THREE.Color(color).multiplyScalar(0.48),
-    [color],
-  );
+  const grooveColor = new THREE.Color(color).multiplyScalar(0.48);
 
   return (
     <group position={[0, 0.024, 0]}>
@@ -155,15 +153,13 @@ export function Token({
   onMoveComplete: () => void;
 }) {
   const ref = useRef<THREE.Group>(null);
-  const initialPosition = useRef<[number, number, number]>([
+  // 마운트 시점의 위치를 고정합니다. 이후 위치는 useFrame이 직접 제어합니다.
+  const [initialPosition] = useState<[number, number, number]>(() => [
     position[0],
     position[1],
     position[2],
   ]);
-  const target = useMemo(
-    () => new THREE.Vector3(position[0], position[1], position[2]),
-    [position[0], position[1], position[2]],
-  );
+  const target = new THREE.Vector3(position[0], position[1], position[2]);
   const segmentStart = useRef(target.clone());
   const segmentEnd = useRef(target.clone());
   const segmentProgress = useRef(1);
@@ -173,7 +169,7 @@ export function Token({
   const notifyWhenFinished = useRef(false);
   const handledMoveId = useRef<number | null>(null);
 
-  const beginNextSegment = useCallback(() => {
+  const beginNextSegment = () => {
     const group = ref.current;
     const next = waypointQueue.current.shift();
     if (!group || !next) {
@@ -190,7 +186,7 @@ export function Token({
     const distance = segmentStart.current.distanceTo(segmentEnd.current);
     segmentDuration.current = Math.min(0.58, Math.max(0.3, distance * 0.14));
     jumpHeight.current = Math.min(0.55, Math.max(0.3, distance * 0.13));
-  }, [onMoveComplete]);
+  };
 
   useEffect(() => {
     const group = ref.current;
@@ -268,7 +264,7 @@ export function Token({
   });
 
   return (
-    <group ref={ref} position={initialPosition.current}>
+    <group ref={ref} position={initialPosition}>
       <LacquerTokenMesh color={color} highlighted={highlighted} />
       <mesh
         visible={highlighted}

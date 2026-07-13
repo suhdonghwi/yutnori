@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   NODE_POSITIONS,
   canChooseRoute,
@@ -28,6 +28,14 @@ import { tokenPlacement } from "../../scene/token";
 import { gameSfx } from "../../audio/game-sfx";
 import { useI18n, type MessageRef, type Messages } from "../../i18n";
 
+function previewWinnerFromQuery(): Player | null {
+  if (!import.meta.env.DEV) return null;
+  const value = new URLSearchParams(window.location.search).get("victory");
+  if (value === "blue" || value === "cheong" || value === "0") return 0;
+  if (value === "red" || value === "hong" || value === "1") return 1;
+  return null;
+}
+
 export function useGameSession(mode: GameMode) {
   const { t } = useI18n();
   const [current, setCurrent] = useState<Player>(0);
@@ -54,13 +62,7 @@ export function useGameSession(mode: GameMode) {
   const routeChoiceFromCenter =
     pendingRoute !== null &&
     nodeForPiece(pieces[current][pendingRoute.piece]) === "C";
-  const previewWinner = useMemo<Player | null>(() => {
-    if (!import.meta.env.DEV) return null;
-    const value = new URLSearchParams(window.location.search).get("victory");
-    if (value === "blue" || value === "cheong" || value === "0") return 0;
-    if (value === "red" || value === "hong" || value === "1") return 1;
-    return null;
-  }, []);
+  const previewWinner = previewWinnerFromQuery();
   const visibleWinner = phase === "gameover" ? winner : previewWinner;
 
   useEffect(() => {
@@ -69,7 +71,7 @@ export function useGameSession(mode: GameMode) {
     return () => window.clearTimeout(timeout);
   }, [throwResultEffect]);
 
-  const movePreviews = useMemo<MovePreview[]>(() => {
+  const movePreviews = ((): MovePreview[] => {
     if (!result) return [];
     const pieceIndex =
       phase === "move" && aiDecision
@@ -141,49 +143,36 @@ export function useGameSession(mode: GameMode) {
           : resolution.waypoints,
       };
     });
-  }, [
-    aiDecision,
-    current,
-    hoveredRouteChoice,
-    hoveredToken,
-    pendingRoute,
-    phase,
-    pieces,
-    result,
-    t,
-  ]);
+  })();
 
-  const throwYut = useCallback(() => {
+  const throwYut = () => {
     if (phase !== "ready") return;
     setAiDecision(null);
     setResult(null);
     setNotice(null);
     setNonce((value) => value + 1);
     setPhase("rolling");
-  }, [phase]);
+  };
 
-  const settleThrow = useCallback(
-    (flats: number, backdo: boolean) => {
-      const nextResult = backdo ? BACKDO_RESULT : RESULT_BY_FLATS[flats];
-      gameSfx.playResult(nextResult.steps);
-      throwEffectId.current += 1;
-      setThrowResultEffect({ id: throwEffectId.current, result: nextResult });
-      setResult(nextResult);
-      if (
-        nextResult.steps < 0 &&
-        !pieces[current].some((piece) => piece.status === "board")
-      ) {
-        setCurrent(current === 0 ? 1 : 0);
-        setNotice(() => (messages: Messages) => messages.notice.backdoNoMoves);
-        setPhase("ready");
-        return;
-      }
-      setPhase("move");
-    },
-    [current, pieces],
-  );
+  const settleThrow = (flats: number, backdo: boolean) => {
+    const nextResult = backdo ? BACKDO_RESULT : RESULT_BY_FLATS[flats];
+    gameSfx.playResult(nextResult.steps);
+    throwEffectId.current += 1;
+    setThrowResultEffect({ id: throwEffectId.current, result: nextResult });
+    setResult(nextResult);
+    if (
+      nextResult.steps < 0 &&
+      !pieces[current].some((piece) => piece.status === "board")
+    ) {
+      setCurrent(current === 0 ? 1 : 0);
+      setNotice(() => (messages: Messages) => messages.notice.backdoNoMoves);
+      setPhase("ready");
+      return;
+    }
+    setPhase("move");
+  };
 
-  const handleMoveComplete = useCallback(() => {
+  const handleMoveComplete = () => {
     const move = activeMoveRef.current;
     if (!move) return;
 
@@ -221,7 +210,7 @@ export function useGameSession(mode: GameMode) {
       setCurrent(move.nextPlayer);
       setPhase("ready");
     }
-  }, []);
+  };
 
   const executeMove = (pieceIndex: number, routeChoice: RouteChoice) => {
     if (!result || (phase !== "move" && phase !== "route")) return;

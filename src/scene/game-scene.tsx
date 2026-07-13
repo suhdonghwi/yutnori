@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import { ContactShadows, Html, OrbitControls } from "@react-three/drei";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import {
   NODE_POSITIONS,
@@ -137,15 +137,15 @@ export function Scene({
   onMoveComplete: () => void;
 }) {
   const { t } = useI18n();
-  const previewEdgeColors = useMemo(() => {
-    const colors = new Map<string, string>();
-    movePreviews.forEach((preview) => {
-      preview.pathNodes.slice(1).forEach((node, index) => {
-        colors.set(boardEdgeKey(preview.pathNodes[index], node), preview.color);
-      });
+  const previewEdgeColors = new Map<string, string>();
+  movePreviews.forEach((preview) => {
+    preview.pathNodes.slice(1).forEach((node, index) => {
+      previewEdgeColors.set(
+        boardEdgeKey(preview.pathNodes[index], node),
+        preview.color,
+      );
     });
-    return colors;
-  }, [movePreviews]);
+  });
 
   return (
     <>
