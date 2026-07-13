@@ -2,7 +2,8 @@ import { ContactShadows, Float } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Suspense, useRef } from "react";
 import * as THREE from "three";
-import { BoardSurface, LacquerTokenMesh } from "./board-scene";
+import { BoardSurface } from "./board";
+import { LacquerTokenMesh } from "./token";
 import { YutStickMesh } from "./yut-physics";
 
 export type LobbyPreviewMode = "local" | "online" | "ai";
