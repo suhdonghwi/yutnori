@@ -388,7 +388,6 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
 
   return (
     <main className="game-shell fixed inset-0 block h-svh min-h-0 w-full overflow-hidden isolate">
-      <div className="grain" aria-hidden="true" />
       {throwResultEffect && <ThrowResultEffect effect={throwResultEffect} />}
       {visibleWinner !== null && <VictoryEffect winner={visibleWinner} />}
 

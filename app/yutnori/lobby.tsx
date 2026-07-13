@@ -105,7 +105,6 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
 
   return (
     <main className="lobby-shell relative min-h-svh overflow-hidden text-[#f3e6c8] max-[820px]:overflow-auto">
-      <div className="grain" aria-hidden="true" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-0 w-[64vw] [mask-image:linear-gradient(90deg,transparent_0%,#000_18%,#000_100%)] max-[820px]:top-[76px] max-[820px]:h-[330px] max-[820px]:w-full max-[820px]:opacity-80 max-[820px]:[mask-image:linear-gradient(180deg,#000_0%,#000_72%,transparent_100%)] max-[560px]:h-[285px]" aria-hidden="true">
         <div className="pointer-events-auto size-full max-[820px]:pointer-events-none">
           <LobbyScene previewMode={previewMode} />
