@@ -12,7 +12,7 @@ await build({
   configFile: false,
   logLevel: "silent",
   build: {
-    ssr: resolve("app/yutnori/ai-player.ts"),
+    ssr: resolve("src/game/ai-player.ts"),
     outDir: outputDirectory,
     emptyOutDir: true,
   },

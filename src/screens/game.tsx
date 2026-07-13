@@ -16,10 +16,10 @@ import {
   type BoardState,
   type Player,
   type RouteChoice,
-} from "./rules";
-import { Scene, tokenPlacement } from "./board-scene";
-import { chooseAiMove, type AiDecision } from "./ai-player";
-import { BACKDO_RESULT, PLAYERS, RESULT_BY_FLATS } from "./game-config";
+} from "../game/rules";
+import { Scene, tokenPlacement } from "../scene/board-scene";
+import { chooseAiMove, type AiDecision } from "../game/ai-player";
+import { BACKDO_RESULT, PLAYERS, RESULT_BY_FLATS } from "../game/config";
 import type {
   ActiveMove,
   GameMode,
@@ -29,10 +29,10 @@ import type {
   Phase,
   ThrowResult,
   ThrowResultEffectState,
-} from "./game-types";
+} from "../game/types";
 import { ThrowResultEffect, VictoryEffect } from "./result-effects";
 import { Lobby } from "./lobby";
-import { gameSfx } from "./game-sfx";
+import { gameSfx } from "../audio/game-sfx";
 
 function PlayerProgress({
   player,

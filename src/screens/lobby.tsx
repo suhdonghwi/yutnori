@@ -1,6 +1,6 @@
 import { ArrowRight, BookOpen, GlobeHemisphereWest, Robot, UsersThree } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
-import { LobbyScene, type LobbyPreviewMode } from "./lobby-scene";
+import { LobbyScene, type LobbyPreviewMode } from "../scene/lobby-scene";
 
 type LobbyProps = {
   onStartLocal: () => void;

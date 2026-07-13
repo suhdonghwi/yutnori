@@ -1,7 +1,7 @@
 @import "tailwindcss";
-@import "./yutnori/styles/base.css";
-@import "./yutnori/styles/effects.css";
-@import "./yutnori/styles/lobby.css";
+@import "./styles/base.css";
+@import "./styles/effects.css";
+@import "./styles/lobby.css";
 
 @theme inline {
   --color-ink: var(--ink);

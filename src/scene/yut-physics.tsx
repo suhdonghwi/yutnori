@@ -8,7 +8,7 @@ import {
 } from "@react-three/rapier";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { gameSfx } from "./game-sfx";
+import { gameSfx } from "../audio/game-sfx";
 
 function XMark({ z }: { z: number }) {
   return (

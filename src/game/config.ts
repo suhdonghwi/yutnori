@@ -1,4 +1,4 @@
-import type { ThrowResult } from "./game-types";
+import type { ThrowResult } from "./types";
 
 export const PLAYERS = [
   { name: "청팀", color: "#174c6b", glow: "#8bc0d4" },

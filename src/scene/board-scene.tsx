@@ -13,10 +13,10 @@ import {
   type NodeId,
   type PieceState,
   type Player,
-} from "./rules";
-import { PLAYERS } from "./game-config";
-import type { ActiveMove, HoveredToken, MovePreview } from "./game-types";
-import { gameSfx } from "./game-sfx";
+} from "../game/rules";
+import { PLAYERS } from "../game/config";
+import type { ActiveMove, HoveredToken, MovePreview } from "../game/types";
+import { gameSfx } from "../audio/game-sfx";
 import { YutPhysics } from "./yut-physics";
 
 const TOKEN_STACK_STEP = 0.17;

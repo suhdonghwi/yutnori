@@ -4,7 +4,7 @@ import {
   createInitialBoard,
   groupForPiece,
   resolveMove,
-} from "../app/yutnori/rules.ts";
+} from "../src/game/rules.ts";
 
 test("keeps arrival order when a lower-numbered piece joins and moves with a stack", () => {
   let board = createInitialBoard();

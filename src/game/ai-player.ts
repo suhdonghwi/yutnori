@@ -10,7 +10,7 @@ import {
   type Player,
   type RouteChoice,
 } from "./rules";
-import type { ThrowResult } from "./game-types";
+import type { ThrowResult } from "./types";
 
 export type AiDecision = {
   pieceIndex: number;

@@ -1,7 +1,7 @@
 import type React from "react";
-import type { Player } from "./rules";
-import { PLAYERS } from "./game-config";
-import type { ThrowResultEffectState } from "./game-types";
+import type { Player } from "../game/rules";
+import { PLAYERS } from "../game/config";
+import type { ThrowResultEffectState } from "../game/types";
 
 export function VictoryEffect({ winner }: { winner: Player }) {
   const player = PLAYERS[winner];
