@@ -46,8 +46,8 @@ export const ko = {
     title: "윷놀이 게임 방법",
     close: "게임 방법 닫기",
     goal: {
-      title: "네 말을 먼저 완주시키세요",
-      body: "윷을 던져 나온 수만큼 말을 움직이고, 자기 팀의 네 말을 모두 도착시키면 승리합니다.",
+      title: "말 4개를 먼저 완주시키세요",
+      body: "윷을 던져 나온 수만큼 말을 움직이고, 자기 팀의 말 4개를 모두 도착시키면 승리합니다.",
     },
     throws: {
       title: "윷의 결과",
@@ -82,7 +82,7 @@ export const ko = {
     newGame: "새 판",
     newGameLabel: "새 판 시작",
     footerHintRules:
-      "갈림길에서는 길을 고르고, 같은 편은 업고, 상대편은 잡습니다. 네 말을 먼저 모두 내면 승리합니다.",
+      "갈림길에서는 길을 고르고, 같은 편은 업고, 상대편은 잡습니다. 말 4개를 먼저 모두 내면 승리합니다.",
     footerHintExtraThrow: "윷·모 또는 잡기에는 한 번 더 던집니다",
   },
 
@@ -124,7 +124,7 @@ export const ko = {
     aiPreparingThrow: (team: string) => `${team} AI가 윷을 준비하는 중`,
     playerTurn: (team: string) => `${team}의 차례입니다`,
     aiJudgingThrow: (team: string) => `${team} AI가 던진 윷을 판정하는 중`,
-    waitingForSticks: "던진 윷을 판정하는 중",
+    waitingForSticks: (team: string) => `${josa(team, "이/가")} 던진 윷을 판정하는 중`,
     aiDecision: (reason: string) => `AI 판단 · ${reason}`,
     aiComputing: "AI가 최선의 수를 계산하는 중",
     backdoMove: "빽도 · 움직일 말을 골라 한 칸 뒤로 가세요",
@@ -132,9 +132,7 @@ export const ko = {
       `${yutName} · ${steps}칸 움직이세요`,
     routeFromCenter: "중앙에서 어느 지름길로 갈까요?",
     routeFromBranch: "이 갈림길에서 어느 길로 갈까요?",
-    captureReturning: "잡힌 말이 대기석으로 돌아가는 중",
-    capturerMoving: "잡는 말이 도착 칸으로 이동하는 중",
-    winner: (team: string) => `${josa(team, "이/가")} 네 말을 모두 냈습니다`,
+    winner: (team: string) => `${josa(team, "이/가")} 말 4개를 모두 냈습니다`,
   },
 
   notice: {
@@ -142,8 +140,7 @@ export const ko = {
     aiNoMoves: "AI가 움직일 수 없어 차례가 넘어갔습니다",
     stacked: (count: number) =>
       `같은 편 ${josa(`${susa(count, true)} 말`, "을/를")} 업었습니다`,
-    captured: (count: number) =>
-      `상대 ${josa(`${susa(count, true)} 말`, "을/를")} 잡아 한 번 더 던집니다`,
+    captured: "상대 말을 잡아 한 번 더 던집니다",
     extraThrow: (yutName: string) =>
       `${josa(yutName, "이/가")} 나와 한 번 더 던집니다`,
   },
@@ -191,7 +188,7 @@ export const ko = {
   victory: {
     tag: "승부 종료",
     winner: (team: string) => `${team} 승리`,
-    subtitle: "네 말을 모두 먼저 냈습니다",
+    subtitle: "말 4개를 모두 먼저 냈습니다",
   },
 
   throwEffect: {

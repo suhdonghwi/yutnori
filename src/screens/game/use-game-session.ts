@@ -225,8 +225,7 @@ export function useGameSession(mode: GameMode) {
       noticeRefs.push((messages) => messages.notice.stacked(stackedCount));
     }
     if (resolution.capturedPieces.length > 0) {
-      const capturedCount = resolution.capturedPieces.length;
-      noticeRefs.push((messages) => messages.notice.captured(capturedCount));
+      noticeRefs.push((messages) => messages.notice.captured);
     } else if (result.extraThrow) {
       const resultId = result.id;
       noticeRefs.push((messages) => messages.notice.extraThrow(messages.yut[resultId]));
@@ -337,7 +336,7 @@ export function useGameSession(mode: GameMode) {
       ? noticeText || t.status.aiPreparingThrow(t.team(1))
       : noticeText || t.status.playerTurn(t.team(current))
     : phase === "rolling"
-      ? isAiTurn ? t.status.aiJudgingThrow(t.team(1)) : t.status.waitingForSticks
+      ? isAiTurn ? t.status.aiJudgingThrow(t.team(1)) : t.status.waitingForSticks(t.team(current))
       : phase === "move"
         ? isAiTurn
           ? aiDecision ? t.status.aiDecision(t.aiReason[aiDecision.reason]) : t.status.aiComputing
@@ -345,9 +344,7 @@ export function useGameSession(mode: GameMode) {
         : phase === "route"
           ? routeChoiceFromCenter ? t.status.routeFromCenter : t.status.routeFromBranch
           : phase === "moving"
-            ? activeMove?.stage === "capture-return"
-              ? t.status.captureReturning
-              : t.status.capturerMoving
+            ? t.status.playerTurn(t.team(current))
             : t.status.winner(t.team(winner ?? 0));
 
   return {
