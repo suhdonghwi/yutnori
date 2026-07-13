@@ -368,10 +368,11 @@ function PhysicsYutStick({
       onSleep={() =>
         !preparing.current && body.current && onSleep(index, body.current)
       }
-      onCollisionEnter={() => {
+      onCollisionEnter={({ manifold }) => {
         const rigidBody = body.current;
         if (!rigidBody || preparing.current || nonce === 0) return;
-        const position = rigidBody.translation();
+        const contact = manifold?.solverContactPoint(0);
+        const position = contact ?? rigidBody.translation();
         const velocity = rigidBody.linvel();
         const speed = Math.hypot(velocity.x, velocity.y, velocity.z);
         const now = performance.now();
@@ -383,7 +384,11 @@ function PhysicsYutStick({
           return;
         lastImpactAt.current = now;
         onImpact(
-          [position.x, Math.max(0.12, position.y - 0.2), position.z],
+          [
+            position.x,
+            Math.max(0.12, contact ? position.y : position.y - 0.2),
+            position.z,
+          ],
           Math.min(1.65, Math.max(0.85, speed * 0.13)),
         );
       }}
