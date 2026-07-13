@@ -3,9 +3,10 @@ import type { Player } from "../../game/rules";
 import { PLAYERS } from "../../game/config";
 import { useI18n } from "../../i18n";
 
+// 구조 분해 기본값(= false)은 React Compiler v1이 아직 컴파일하지 못해 생략합니다.
 export function PlayerProgress({
   player,
-  ai = false,
+  ai,
   finished,
   active,
 }: {
