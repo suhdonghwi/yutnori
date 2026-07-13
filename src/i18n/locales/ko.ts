@@ -72,7 +72,6 @@ export const ko = {
     back: "이전",
     next: "다음",
     done: "알겠어요",
-    detailedRules: "자세한 규칙",
     stepLabel: (current: number, total: number) =>
       `${total}단계 중 ${current}단계`,
     steps: {

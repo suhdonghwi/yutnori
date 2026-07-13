@@ -67,7 +67,6 @@ export const en: Messages = {
     back: "Back",
     next: "Next",
     done: "Got it",
-    detailedRules: "Detailed rules",
     stepLabel: (current, total) => `Step ${current} of ${total}`,
     steps: {
       goal: {

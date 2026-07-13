@@ -1,16 +1,14 @@
 import { Canvas } from "@react-three/fiber";
-import { ArrowLeft, ArrowRight, BookOpen, X } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, X } from "@phosphor-icons/react";
 import { Suspense, useEffect, useState } from "react";
 import { TUTORIAL_STEPS } from "../../game/tutorial-script";
 import { useI18n } from "../../i18n";
 import { TutorialScene } from "../../scene/tutorial-scene";
-import { RulesDialog } from "../rules-dialog";
 import { useTutorialPlayer } from "./use-tutorial-player";
 
 export function TutorialScreen({ onClose }: { onClose: () => void }) {
   const { t } = useI18n();
   const [stepIndex, setStepIndex] = useState(0);
-  const [showRules, setShowRules] = useState(false);
   const step = TUTORIAL_STEPS[stepIndex];
   const player = useTutorialPlayer(step);
   const last = stepIndex === TUTORIAL_STEPS.length - 1;
@@ -22,14 +20,13 @@ export function TutorialScreen({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (showRules) return;
       if (event.key === "Escape") onClose();
       if (event.key === "ArrowLeft") goBack();
       if (event.key === "ArrowRight") goNext();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [last, onClose, showRules]);
+  }, [last, onClose]);
 
   const copy = t.tutorial.steps[step.id];
   return (
@@ -80,10 +77,7 @@ export function TutorialScreen({ onClose }: { onClose: () => void }) {
         aria-live="polite"
       >
         <div className="mx-auto w-[min(820px,100%)]">
-          <span className="text-[10px] font-black tracking-[.16em] text-[#a99263]">
-            {t.tutorial.stepLabel(stepIndex + 1, TUTORIAL_STEPS.length)}
-          </span>
-          <h1 className="mt-1 mb-2 text-[clamp(22px,4vw,31px)] leading-tight font-black tracking-[-.03em] text-[#f3e2bd]">
+          <h1 className="mb-2 text-[clamp(22px,4vw,31px)] leading-tight font-black tracking-[-.03em] text-[#f3e2bd]">
             {copy.title}
           </h1>
           <p className="m-0 min-h-[2.8em] text-[14px] leading-[1.55] font-medium text-[#aaa089]">
@@ -128,14 +122,6 @@ export function TutorialScreen({ onClose }: { onClose: () => void }) {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setShowRules(true)}
-                className="mr-2 flex cursor-pointer items-center gap-1.5 border-0 bg-transparent text-xs font-bold text-[#9f957f] underline decoration-white/20 underline-offset-4 max-[560px]:hidden"
-              >
-                <BookOpen size={16} />
-                {t.tutorial.detailedRules}
-              </button>
-              <button
-                type="button"
                 onClick={goBack}
                 disabled={stepIndex === 0}
                 className="flex cursor-pointer items-center gap-1 rounded-xl border border-white/12 bg-white/5 px-4 py-3 text-sm font-bold text-[#c8bda5] disabled:cursor-default disabled:opacity-30"
@@ -155,7 +141,6 @@ export function TutorialScreen({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </section>
-      {showRules && <RulesDialog onClose={() => setShowRules(false)} />}
     </main>
   );
 }

@@ -75,7 +75,6 @@ export const bn: Messages = {
     back: "আগেরটি",
     next: "পরেরটি",
     done: "বুঝেছি",
-    detailedRules: "বিস্তারিত নিয়ম",
     stepLabel: (current, total) =>
       `${bnNum(total)}টির মধ্যে ধাপ ${bnNum(current)}`,
     steps: {
