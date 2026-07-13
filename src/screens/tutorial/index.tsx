@@ -163,7 +163,7 @@ export function Tutorial({ onExit }: { onExit: () => void }) {
             </div>
 
             <div aria-live="polite" aria-atomic="true">
-              <h1 className="m-0 text-[clamp(22px,2.7vw,34px)] leading-[1.1] font-black tracking-[-.04em] text-[#f3e2bd]">
+              <h1 className="m-0 text-[clamp(22px,2.7vw,34px)] leading-[1.1] font-bold tracking-[-.035em] text-[#f3e2bd]">
                 {copy.title}
               </h1>
               <p className="mt-2 mb-0 max-w-[720px] text-[13px] leading-[1.55] font-medium text-[#aaa08b] max-[600px]:text-[12px]">
