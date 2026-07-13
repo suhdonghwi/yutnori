@@ -9,8 +9,10 @@ import { Lobby } from "../lobby";
 import { useGameSession } from "./use-game-session";
 import { PlayerProgress } from "./player-progress";
 import { ControlDock } from "./control-dock";
+import { useI18n } from "../../i18n";
 
 function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
+  const { t } = useI18n();
   const session = useGameSession(mode);
   const {
     current,
@@ -28,11 +30,11 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
       {throwResultEffect && <ThrowResultEffect effect={throwResultEffect} />}
       {visibleWinner !== null && <VictoryEffect winner={visibleWinner} />}
 
-      <section className="pointer-events-none absolute inset-0 block h-full w-full" aria-label="3D 윷놀이 게임">
+      <section className="pointer-events-none absolute inset-0 block h-full w-full" aria-label={t.game.canvasLabel}>
         <div className="pointer-events-auto absolute top-7 left-8 z-20 max-[760px]:top-4 max-[760px]:left-3">
           <PlayerProgress
             player={0}
-            role={mode === "ai" ? "플레이어" : "첫째 선수"}
+            role={mode === "ai" ? "player" : "first"}
             finished={pieces[0].filter((piece) => piece.status === "finished").length}
             active={current === 0 && phase !== "gameover"}
           />
@@ -41,24 +43,24 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
         <div className="pointer-events-auto absolute top-7 right-8 z-20 flex items-start gap-7 max-[760px]:top-4 max-[760px]:right-3 max-[760px]:gap-3">
           <PlayerProgress
             player={1}
-            role={mode === "ai" ? "AI 상대" : "둘째 선수"}
+            role={mode === "ai" ? "ai" : "second"}
             finished={pieces[1].filter((piece) => piece.status === "finished").length}
             active={current === 1 && phase !== "gameover"}
           />
           <div className="flex items-start gap-4 border-l border-[rgba(217,186,112,.34)] pl-5 max-[760px]:gap-2 max-[760px]:pl-3">
-            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={toggleSfx} aria-label={sfxEnabled ? "효과음 끄기" : "효과음 켜기"} aria-pressed={sfxEnabled}>
+            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={toggleSfx} aria-label={sfxEnabled ? t.game.sfxOff : t.game.sfxOn} aria-pressed={sfxEnabled}>
               {sfxEnabled
                 ? <SpeakerHigh size={21} weight="regular" aria-hidden="true" />
                 : <SpeakerSlash size={21} weight="regular" aria-hidden="true" />}
-              <span className="max-[760px]:hidden">효과음</span>
+              <span className="max-[760px]:hidden">{t.game.sfx}</span>
             </button>
-            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={onExit} aria-label="로비로 돌아가기">
+            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={onExit} aria-label={t.game.toLobbyLabel}>
               <DoorOpen size={21} weight="regular" aria-hidden="true" />
-              <span className="max-[760px]:hidden">로비로</span>
+              <span className="max-[760px]:hidden">{t.game.toLobby}</span>
             </button>
-            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={reset} aria-label="새 판 시작">
+            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={reset} aria-label={t.game.newGameLabel}>
               <Plus size={21} weight="regular" aria-hidden="true" />
-              <span className="max-[760px]:hidden">새 판</span>
+              <span className="max-[760px]:hidden">{t.game.newGame}</span>
             </button>
           </div>
         </div>
@@ -102,8 +104,8 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
       </section>
 
       <footer className="hidden">
-        <p>갈림길에서는 길을 고르고, 같은 편은 업고, 상대편은 잡습니다. 네 말을 먼저 모두 내면 승리합니다.</p>
-        <span>윷·모 또는 잡기에는 한 번 더 던집니다</span>
+        <p>{t.game.footerHintRules}</p>
+        <span>{t.game.footerHintExtraThrow}</span>
       </footer>
     </main>
   );

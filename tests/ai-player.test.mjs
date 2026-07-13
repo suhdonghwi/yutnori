@@ -32,10 +32,10 @@ test("chooses a capture when the current throw can catch an opponent", () => {
     [{ status: "board", route: "outer", index: 1, stackOrder: 0 }, home(), home(), home()],
   ];
 
-  const decision = chooseAiMove(board, { name: "개", steps: 2, flats: 2, extraThrow: false });
+  const decision = chooseAiMove(board, { id: "gae", steps: 2, flats: 2, extraThrow: false });
 
   assert.equal(decision?.pieceIndex, 0);
-  assert.equal(decision?.reason, "상대 말 잡기");
+  assert.equal(decision?.reason, "capture");
 });
 
 test("chooses a move that immediately finishes a piece", () => {
@@ -44,8 +44,8 @@ test("chooses a move that immediately finishes a piece", () => {
     [{ status: "board", route: "outer", index: 19, stackOrder: 0 }, home(), home(), home()],
   ];
 
-  const decision = chooseAiMove(board, { name: "도", steps: 1, flats: 1, extraThrow: false });
+  const decision = chooseAiMove(board, { id: "do", steps: 1, flats: 1, extraThrow: false });
 
   assert.equal(decision?.pieceIndex, 0);
-  assert.match(decision?.reason ?? "", /완주/);
+  assert.match(decision?.reason ?? "", /finish/i);
 });

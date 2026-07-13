@@ -1,4 +1,3 @@
-import { josa, susa } from "es-hangul";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   NODE_POSITIONS,
@@ -27,8 +26,10 @@ import type {
 } from "../../game/types";
 import { tokenPlacement } from "../../scene/token";
 import { gameSfx } from "../../audio/game-sfx";
+import { useI18n, type MessageRef, type Messages } from "../../i18n";
 
 export function useGameSession(mode: GameMode) {
+  const { t } = useI18n();
   const [current, setCurrent] = useState<Player>(0);
   const [phase, setPhase] = useState<Phase>("ready");
   const [pieces, setPieces] = useState<BoardState>(() => createInitialBoard());
@@ -41,7 +42,7 @@ export function useGameSession(mode: GameMode) {
   const [pendingRoute, setPendingRoute] = useState<PendingRoute>(null);
   const [hoveredRouteChoice, setHoveredRouteChoice] = useState<RouteChoice | null>(null);
   const [aiDecision, setAiDecision] = useState<AiDecision | null>(null);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<MessageRef | null>(null);
   const [sfxEnabled, setSfxEnabled] = useState(() => gameSfx.isEnabled());
   const activeMoveRef = useRef<ActiveMove>(null);
   const moveId = useRef(0);
@@ -99,30 +100,30 @@ export function useGameSession(mode: GameMode) {
         key: `${pieceIndex}-${choice}`,
         position: destinationPosition,
         label: resolution.destination.status === "finished"
-          ? "도착"
+          ? t.preview.finished
           : resolution.destination.status === "home"
-            ? "대기석으로"
+            ? t.preview.toHome
             : isBranchPreview
               ? isCenterPreview
-                ? choice === "shortcut" ? "빠른 길 도착" : "돌아가는 길 도착"
-                : choice === "shortcut" ? "지름길 도착" : "바깥길 도착"
-              : `${result.name} 도착`,
+                ? choice === "shortcut" ? t.preview.fastShortcutArrival : t.preview.roundaboutArrival
+                : choice === "shortcut" ? t.preview.shortcutArrival : t.preview.outerArrival
+              : t.preview.arrival(t.yut[result.id]),
         action: resolution.capturedPieces.length > 0
-          ? "잡기!"
+          ? "capture" as const
           : resolution.stackedPieces.length > 0
-            ? "업기!"
+            ? "stack" as const
             : null,
         color: choice === "shortcut" ? "#f2cb72" : PLAYERS[current].glow,
         pathNodes: sourceNode ? [sourceNode, ...resolution.waypoints] : resolution.waypoints,
       };
     });
-  }, [aiDecision, current, hoveredRouteChoice, hoveredToken, pendingRoute, phase, pieces, result]);
+  }, [aiDecision, current, hoveredRouteChoice, hoveredToken, pendingRoute, phase, pieces, result, t]);
 
   const throwYut = useCallback(() => {
     if (phase !== "ready") return;
     setAiDecision(null);
     setResult(null);
-    setNotice("");
+    setNotice(null);
     setNonce((value) => value + 1);
     setPhase("rolling");
   }, [phase]);
@@ -135,7 +136,7 @@ export function useGameSession(mode: GameMode) {
     setResult(nextResult);
     if (nextResult.steps < 0 && !pieces[current].some((piece) => piece.status === "board")) {
       setCurrent(current === 0 ? 1 : 0);
-      setNotice("빽도였지만 움직일 말이 없어 차례가 넘어갔습니다");
+      setNotice(() => (messages: Messages) => messages.notice.backdoNoMoves);
       setPhase("ready");
       return;
     }
@@ -171,7 +172,7 @@ export function useGameSession(mode: GameMode) {
     activeMoveRef.current = null;
     setActiveMove(null);
     if (move.arrivalEffect === "stack") gameSfx.playStack();
-    setNotice(move.notice);
+    setNotice(() => move.notice);
     if (move.winner !== null) {
       gameSfx.playVictory();
       setWinner(move.winner);
@@ -218,15 +219,17 @@ export function useGameSession(mode: GameMode) {
 
     const gotExtraThrow = result.extraThrow || resolution.capturedPieces.length > 0;
     const nextPlayer = gotExtraThrow ? current : otherPlayer;
-    const messages: string[] = [];
+    const noticeRefs: MessageRef[] = [];
     if (resolution.stackedPieces.length > 0) {
       const stackedCount = resolution.stackedPieces.length + resolution.movedPieces.length;
-      messages.push(`같은 편 ${josa(`${susa(stackedCount, true)} 말`, "을/를")} 업었습니다`);
+      noticeRefs.push((messages) => messages.notice.stacked(stackedCount));
     }
     if (resolution.capturedPieces.length > 0) {
-      messages.push(`상대 ${josa(`${susa(resolution.capturedPieces.length, true)} 말`, "을/를")} 잡아 한 번 더 던집니다`);
+      const capturedCount = resolution.capturedPieces.length;
+      noticeRefs.push((messages) => messages.notice.captured(capturedCount));
     } else if (result.extraThrow) {
-      messages.push(`${josa(result.name, "이/가")} 나와 한 번 더 던집니다`);
+      const resultId = result.id;
+      noticeRefs.push((messages) => messages.notice.extraThrow(messages.yut[resultId]));
     }
 
     moveId.current += 1;
@@ -240,7 +243,9 @@ export function useGameSession(mode: GameMode) {
       waypointClearances,
       nextPlayer,
       winner: resolution.won ? current : null,
-      notice: messages.join(" · "),
+      notice: noticeRefs.length > 0
+        ? (messages) => noticeRefs.map((ref) => ref(messages)).join(" · ")
+        : null,
       arrivalEffect: resolution.capturedPieces.length > 0
         ? "capture"
         : resolution.stackedPieces.length > 0
@@ -285,7 +290,7 @@ export function useGameSession(mode: GameMode) {
       const timeout = window.setTimeout(() => {
         const decision = chooseAiMove(pieces, result);
         if (!decision) {
-          setNotice("AI가 움직일 수 없어 차례가 넘어갔습니다");
+          setNotice(() => (messages: Messages) => messages.notice.aiNoMoves);
           setCurrent(0);
           setPhase("ready");
           return;
@@ -314,7 +319,7 @@ export function useGameSession(mode: GameMode) {
     setHoveredRouteChoice(null);
     setAiDecision(null);
     setPendingRoute(null);
-    setNotice("");
+    setNotice(null);
     activeMoveRef.current = null;
     setActiveMove(null);
   };
@@ -326,23 +331,24 @@ export function useGameSession(mode: GameMode) {
     if (next) gameSfx.playToggle();
   };
 
+  const noticeText = notice ? notice(t) : "";
   const statusText = phase === "ready"
     ? isAiTurn
-      ? notice || "홍팀 AI가 윷을 준비하는 중"
-      : notice || `${PLAYERS[current].name}의 차례입니다`
+      ? noticeText || t.status.aiPreparingThrow(t.team(1))
+      : noticeText || t.status.playerTurn(t.team(current))
     : phase === "rolling"
-      ? isAiTurn ? "홍팀 AI가 던진 윷을 판정하는 중" : "윷이 안정될 때까지 기다리는 중"
+      ? isAiTurn ? t.status.aiJudgingThrow(t.team(1)) : t.status.waitingForSticks
       : phase === "move"
         ? isAiTurn
-          ? aiDecision ? `AI 판단 · ${aiDecision.reason}` : "AI가 최선의 수를 계산하는 중"
-          : result?.steps === -1 ? "빽도 · 움직일 말을 골라 한 칸 뒤로 가세요" : `${result?.name} · ${result?.steps}칸 움직이세요`
+          ? aiDecision ? t.status.aiDecision(t.aiReason[aiDecision.reason]) : t.status.aiComputing
+          : result === null ? "" : result.steps === -1 ? t.status.backdoMove : t.status.move(t.yut[result.id], result.steps)
         : phase === "route"
-          ? routeChoiceFromCenter ? "중앙에서 어느 지름길로 갈까요?" : "이 갈림길에서 어느 길로 갈까요?"
+          ? routeChoiceFromCenter ? t.status.routeFromCenter : t.status.routeFromBranch
           : phase === "moving"
             ? activeMove?.stage === "capture-return"
-              ? "잡힌 말이 대기석으로 돌아가는 중"
-              : "잡는 말이 도착 칸으로 이동하는 중"
-            : `${josa(PLAYERS[winner ?? 0].name, "이/가")} 네 말을 모두 냈습니다`;
+              ? t.status.captureReturning
+              : t.status.capturerMoving
+            : t.status.winner(t.team(winner ?? 0));
 
   return {
     current,

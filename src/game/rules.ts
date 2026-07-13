@@ -248,12 +248,16 @@ export function resolveMove(
   };
 }
 
-export function pieceProgressLabel(piece: PieceState): string {
-  if (piece.status === "home") return "출발";
-  if (piece.status === "finished") return "도착";
+export type PieceProgress =
+  | { kind: "home" | "finished" | "junction" | "center" | "shortcut" }
+  | { kind: "outer"; index: number };
+
+export function pieceProgress(piece: PieceState): PieceProgress {
+  if (piece.status === "home") return { kind: "home" };
+  if (piece.status === "finished") return { kind: "finished" };
   const node = nodeForPiece(piece);
-  if (node === "O5" || node === "O10") return "갈림길";
-  if (node === "C") return "한가운데";
-  if (piece.route === "outer") return `바깥길 ${piece.index}/20`;
-  return "지름길";
+  if (node === "O5" || node === "O10") return { kind: "junction" };
+  if (node === "C") return { kind: "center" };
+  if (piece.route === "outer") return { kind: "outer", index: piece.index };
+  return { kind: "shortcut" };
 }

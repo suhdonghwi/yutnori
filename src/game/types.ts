@@ -1,10 +1,13 @@
 import type { BoardState, NodeId, Player } from "./rules";
+import type { MessageRef } from "../i18n";
 
 export type Phase = "ready" | "rolling" | "move" | "route" | "moving" | "gameover";
 export type GameMode = "local" | "ai";
 
+export type YutResultId = "backdo" | "do" | "gae" | "geol" | "yut" | "mo";
+
 export type ThrowResult = {
-  name: string;
+  id: YutResultId;
   steps: number;
   flats: number;
   extraThrow: boolean;
@@ -17,7 +20,7 @@ export type MovePreview = {
   key: string;
   position: [number, number, number];
   label: string;
-  action: "잡기!" | "업기!" | null;
+  action: "capture" | "stack" | null;
   color: string;
   pathNodes: NodeId[];
 };
@@ -32,7 +35,7 @@ export type ActiveMove = {
   waypointClearances: number[];
   nextPlayer: Player;
   winner: Player | null;
-  notice: string;
+  notice: MessageRef | null;
   arrivalEffect: "stack" | "capture" | null;
   captureReturn: {
     player: Player;

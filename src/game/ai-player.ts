@@ -12,10 +12,20 @@ import {
 } from "./rules";
 import type { ThrowResult } from "./types";
 
+export type AiReason =
+  | "win"
+  | "finish"
+  | "capture"
+  | "stack"
+  | "shortcut"
+  | "prepareShortcut"
+  | "backdoRetreat"
+  | "expectedFinish";
+
 export type AiDecision = {
   pieceIndex: number;
   routeChoice: RouteChoice;
-  reason: string;
+  reason: AiReason;
   score: number;
 };
 
@@ -35,12 +45,12 @@ const FUTURE_THROW_DEPTH = 2;
 const WIN_SCORE = 100_000;
 
 const THROW_DISTRIBUTION: WeightedThrow[] = [
-  { probability: 1 / 16, result: { name: "모", steps: 5, flats: 0, extraThrow: true } },
-  { probability: 3 / 16, result: { name: "도", steps: 1, flats: 1, extraThrow: false } },
-  { probability: 1 / 16, result: { name: "빽도", steps: -1, flats: 1, extraThrow: false } },
-  { probability: 6 / 16, result: { name: "개", steps: 2, flats: 2, extraThrow: false } },
-  { probability: 4 / 16, result: { name: "걸", steps: 3, flats: 3, extraThrow: false } },
-  { probability: 1 / 16, result: { name: "윷", steps: 4, flats: 4, extraThrow: true } },
+  { probability: 1 / 16, result: { id: "mo", steps: 5, flats: 0, extraThrow: true } },
+  { probability: 3 / 16, result: { id: "do", steps: 1, flats: 1, extraThrow: false } },
+  { probability: 1 / 16, result: { id: "backdo", steps: -1, flats: 1, extraThrow: false } },
+  { probability: 6 / 16, result: { id: "gae", steps: 2, flats: 2, extraThrow: false } },
+  { probability: 4 / 16, result: { id: "geol", steps: 3, flats: 3, extraThrow: false } },
+  { probability: 1 / 16, result: { id: "yut", steps: 4, flats: 4, extraThrow: true } },
 ];
 
 function otherPlayer(player: Player): Player {
@@ -147,15 +157,15 @@ function bestKnownThrowValue(
   return player === AI_PLAYER ? Math.max(...values) : Math.min(...values);
 }
 
-function decisionReason(candidate: Candidate, result: ThrowResult): string {
-  if (candidate.resolution.won) return "승리를 완성하는 말 선택";
-  if (candidate.resolution.destination.status === "finished") return "완주할 수 있는 말 선택";
-  if (candidate.resolution.capturedPieces.length > 0) return "상대 말 잡기";
-  if (candidate.resolution.stackedPieces.length > 0) return "같은 편 말 업기";
-  if (candidate.routeChoice === "shortcut") return "지름길 선택";
-  if (canChooseRoute(candidate.resolution.destination, result.steps)) return "다음 지름길 준비";
-  if (result.steps < 0) return "빽도 최적 후퇴";
-  return "완주 기대값이 높은 말 선택";
+function decisionReason(candidate: Candidate, result: ThrowResult): AiReason {
+  if (candidate.resolution.won) return "win";
+  if (candidate.resolution.destination.status === "finished") return "finish";
+  if (candidate.resolution.capturedPieces.length > 0) return "capture";
+  if (candidate.resolution.stackedPieces.length > 0) return "stack";
+  if (candidate.routeChoice === "shortcut") return "shortcut";
+  if (canChooseRoute(candidate.resolution.destination, result.steps)) return "prepareShortcut";
+  if (result.steps < 0) return "backdoRetreat";
+  return "expectedFinish";
 }
 
 export function chooseAiMove(board: BoardState, result: ThrowResult): AiDecision | null {

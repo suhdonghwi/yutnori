@@ -13,6 +13,7 @@ import type { ActiveMove, HoveredToken, MovePreview } from "../game/types";
 import { BoardSurface, boardEdgeKey } from "./board";
 import { Token, tokenPlacement } from "./token";
 import { YutPhysics } from "./yut-physics";
+import { useI18n } from "../i18n";
 
 function PreviewPathNode({ position, color }: { position: [number, number, number]; color: string }) {
   const ref = useRef<THREE.Group>(null);
@@ -34,6 +35,7 @@ function PreviewPathNode({ position, color }: { position: [number, number, numbe
 }
 
 function MoveDestinationPreview({ preview }: { preview: MovePreview }) {
+  const { t } = useI18n();
   const ref = useRef<THREE.Group>(null);
 
   useFrame(({ clock }) => {
@@ -57,8 +59,8 @@ function MoveDestinationPreview({ preview }: { preview: MovePreview }) {
         <div className="flex flex-col items-center gap-1.5">
           <span className="block whitespace-nowrap rounded-full border-[1.5px] border-[rgba(255,242,205,.62)] bg-[rgba(18,25,20,.94)] px-3.5 py-2 text-[clamp(16px,1.35vw,20px)] leading-[1.1] font-extrabold tracking-[-.02em] text-[#fff0c8] shadow-[0_8px_24px_rgba(0,0,0,.46)] backdrop-blur-[5px]">{preview.label}</span>
           {preview.action && (
-            <span className={`block whitespace-nowrap rounded-full border-[1.5px] border-current px-3 py-1.5 text-[clamp(15px,1.2vw,18px)] leading-none font-black tracking-[-.02em] shadow-[0_7px_20px_rgba(0,0,0,.42)] ${preview.action === "잡기!" ? "bg-[rgba(153,45,32,.96)] text-[#ffe3d8]" : "bg-[rgba(126,91,25,.96)] text-[#fff0bd]"}`}>
-              {preview.action}
+            <span className={`block whitespace-nowrap rounded-full border-[1.5px] border-current px-3 py-1.5 text-[clamp(15px,1.2vw,18px)] leading-none font-black tracking-[-.02em] shadow-[0_7px_20px_rgba(0,0,0,.42)] ${preview.action === "capture" ? "bg-[rgba(153,45,32,.96)] text-[#ffe3d8]" : "bg-[rgba(126,91,25,.96)] text-[#fff0bd]"}`}>
+              {preview.action === "capture" ? t.preview.capture : t.preview.stack}
             </span>
           )}
         </div>
@@ -86,6 +88,7 @@ export function Scene({
   activeMove: ActiveMove;
   onMoveComplete: () => void;
 }) {
+  const { t } = useI18n();
   const previewEdgeColors = useMemo(() => {
     const colors = new Map<string, string>();
     movePreviews.forEach((preview) => {
@@ -131,7 +134,7 @@ export function Scene({
               && Math.abs(preview.position[2] - placement.position[2]) < 0.1
             ));
             const stackLabel = !hasMovePreviewAtPosition && placement.count > 1 && placement.slot === placement.count - 1
-              ? placement.members.map((member) => `${player === 0 ? "청" : "홍"}${member + 1}`).join(" + ")
+              ? placement.members.map((member) => t.tokenTag(player as Player, member)).join(" + ")
               : null;
             return (
               <Token
