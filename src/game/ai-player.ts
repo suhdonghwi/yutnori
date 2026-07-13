@@ -45,19 +45,41 @@ const FUTURE_THROW_DEPTH = 2;
 const WIN_SCORE = 100_000;
 
 const THROW_DISTRIBUTION: WeightedThrow[] = [
-  { probability: 1 / 16, result: { id: "mo", steps: 5, flats: 0, extraThrow: true } },
-  { probability: 3 / 16, result: { id: "do", steps: 1, flats: 1, extraThrow: false } },
-  { probability: 1 / 16, result: { id: "backdo", steps: -1, flats: 1, extraThrow: false } },
-  { probability: 6 / 16, result: { id: "gae", steps: 2, flats: 2, extraThrow: false } },
-  { probability: 4 / 16, result: { id: "geol", steps: 3, flats: 3, extraThrow: false } },
-  { probability: 1 / 16, result: { id: "yut", steps: 4, flats: 4, extraThrow: true } },
+  {
+    probability: 1 / 16,
+    result: { id: "mo", steps: 5, flats: 0, extraThrow: true },
+  },
+  {
+    probability: 3 / 16,
+    result: { id: "do", steps: 1, flats: 1, extraThrow: false },
+  },
+  {
+    probability: 1 / 16,
+    result: { id: "backdo", steps: -1, flats: 1, extraThrow: false },
+  },
+  {
+    probability: 6 / 16,
+    result: { id: "gae", steps: 2, flats: 2, extraThrow: false },
+  },
+  {
+    probability: 4 / 16,
+    result: { id: "geol", steps: 3, flats: 3, extraThrow: false },
+  },
+  {
+    probability: 1 / 16,
+    result: { id: "yut", steps: 4, flats: 4, extraThrow: true },
+  },
 ];
 
 function otherPlayer(player: Player): Player {
   return player === 0 ? 1 : 0;
 }
 
-function legalCandidates(board: BoardState, player: Player, result: ThrowResult): Candidate[] {
+function legalCandidates(
+  board: BoardState,
+  player: Player,
+  result: ThrowResult,
+): Candidate[] {
   const candidates: Candidate[] = [];
 
   board[player].forEach((piece, pieceIndex) => {
@@ -71,7 +93,13 @@ function legalCandidates(board: BoardState, player: Player, result: ThrowResult)
       candidates.push({
         pieceIndex,
         routeChoice,
-        resolution: resolveMove(board, player, pieceIndex, result.steps, routeChoice),
+        resolution: resolveMove(
+          board,
+          player,
+          pieceIndex,
+          result.steps,
+          routeChoice,
+        ),
       });
     });
   });
@@ -93,20 +121,27 @@ function stackBonus(board: BoardState, player: Player): number {
     const key = `${piece.route}:${piece.index}`;
     stacks.set(key, (stacks.get(key) ?? 0) + 1);
   });
-  return [...stacks.values()].reduce((score, count) => score + Math.max(0, count - 1) * 14, 0);
+  return [...stacks.values()].reduce(
+    (score, count) => score + Math.max(0, count - 1) * 14,
+    0,
+  );
 }
 
 function evaluateBoard(board: BoardState): number {
-  const teamScore = (player: Player) => (
-    board[player].reduce((score, piece) => score + pieceValue(piece), 0)
-    + stackBonus(board, player)
-  );
+  const teamScore = (player: Player) =>
+    board[player].reduce((score, piece) => score + pieceValue(piece), 0) +
+    stackBonus(board, player);
   return teamScore(AI_PLAYER) - teamScore(0);
 }
 
 function boardKey(board: BoardState): string {
   return board
-    .flatMap((pieces) => pieces.map((piece) => `${piece.status[0]}:${piece.route}:${piece.index}:${piece.stackOrder}`))
+    .flatMap((pieces) =>
+      pieces.map(
+        (piece) =>
+          `${piece.status[0]}:${piece.route}:${piece.index}:${piece.stackOrder}`,
+      ),
+    )
     .join("|");
 }
 
@@ -121,9 +156,19 @@ function expectedThrowValue(
   const cached = memo.get(key);
   if (cached !== undefined) return cached;
 
-  const value = THROW_DISTRIBUTION.reduce((sum, outcome) => (
-    sum + outcome.probability * bestKnownThrowValue(board, player, outcome.result, remainingThrows, memo)
-  ), 0);
+  const value = THROW_DISTRIBUTION.reduce(
+    (sum, outcome) =>
+      sum +
+      outcome.probability *
+        bestKnownThrowValue(
+          board,
+          player,
+          outcome.result,
+          remainingThrows,
+          memo,
+        ),
+    0,
+  );
   memo.set(key, value);
   return value;
 }
@@ -135,10 +180,17 @@ function candidateValue(
   remainingThrows: number,
   memo: Map<string, number>,
 ): number {
-  if (candidate.resolution.won) return player === AI_PLAYER ? WIN_SCORE : -WIN_SCORE;
-  const keepsTurn = result.extraThrow || candidate.resolution.capturedPieces.length > 0;
+  if (candidate.resolution.won)
+    return player === AI_PLAYER ? WIN_SCORE : -WIN_SCORE;
+  const keepsTurn =
+    result.extraThrow || candidate.resolution.capturedPieces.length > 0;
   const nextPlayer = keepsTurn ? player : otherPlayer(player);
-  return expectedThrowValue(candidate.resolution.board, nextPlayer, remainingThrows - 1, memo);
+  return expectedThrowValue(
+    candidate.resolution.board,
+    nextPlayer,
+    remainingThrows - 1,
+    memo,
+  );
 }
 
 function bestKnownThrowValue(
@@ -150,10 +202,17 @@ function bestKnownThrowValue(
 ): number {
   const candidates = legalCandidates(board, player, result);
   if (candidates.length === 0) {
-    return expectedThrowValue(board, otherPlayer(player), remainingThrows - 1, memo);
+    return expectedThrowValue(
+      board,
+      otherPlayer(player),
+      remainingThrows - 1,
+      memo,
+    );
   }
 
-  const values = candidates.map((candidate) => candidateValue(candidate, player, result, remainingThrows, memo));
+  const values = candidates.map((candidate) =>
+    candidateValue(candidate, player, result, remainingThrows, memo),
+  );
   return player === AI_PLAYER ? Math.max(...values) : Math.min(...values);
 }
 
@@ -163,12 +222,16 @@ function decisionReason(candidate: Candidate, result: ThrowResult): AiReason {
   if (candidate.resolution.capturedPieces.length > 0) return "capture";
   if (candidate.resolution.stackedPieces.length > 0) return "stack";
   if (candidate.routeChoice === "shortcut") return "shortcut";
-  if (canChooseRoute(candidate.resolution.destination, result.steps)) return "prepareShortcut";
+  if (canChooseRoute(candidate.resolution.destination, result.steps))
+    return "prepareShortcut";
   if (result.steps < 0) return "backdoRetreat";
   return "expectedFinish";
 }
 
-export function chooseAiMove(board: BoardState, result: ThrowResult): AiDecision | null {
+export function chooseAiMove(
+  board: BoardState,
+  result: ThrowResult,
+): AiDecision | null {
   const candidates = legalCandidates(board, AI_PLAYER, result);
   if (candidates.length === 0) return null;
 
@@ -177,7 +240,13 @@ export function chooseAiMove(board: BoardState, result: ThrowResult): AiDecision
   let bestScore = -Infinity;
 
   candidates.forEach((candidate) => {
-    const score = candidateValue(candidate, AI_PLAYER, result, FUTURE_THROW_DEPTH + 1, memo);
+    const score = candidateValue(
+      candidate,
+      AI_PLAYER,
+      result,
+      FUTURE_THROW_DEPTH + 1,
+      memo,
+    );
     if (score > bestScore) {
       bestScore = score;
       bestCandidate = candidate;

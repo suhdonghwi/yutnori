@@ -5,7 +5,10 @@ import { LOCALES, useI18n, type LocaleId } from ".";
 // locales에 두 번째 언어를 등록하는 순간 자동으로 나타납니다.
 export function LanguageSwitcher({ className = "" }: { className?: string }) {
   const { locale, setLocale, t } = useI18n();
-  const entries = Object.entries(LOCALES) as [LocaleId, (typeof LOCALES)[LocaleId]][];
+  const entries = Object.entries(LOCALES) as [
+    LocaleId,
+    (typeof LOCALES)[LocaleId],
+  ][];
   if (entries.length < 2) return null;
 
   return (
@@ -18,7 +21,9 @@ export function LanguageSwitcher({ className = "" }: { className?: string }) {
         onChange={(event) => setLocale(event.target.value as LocaleId)}
       >
         {entries.map(([id, definition]) => (
-          <option key={id} value={id}>{definition.label}</option>
+          <option key={id} value={id}>
+            {definition.label}
+          </option>
         ))}
       </select>
     </label>

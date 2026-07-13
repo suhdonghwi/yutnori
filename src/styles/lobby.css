@@ -1,9 +1,19 @@
 .lobby-shell {
   background:
-    radial-gradient(circle at 76% 44%, rgba(104, 62, 34, .22), transparent 35%),
-    radial-gradient(circle at 19% 14%, rgba(31, 82, 70, .2), transparent 36%),
+    radial-gradient(
+      circle at 76% 44%,
+      rgba(104, 62, 34, 0.22),
+      transparent 35%
+    ),
+    radial-gradient(circle at 19% 14%, rgba(31, 82, 70, 0.2), transparent 36%),
     linear-gradient(135deg, #14231c 0%, #09110e 55%, #121a16 100%);
 }
 
-.rules-backdrop { animation: rules-in .18s ease-out both; }
-@keyframes rules-in { from { opacity: 0; } }
+.rules-backdrop {
+  animation: rules-in 0.18s ease-out both;
+}
+@keyframes rules-in {
+  from {
+    opacity: 0;
+  }
+}

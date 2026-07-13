@@ -118,7 +118,8 @@ export const ko = {
     aiPreparingThrow: (team: string) => `${team} AI가 윷을 준비하는 중`,
     playerTurn: (team: string) => `${team}의 차례입니다`,
     aiJudgingThrow: (team: string) => `${team} AI가 던진 윷을 판정하는 중`,
-    waitingForSticks: (team: string) => `${josa(team, "이/가")} 던진 윷을 판정하는 중`,
+    waitingForSticks: (team: string) =>
+      `${josa(team, "이/가")} 던진 윷을 판정하는 중`,
     aiDecision: (reason: string) => `AI 판단 · ${reason}`,
     aiComputing: "AI가 최선의 수를 계산하는 중",
     backdoMove: "빽도 · 움직일 말을 골라 한 칸 뒤로 가세요",

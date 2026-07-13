@@ -4,14 +4,21 @@
   --night: #0d1713;
   --blue: #174c6b;
   --red: #a63f31;
-  --font-primary: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", sans-serif;
+  --font-primary:
+    "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", sans-serif;
   --font-geist-sans: var(--font-primary);
   --font-noto-serif-kr: var(--font-primary);
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body { margin: 0; min-height: 100%; }
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
 
 body {
   background: var(--night);
@@ -19,7 +26,9 @@ body {
   font-family: var(--font-noto-serif-kr), "Apple SD Gothic Neo", serif;
 }
 
-button { font: inherit; }
+button {
+  font: inherit;
+}
 
 .game-shell {
   position: relative;
@@ -29,7 +38,10 @@ button { font: inherit; }
   flex-direction: column;
   isolation: isolate;
   background:
-    radial-gradient(circle at 50% 45%, rgba(102, 75, 44, .24), transparent 38%),
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(102, 75, 44, 0.24),
+      transparent 38%
+    ),
     linear-gradient(135deg, #13221b 0%, #0a120f 48%, #111b17 100%);
 }
-

@@ -39,9 +39,19 @@ function LobbyToken({
         <>
           <mesh position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <ringGeometry args={[0.45, 0.56, 48]} />
-            <meshBasicMaterial color="#e7c678" transparent opacity={0.75} depthWrite={false} />
+            <meshBasicMaterial
+              color="#e7c678"
+              transparent
+              opacity={0.75}
+              depthWrite={false}
+            />
           </mesh>
-          <pointLight color={color} intensity={3.2} distance={3.4} position={[0, 0.55, 0]} />
+          <pointLight
+            color={color}
+            intensity={3.2}
+            distance={3.4}
+            position={[0, 0.55, 0]}
+          />
         </>
       )}
     </group>
@@ -81,10 +91,30 @@ function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
 
   useFrame(({ pointer }, delta) => {
     if (!rig.current) return;
-    rig.current.rotation.y = THREE.MathUtils.damp(rig.current.rotation.y, pointer.x * 0.065 - 0.06, 4.5, delta);
-    rig.current.rotation.x = THREE.MathUtils.damp(rig.current.rotation.x, pointer.y * -0.025, 4.5, delta);
-    rig.current.position.x = THREE.MathUtils.damp(rig.current.position.x, pointer.x * 0.16, 4.2, delta);
-    rig.current.position.y = THREE.MathUtils.damp(rig.current.position.y, -0.72 + pointer.y * 0.055, 4.2, delta);
+    rig.current.rotation.y = THREE.MathUtils.damp(
+      rig.current.rotation.y,
+      pointer.x * 0.065 - 0.06,
+      4.5,
+      delta,
+    );
+    rig.current.rotation.x = THREE.MathUtils.damp(
+      rig.current.rotation.x,
+      pointer.y * -0.025,
+      4.5,
+      delta,
+    );
+    rig.current.position.x = THREE.MathUtils.damp(
+      rig.current.position.x,
+      pointer.x * 0.16,
+      4.2,
+      delta,
+    );
+    rig.current.position.y = THREE.MathUtils.damp(
+      rig.current.position.y,
+      -0.72 + pointer.y * 0.055,
+      4.2,
+      delta,
+    );
   });
 
   return (
@@ -97,25 +127,58 @@ function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
         position={[5, 10, 6]}
         shadow-mapSize={[2048, 2048]}
       />
-      <pointLight color="#9a5b31" distance={17} intensity={20} position={[-6, 4, -2]} />
-      <pointLight color="#174c6b" distance={12} intensity={previewMode === "local" ? 11 : 4} position={[-5, 2, 4]} />
-      <pointLight color="#a63f31" distance={12} intensity={previewMode === "ai" ? 11 : 4} position={[5, 2, 4]} />
+      <pointLight
+        color="#9a5b31"
+        distance={17}
+        intensity={20}
+        position={[-6, 4, -2]}
+      />
+      <pointLight
+        color="#174c6b"
+        distance={12}
+        intensity={previewMode === "local" ? 11 : 4}
+        position={[-5, 2, 4]}
+      />
+      <pointLight
+        color="#a63f31"
+        distance={12}
+        intensity={previewMode === "ai" ? 11 : 4}
+        position={[5, 2, 4]}
+      />
 
       <group ref={rig} position={[0, -0.72, 0]} scale={0.78}>
         <BoardSurface />
-        <LobbyToken color="#174c6b" highlighted={previewMode === "local"} position={[-3.55, 0.06, 3.1]} />
-        <LobbyToken color="#a63f31" highlighted={previewMode === "ai"} position={[3.35, 0.06, 2.4]} />
+        <LobbyToken
+          color="#174c6b"
+          highlighted={previewMode === "local"}
+          position={[-3.55, 0.06, 3.1]}
+        />
+        <LobbyToken
+          color="#a63f31"
+          highlighted={previewMode === "ai"}
+          position={[3.35, 0.06, 2.4]}
+        />
         {[0, 1, 2, 3].map((index) => (
           <FloatingYut key={index} index={index} />
         ))}
       </group>
 
-      <ContactShadows position={[0, -1.05, 0]} opacity={0.46} scale={17} blur={2.8} far={9} />
+      <ContactShadows
+        position={[0, -1.05, 0]}
+        opacity={0.46}
+        scale={17}
+        blur={2.8}
+        far={9}
+      />
     </>
   );
 }
 
-export function LobbyScene({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
+export function LobbyScene({
+  previewMode,
+}: {
+  previewMode: LobbyPreviewMode | null;
+}) {
   return (
     <Canvas
       shadows

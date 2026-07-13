@@ -4,9 +4,10 @@ const MASTER_LEVEL = 1.02;
 let audioContext: AudioContext | null = null;
 let masterGain: GainNode | null = null;
 let noiseBuffer: AudioBuffer | null = null;
-let enabled = typeof window === "undefined"
-  ? true
-  : window.localStorage.getItem(STORAGE_KEY) !== "false";
+let enabled =
+  typeof window === "undefined"
+    ? true
+    : window.localStorage.getItem(STORAGE_KEY) !== "false";
 let lastImpactAt = 0;
 
 function ensureAudio() {
@@ -46,13 +47,25 @@ function connectWithPan(context: AudioContext, input: AudioNode, pan: number) {
   panner.connect(masterGain!);
 }
 
-function shapeEnvelope(gain: AudioParam, at: number, peak: number, attack: number, decay: number) {
+function shapeEnvelope(
+  gain: AudioParam,
+  at: number,
+  peak: number,
+  attack: number,
+  decay: number,
+) {
   gain.setValueAtTime(0.0001, at);
   gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), at + attack);
   gain.exponentialRampToValueAtTime(0.0001, at + attack + decay);
 }
 
-function woodKnock(context: AudioContext, at: number, volume: number, pitch: number, pan = 0) {
+function woodKnock(
+  context: AudioContext,
+  at: number,
+  volume: number,
+  pitch: number,
+  pan = 0,
+) {
   const toneGain = context.createGain();
   shapeEnvelope(toneGain.gain, at, volume, 0.0025, 0.105);
   connectWithPan(context, toneGain, pan);
@@ -91,7 +104,12 @@ function woodKnock(context: AudioContext, at: number, volume: number, pitch: num
   click.stop(at + 0.04);
 }
 
-function resultTone(context: AudioContext, at: number, volume: number, pitch: number) {
+function resultTone(
+  context: AudioContext,
+  at: number,
+  volume: number,
+  pitch: number,
+) {
   const gain = context.createGain();
   shapeEnvelope(gain.gain, at, volume, 0.006, 0.34);
   gain.connect(masterGain!);
@@ -129,7 +147,8 @@ export const gameSfx = {
 
   setEnabled(next: boolean) {
     enabled = next;
-    if (typeof window !== "undefined") window.localStorage.setItem(STORAGE_KEY, String(next));
+    if (typeof window !== "undefined")
+      window.localStorage.setItem(STORAGE_KEY, String(next));
     if (!next && masterGain && audioContext) {
       masterGain.gain.cancelScheduledValues(audioContext.currentTime);
       masterGain.gain.setTargetAtTime(0.0001, audioContext.currentTime, 0.018);

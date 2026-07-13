@@ -55,7 +55,9 @@ function createYutGeometry() {
 }
 
 const YUT_GEOMETRY = createYutGeometry();
-const YUT_COLLIDER_VERTICES = new Float32Array(YUT_GEOMETRY.attributes.position.array);
+const YUT_COLLIDER_VERTICES = new Float32Array(
+  YUT_GEOMETRY.attributes.position.array,
+);
 const YUT_WOOD_TONES = ["#b98a52", "#c3975d", "#ad7d48", "#c69d65"] as const;
 
 function YutImpactBurst({
@@ -71,15 +73,28 @@ function YutImpactBurst({
 }) {
   const meshes = useRef<(THREE.Mesh | null)[]>([]);
   const elapsed = useRef(0);
-  const particles = useMemo(() => Array.from({ length: 12 }, (_, index) => {
-    const angle = (index / 12) * Math.PI * 2 + Math.random() * 0.28;
-    const speed = (0.8 + Math.random() * 0.9) * intensity;
-    return {
-      velocity: new THREE.Vector3(Math.cos(angle) * speed, 1.2 + Math.random() * 1.7, Math.sin(angle) * speed),
-      size: 0.045 + Math.random() * 0.055,
-      color: index % 3 === 0 ? "#fff0b8" : index % 2 === 0 ? "#d9ad64" : "#9b7041",
-    };
-  }), [intensity]);
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, index) => {
+        const angle = (index / 12) * Math.PI * 2 + Math.random() * 0.28;
+        const speed = (0.8 + Math.random() * 0.9) * intensity;
+        return {
+          velocity: new THREE.Vector3(
+            Math.cos(angle) * speed,
+            1.2 + Math.random() * 1.7,
+            Math.sin(angle) * speed,
+          ),
+          size: 0.045 + Math.random() * 0.055,
+          color:
+            index % 3 === 0
+              ? "#fff0b8"
+              : index % 2 === 0
+                ? "#d9ad64"
+                : "#9b7041",
+        };
+      }),
+    [intensity],
+  );
 
   useEffect(() => {
     const timeout = window.setTimeout(() => onComplete(id), 850);
@@ -108,9 +123,19 @@ function YutImpactBurst({
   return (
     <group position={position}>
       {particles.map((particle, index) => (
-        <mesh key={index} ref={(mesh) => { meshes.current[index] = mesh; }}>
+        <mesh
+          key={index}
+          ref={(mesh) => {
+            meshes.current[index] = mesh;
+          }}
+        >
           <sphereGeometry args={[1, 6, 6]} />
-          <meshBasicMaterial color={particle.color} transparent opacity={0.9} depthWrite={false} />
+          <meshBasicMaterial
+            color={particle.color}
+            transparent
+            opacity={0.9}
+            depthWrite={false}
+          />
         </mesh>
       ))}
     </group>
@@ -126,7 +151,8 @@ function FlatBackdoX({ glowing }: { glowing: boolean }) {
     const pulse = 0.5 + Math.sin(clock.elapsedTime * 10) * 0.5;
     if (ring.current) {
       ring.current.scale.setScalar(1 + pulse * 0.35);
-      (ring.current.material as THREE.MeshBasicMaterial).opacity = 0.42 + pulse * 0.38;
+      (ring.current.material as THREE.MeshBasicMaterial).opacity =
+        0.42 + pulse * 0.38;
     }
     if (light.current) light.current.intensity = 2.8 + pulse * 3.4;
   });
@@ -143,19 +169,46 @@ function FlatBackdoX({ glowing }: { glowing: boolean }) {
       </mesh>
       <mesh rotation={[0, Math.PI / 4, 0]}>
         <boxGeometry args={[0.052, 0.005, 0.34]} />
-        <meshStandardMaterial color="#2b211b" roughness={1} emissive="#ff241c" emissiveIntensity={glowing ? 4.2 : 0} />
+        <meshStandardMaterial
+          color="#2b211b"
+          roughness={1}
+          emissive="#ff241c"
+          emissiveIntensity={glowing ? 4.2 : 0}
+        />
       </mesh>
       <mesh rotation={[0, -Math.PI / 4, 0]}>
         <boxGeometry args={[0.052, 0.005, 0.34]} />
-        <meshStandardMaterial color="#2b211b" roughness={1} emissive="#ff241c" emissiveIntensity={glowing ? 4.2 : 0} />
+        <meshStandardMaterial
+          color="#2b211b"
+          roughness={1}
+          emissive="#ff241c"
+          emissiveIntensity={glowing ? 4.2 : 0}
+        />
       </mesh>
       {glowing && (
         <>
-          <mesh ref={ring} position={[0, -0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <mesh
+            ref={ring}
+            position={[0, -0.02, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
             <ringGeometry args={[0.25, 0.32, 40]} />
-            <meshBasicMaterial color="#ff3b2f" transparent opacity={0.72} depthWrite={false} blending={THREE.AdditiveBlending} side={THREE.DoubleSide} />
+            <meshBasicMaterial
+              color="#ff3b2f"
+              transparent
+              opacity={0.72}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              side={THREE.DoubleSide}
+            />
           </mesh>
-          <pointLight ref={light} color="#ff3026" intensity={4} distance={2.3} position={[0, -0.24, 0]} />
+          <pointLight
+            ref={light}
+            color="#ff3026"
+            intensity={4}
+            distance={2.3}
+            position={[0, -0.24, 0]}
+          />
         </>
       )}
     </group>
@@ -226,7 +279,12 @@ function PhysicsYutStick({
     const translation = rigidBody.translation();
     const rotation = rigidBody.rotation();
     prepareStart.current.set(translation.x, translation.y, translation.z);
-    prepareStartRotation.current.set(rotation.x, rotation.y, rotation.z, rotation.w);
+    prepareStartRotation.current.set(
+      rotation.x,
+      rotation.y,
+      rotation.z,
+      rotation.w,
+    );
     launchAfterPrepare.current = nonce > 0;
 
     if (nonce === 0) {
@@ -237,11 +295,13 @@ function PhysicsYutStick({
     } else {
       const direction = index - 1.5;
       prepareEnd.current.set(direction * 0.95, 1.32 + (index % 2) * 0.22, 1.15);
-      prepareEndRotation.current.setFromEuler(new THREE.Euler(
-        (Math.random() - 0.5) * 0.34,
-        (Math.random() - 0.5) * 0.12,
-        (Math.random() - 0.5) * 0.22,
-      ));
+      prepareEndRotation.current.setFromEuler(
+        new THREE.Euler(
+          (Math.random() - 0.5) * 0.34,
+          (Math.random() - 0.5) * 0.12,
+          (Math.random() - 0.5) * 0.22,
+        ),
+      );
       launchVelocity.current.set(
         direction * 1.02 + (Math.random() - 0.5) * 0.95,
         9.1 + Math.random() * 1.7,
@@ -269,9 +329,13 @@ function PhysicsYutStick({
     prepareElapsed.current = Math.min(0.58, prepareElapsed.current + delta);
     const t = prepareElapsed.current / 0.58;
     const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    const position = prepareStart.current.clone().lerp(prepareEnd.current, eased);
+    const position = prepareStart.current
+      .clone()
+      .lerp(prepareEnd.current, eased);
     position.y += Math.sin(Math.PI * t) * 0.52;
-    const rotation = prepareStartRotation.current.clone().slerp(prepareEndRotation.current, eased);
+    const rotation = prepareStartRotation.current
+      .clone()
+      .slerp(prepareEndRotation.current, eased);
     rigidBody.setTranslation(position, true);
     rigidBody.setRotation(rotation, true);
     rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
@@ -304,7 +368,9 @@ function PhysicsYutStick({
       angularDamping={0.48}
       ccd
       canSleep
-      onSleep={() => !preparing.current && body.current && onSleep(index, body.current)}
+      onSleep={() =>
+        !preparing.current && body.current && onSleep(index, body.current)
+      }
       onCollisionEnter={() => {
         const rigidBody = body.current;
         if (!rigidBody || preparing.current || nonce === 0) return;
@@ -312,7 +378,12 @@ function PhysicsYutStick({
         const velocity = rigidBody.linvel();
         const speed = Math.hypot(velocity.x, velocity.y, velocity.z);
         const now = performance.now();
-        if (position.y > 0.85 || speed < 2.25 || now - lastImpactAt.current < 150) return;
+        if (
+          position.y > 0.85 ||
+          speed < 2.25 ||
+          now - lastImpactAt.current < 150
+        )
+          return;
         lastImpactAt.current = now;
         onImpact(
           [position.x, Math.max(0.12, position.y - 0.2), position.z],
@@ -320,8 +391,17 @@ function PhysicsYutStick({
         );
       }}
     >
-      <ConvexHullCollider args={[YUT_COLLIDER_VERTICES]} friction={0.92} restitution={0.34} contactSkin={0.028} />
-      <YutStickMesh backdo={index === 0} backdoGlow={backdoGlow} variant={index} />
+      <ConvexHullCollider
+        args={[YUT_COLLIDER_VERTICES]}
+        friction={0.92}
+        restitution={0.34}
+        contactSkin={0.028}
+      />
+      <YutStickMesh
+        backdo={index === 0}
+        backdoGlow={backdoGlow}
+        variant={index}
+      />
     </RigidBody>
   );
 }
@@ -339,7 +419,9 @@ export function YutPhysics({
   const retries = useRef([0, 0, 0, 0]);
   const completed = useRef(false);
   const burstId = useRef(0);
-  const [impactBursts, setImpactBursts] = useState<{ id: number; position: [number, number, number]; intensity: number }[]>([]);
+  const [impactBursts, setImpactBursts] = useState<
+    { id: number; position: [number, number, number]; intensity: number }[]
+  >([]);
   const [backdoGlow, setBackdoGlow] = useState(false);
 
   useEffect(() => {
@@ -356,49 +438,91 @@ export function YutPhysics({
     return () => window.clearTimeout(timeout);
   }, [backdoGlow]);
 
-  const handleImpact = useCallback((position: [number, number, number], intensity: number) => {
-    gameSfx.playYutImpact(intensity, THREE.MathUtils.clamp(position[0] / 5.7, -1, 1));
-    burstId.current += 1;
-    const burst = { id: burstId.current, position, intensity };
-    setImpactBursts((bursts) => [...bursts.slice(-7), burst]);
-  }, []);
+  const handleImpact = useCallback(
+    (position: [number, number, number], intensity: number) => {
+      gameSfx.playYutImpact(
+        intensity,
+        THREE.MathUtils.clamp(position[0] / 5.7, -1, 1),
+      );
+      burstId.current += 1;
+      const burst = { id: burstId.current, position, intensity };
+      setImpactBursts((bursts) => [...bursts.slice(-7), burst]);
+    },
+    [],
+  );
 
   const removeImpactBurst = useCallback((id: number) => {
     setImpactBursts((bursts) => bursts.filter((burst) => burst.id !== id));
   }, []);
 
-  const handleSleep = useCallback((index: number, body: RapierRigidBody) => {
-    if (!rolling || completed.current) return;
-    const rotation = body.rotation();
-    const flatNormal = new THREE.Vector3(0, -1, 0).applyQuaternion(
-      new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w),
-    );
+  const handleSleep = useCallback(
+    (index: number, body: RapierRigidBody) => {
+      if (!rolling || completed.current) return;
+      const rotation = body.rotation();
+      const flatNormal = new THREE.Vector3(0, -1, 0).applyQuaternion(
+        new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w),
+      );
 
-    if (Math.abs(flatNormal.y) < 0.42 && retries.current[index] < 2) {
-      retries.current[index] += 1;
-      body.wakeUp();
-      body.applyTorqueImpulse({ x: 0.18 * (index % 2 ? 1 : -1), y: 0.03, z: 0.14 }, true);
-      return;
-    }
+      if (Math.abs(flatNormal.y) < 0.42 && retries.current[index] < 2) {
+        retries.current[index] += 1;
+        body.wakeUp();
+        body.applyTorqueImpulse(
+          { x: 0.18 * (index % 2 ? 1 : -1), y: 0.03, z: 0.14 },
+          true,
+        );
+        return;
+      }
 
-    outcomes.current[index] = flatNormal.y > 0;
-    if (outcomes.current.every((value) => value !== null)) {
-      completed.current = true;
-      const flats = outcomes.current.filter(Boolean).length;
-      const isBackdo = flats === 1 && outcomes.current[0] === true;
-      setBackdoGlow(isBackdo);
-      onSettled(flats, isBackdo);
-    }
-  }, [onSettled, rolling]);
+      outcomes.current[index] = flatNormal.y > 0;
+      if (outcomes.current.every((value) => value !== null)) {
+        completed.current = true;
+        const flats = outcomes.current.filter(Boolean).length;
+        const isBackdo = flats === 1 && outcomes.current[0] === true;
+        setBackdoGlow(isBackdo);
+        onSettled(flats, isBackdo);
+      }
+    },
+    [onSettled, rolling],
+  );
 
   return (
-    <Physics key="world-y0-v3" gravity={[0, -12.8, 0]} timeStep={1 / 60} paused={!rolling && nonce === 0}>
+    <Physics
+      key="world-y0-v3"
+      gravity={[0, -12.8, 0]}
+      timeStep={1 / 60}
+      paused={!rolling && nonce === 0}
+    >
       <RigidBody type="fixed" colliders={false}>
-        <CuboidCollider args={[5.74, 0.13, 5.54]} position={[0, -0.05, 0]} friction={0.95} restitution={0.2} />
-        <CuboidCollider args={[0.28, 5.5, 5.9]} position={[-5.72, 5.5, 0]} friction={0.72} restitution={0.2} />
-        <CuboidCollider args={[0.28, 5.5, 5.9]} position={[5.72, 5.5, 0]} friction={0.72} restitution={0.2} />
-        <CuboidCollider args={[5.95, 5.5, 0.28]} position={[0, 5.5, -5.52]} friction={0.72} restitution={0.2} />
-        <CuboidCollider args={[5.95, 5.5, 0.28]} position={[0, 5.5, 5.52]} friction={0.72} restitution={0.2} />
+        <CuboidCollider
+          args={[5.74, 0.13, 5.54]}
+          position={[0, -0.05, 0]}
+          friction={0.95}
+          restitution={0.2}
+        />
+        <CuboidCollider
+          args={[0.28, 5.5, 5.9]}
+          position={[-5.72, 5.5, 0]}
+          friction={0.72}
+          restitution={0.2}
+        />
+        <CuboidCollider
+          args={[0.28, 5.5, 5.9]}
+          position={[5.72, 5.5, 0]}
+          friction={0.72}
+          restitution={0.2}
+        />
+        <CuboidCollider
+          args={[5.95, 5.5, 0.28]}
+          position={[0, 5.5, -5.52]}
+          friction={0.72}
+          restitution={0.2}
+        />
+        <CuboidCollider
+          args={[5.95, 5.5, 0.28]}
+          position={[0, 5.5, 5.52]}
+          friction={0.72}
+          restitution={0.2}
+        />
       </RigidBody>
       {[0, 1, 2, 3].map((index) => (
         <PhysicsYutStick
@@ -411,7 +535,11 @@ export function YutPhysics({
         />
       ))}
       {impactBursts.map((burst) => (
-        <YutImpactBurst key={burst.id} {...burst} onComplete={removeImpactBurst} />
+        <YutImpactBurst
+          key={burst.id}
+          {...burst}
+          onComplete={removeImpactBurst}
+        />
       ))}
     </Physics>
   );

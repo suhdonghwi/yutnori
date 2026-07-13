@@ -88,11 +88,11 @@ Use three independently versioned and deployed projects:
 
 Recommended ownership:
 
-| Project | Owns | Must not own |
-| --- | --- | --- |
+| Project | Owns                                                                                            | Must not own                                                     |
+| ------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | Gateway | TLS, HTTP-to-HTTPS, canonical host redirects, path dispatch, compression, generic proxy headers | UI, authentication, game logic, database behavior, API semantics |
-| Orirang | Orirang client, API servers, database, migrations, application maintenance behavior | Yutnori configuration |
-| Yutnori | Static client, future multiplayer server, its data/services | Orirang configuration |
+| Orirang | Orirang client, API servers, database, migrations, application maintenance behavior             | Yutnori configuration                                            |
+| Yutnori | Static client, future multiplayer server, its data/services                                     | Orirang configuration                                            |
 
 Prefer a small dedicated Git repository for `gateway`. If that is not desired, it may be managed as a standalone directory, but its deployment must still be independent of both application workflows.
 
@@ -268,7 +268,11 @@ services:
     expose:
       - "80"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:2019/config/ >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:2019/config/ >/dev/null || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 6
@@ -302,7 +306,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "node -e \"fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+          'node -e "fetch(''http://127.0.0.1:3000/healthz'').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"',
         ]
       interval: 10s
       timeout: 5s
@@ -322,12 +326,12 @@ The API must be written with the chosen prefix contract in mind. Because `handle
 
 At Porkbun, replace the two parking records for `jammy.fun`:
 
-| Action | Type | Host | Answer/value | TTL |
-| --- | --- | --- | --- | --- |
+| Action | Type  | Host               | Answer/value        | TTL |
+| ------ | ----- | ------------------ | ------------------- | --- |
 | Delete | ALIAS | root (`jammy.fun`) | `pixie.porkbun.com` | 600 |
-| Delete | CNAME | `*` | `pixie.porkbun.com` | 600 |
-| Add | A | root/blank | `3.39.39.154` | 600 |
-| Add | CNAME | `www` | `jammy.fun` | 600 |
+| Delete | CNAME | `*`                | `pixie.porkbun.com` | 600 |
+| Add    | A     | root/blank         | `3.39.39.154`       | 600 |
+| Add    | CNAME | `www`              | `jammy.fun`         | 600 |
 
 Do not add a wildcard record unless a concrete wildcard-subdomain requirement appears later.
 
@@ -438,9 +442,9 @@ The following work is safe to prepare before requesting cutover permission, prov
 10. Start a candidate gateway on loopback-only alternate ports, for example `127.0.0.1:8080` and `127.0.0.1:8443`, without touching ports 80/443.
 11. Validate configuration:
 
-   ```bash
-   docker compose run --rm caddy caddy validate --config /etc/caddy/Caddyfile
-   ```
+```bash
+docker compose run --rm caddy caddy validate --config /etc/caddy/Caddyfile
+```
 
 12. Exercise host-based routing against the candidate gateway using explicit `Host` headers. Toggle maintenance through Orirang's existing command and prove the candidate gateway passes through both states without its own configuration changing.
 13. Record current container IDs, images, networks, Caddy configuration, volume names, and health states for rollback.

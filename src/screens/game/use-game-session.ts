@@ -34,13 +34,15 @@ export function useGameSession(mode: GameMode) {
   const [phase, setPhase] = useState<Phase>("ready");
   const [pieces, setPieces] = useState<BoardState>(() => createInitialBoard());
   const [result, setResult] = useState<ThrowResult | null>(null);
-  const [throwResultEffect, setThrowResultEffect] = useState<ThrowResultEffectState>(null);
+  const [throwResultEffect, setThrowResultEffect] =
+    useState<ThrowResultEffectState>(null);
   const [nonce, setNonce] = useState(0);
   const [winner, setWinner] = useState<Player | null>(null);
   const [hoveredToken, setHoveredToken] = useState<HoveredToken>(null);
   const [activeMove, setActiveMove] = useState<ActiveMove>(null);
   const [pendingRoute, setPendingRoute] = useState<PendingRoute>(null);
-  const [hoveredRouteChoice, setHoveredRouteChoice] = useState<RouteChoice | null>(null);
+  const [hoveredRouteChoice, setHoveredRouteChoice] =
+    useState<RouteChoice | null>(null);
   const [aiDecision, setAiDecision] = useState<AiDecision | null>(null);
   const [notice, setNotice] = useState<MessageRef | null>(null);
   const [sfxEnabled, setSfxEnabled] = useState(() => gameSfx.isEnabled());
@@ -49,8 +51,9 @@ export function useGameSession(mode: GameMode) {
   const throwEffectId = useRef(0);
   const otherPlayer = (current === 0 ? 1 : 0) as Player;
   const isAiTurn = mode === "ai" && current === 1;
-  const routeChoiceFromCenter = pendingRoute !== null
-    && nodeForPiece(pieces[current][pendingRoute.piece]) === "C";
+  const routeChoiceFromCenter =
+    pendingRoute !== null &&
+    nodeForPiece(pieces[current][pendingRoute.piece]) === "C";
   const previewWinner = useMemo<Player | null>(() => {
     if (!import.meta.env.DEV) return null;
     const value = new URLSearchParams(window.location.search).get("victory");
@@ -68,25 +71,38 @@ export function useGameSession(mode: GameMode) {
 
   const movePreviews = useMemo<MovePreview[]>(() => {
     if (!result) return [];
-    const pieceIndex = phase === "move" && aiDecision
-      ? aiDecision.pieceIndex
-      : phase === "move" && hoveredToken?.player === current
-        ? hoveredToken.piece
-      : phase === "route" && pendingRoute
-        ? pendingRoute.piece
-        : null;
+    const pieceIndex =
+      phase === "move" && aiDecision
+        ? aiDecision.pieceIndex
+        : phase === "move" && hoveredToken?.player === current
+          ? hoveredToken.piece
+          : phase === "route" && pendingRoute
+            ? pendingRoute.piece
+            : null;
     if (pieceIndex === null) return [];
     const piece = pieces[current][pieceIndex];
-    if (!isMovable(piece, result.steps) || groupLeader(pieces, current, pieceIndex) !== pieceIndex) return [];
+    if (
+      !isMovable(piece, result.steps) ||
+      groupLeader(pieces, current, pieceIndex) !== pieceIndex
+    )
+      return [];
 
     const hasRouteChoice = canChooseRoute(piece, result.steps);
     const choices: RouteChoice[] = aiDecision
       ? [aiDecision.routeChoice]
       : hasRouteChoice
-      ? phase === "route" && hoveredRouteChoice ? [hoveredRouteChoice] : ["shortcut", "outer"]
-      : ["outer"];
+        ? phase === "route" && hoveredRouteChoice
+          ? [hoveredRouteChoice]
+          : ["shortcut", "outer"]
+        : ["outer"];
     return choices.map((choice) => {
-      const resolution = resolveMove(pieces, current, pieceIndex, result.steps, choice);
+      const resolution = resolveMove(
+        pieces,
+        current,
+        pieceIndex,
+        result.steps,
+        choice,
+      );
       const destinationNode = nodeForPiece(resolution.destination);
       const sourceNode = nodeForPiece(piece);
       const destinationPosition = destinationNode
@@ -99,25 +115,43 @@ export function useGameSession(mode: GameMode) {
       return {
         key: `${pieceIndex}-${choice}`,
         position: destinationPosition,
-        label: resolution.destination.status === "finished"
-          ? t.preview.finished
-          : resolution.destination.status === "home"
-            ? t.preview.toHome
-            : isBranchPreview
-              ? isCenterPreview
-                ? choice === "shortcut" ? t.preview.fastShortcutArrival : t.preview.roundaboutArrival
-                : choice === "shortcut" ? t.preview.shortcutArrival : t.preview.outerArrival
-              : t.preview.arrival(t.yut[result.id]),
-        action: resolution.capturedPieces.length > 0
-          ? "capture" as const
-          : resolution.stackedPieces.length > 0
-            ? "stack" as const
-            : null,
+        label:
+          resolution.destination.status === "finished"
+            ? t.preview.finished
+            : resolution.destination.status === "home"
+              ? t.preview.toHome
+              : isBranchPreview
+                ? isCenterPreview
+                  ? choice === "shortcut"
+                    ? t.preview.fastShortcutArrival
+                    : t.preview.roundaboutArrival
+                  : choice === "shortcut"
+                    ? t.preview.shortcutArrival
+                    : t.preview.outerArrival
+                : t.preview.arrival(t.yut[result.id]),
+        action:
+          resolution.capturedPieces.length > 0
+            ? ("capture" as const)
+            : resolution.stackedPieces.length > 0
+              ? ("stack" as const)
+              : null,
         color: choice === "shortcut" ? "#f2cb72" : PLAYERS[current].glow,
-        pathNodes: sourceNode ? [sourceNode, ...resolution.waypoints] : resolution.waypoints,
+        pathNodes: sourceNode
+          ? [sourceNode, ...resolution.waypoints]
+          : resolution.waypoints,
       };
     });
-  }, [aiDecision, current, hoveredRouteChoice, hoveredToken, pendingRoute, phase, pieces, result, t]);
+  }, [
+    aiDecision,
+    current,
+    hoveredRouteChoice,
+    hoveredToken,
+    pendingRoute,
+    phase,
+    pieces,
+    result,
+    t,
+  ]);
 
   const throwYut = useCallback(() => {
     if (phase !== "ready") return;
@@ -128,20 +162,26 @@ export function useGameSession(mode: GameMode) {
     setPhase("rolling");
   }, [phase]);
 
-  const settleThrow = useCallback((flats: number, backdo: boolean) => {
-    const nextResult = backdo ? BACKDO_RESULT : RESULT_BY_FLATS[flats];
-    gameSfx.playResult(nextResult.steps);
-    throwEffectId.current += 1;
-    setThrowResultEffect({ id: throwEffectId.current, result: nextResult });
-    setResult(nextResult);
-    if (nextResult.steps < 0 && !pieces[current].some((piece) => piece.status === "board")) {
-      setCurrent(current === 0 ? 1 : 0);
-      setNotice(() => (messages: Messages) => messages.notice.backdoNoMoves);
-      setPhase("ready");
-      return;
-    }
-    setPhase("move");
-  }, [current, pieces]);
+  const settleThrow = useCallback(
+    (flats: number, backdo: boolean) => {
+      const nextResult = backdo ? BACKDO_RESULT : RESULT_BY_FLATS[flats];
+      gameSfx.playResult(nextResult.steps);
+      throwEffectId.current += 1;
+      setThrowResultEffect({ id: throwEffectId.current, result: nextResult });
+      setResult(nextResult);
+      if (
+        nextResult.steps < 0 &&
+        !pieces[current].some((piece) => piece.status === "board")
+      ) {
+        setCurrent(current === 0 ? 1 : 0);
+        setNotice(() => (messages: Messages) => messages.notice.backdoNoMoves);
+        setPhase("ready");
+        return;
+      }
+      setPhase("move");
+    },
+    [current, pieces],
+  );
 
   const handleMoveComplete = useCallback(() => {
     const move = activeMoveRef.current;
@@ -190,12 +230,19 @@ export function useGameSession(mode: GameMode) {
     setHoveredRouteChoice(null);
     setPendingRoute(null);
 
-    const resolution = resolveMove(pieces, current, pieceIndex, result.steps, routeChoice);
+    const resolution = resolveMove(
+      pieces,
+      current,
+      pieceIndex,
+      result.steps,
+      routeChoice,
+    );
     const waypointClearances = resolution.waypoints.map((node) => {
       let occupants = 0;
       pieces.forEach((playerPieces, player) => {
         playerPieces.forEach((piece, index) => {
-          const isMovingPiece = player === current && resolution.movedPieces.includes(index);
+          const isMovingPiece =
+            player === current && resolution.movedPieces.includes(index);
           if (!isMovingPiece && nodeForPiece(piece) === node) occupants += 1;
         });
       });
@@ -207,7 +254,9 @@ export function useGameSession(mode: GameMode) {
     if (resolution.capturedPieces.length > 0) {
       visibleBoard = cloneBoard(resolution.board);
       resolution.capturedPieces.forEach((capturedPiece) => {
-        visibleBoard[capturePlayer][capturedPiece] = { ...pieces[capturePlayer][capturedPiece] };
+        visibleBoard[capturePlayer][capturedPiece] = {
+          ...pieces[capturePlayer][capturedPiece],
+        };
       });
       captureReturn = {
         player: capturePlayer,
@@ -217,18 +266,22 @@ export function useGameSession(mode: GameMode) {
     }
     setPieces(visibleBoard);
 
-    const gotExtraThrow = result.extraThrow || resolution.capturedPieces.length > 0;
+    const gotExtraThrow =
+      result.extraThrow || resolution.capturedPieces.length > 0;
     const nextPlayer = gotExtraThrow ? current : otherPlayer;
     const noticeRefs: MessageRef[] = [];
     if (resolution.stackedPieces.length > 0) {
-      const stackedCount = resolution.stackedPieces.length + resolution.movedPieces.length;
+      const stackedCount =
+        resolution.stackedPieces.length + resolution.movedPieces.length;
       noticeRefs.push((messages) => messages.notice.stacked(stackedCount));
     }
     if (resolution.capturedPieces.length > 0) {
       noticeRefs.push((messages) => messages.notice.captured);
     } else if (result.extraThrow) {
       const resultId = result.id;
-      noticeRefs.push((messages) => messages.notice.extraThrow(messages.yut[resultId]));
+      noticeRefs.push((messages) =>
+        messages.notice.extraThrow(messages.yut[resultId]),
+      );
     }
 
     moveId.current += 1;
@@ -242,14 +295,16 @@ export function useGameSession(mode: GameMode) {
       waypointClearances,
       nextPlayer,
       winner: resolution.won ? current : null,
-      notice: noticeRefs.length > 0
-        ? (messages) => noticeRefs.map((ref) => ref(messages)).join(" · ")
-        : null,
-      arrivalEffect: resolution.capturedPieces.length > 0
-        ? "capture"
-        : resolution.stackedPieces.length > 0
-          ? "stack"
+      notice:
+        noticeRefs.length > 0
+          ? (messages) => noticeRefs.map((ref) => ref(messages)).join(" · ")
           : null,
+      arrivalEffect:
+        resolution.capturedPieces.length > 0
+          ? "capture"
+          : resolution.stackedPieces.length > 0
+            ? "stack"
+            : null,
       captureReturn,
     };
     activeMoveRef.current = move;
@@ -260,7 +315,11 @@ export function useGameSession(mode: GameMode) {
   const movePiece = (pieceIndex: number) => {
     if (isAiTurn || phase !== "move" || !result) return;
     const piece = pieces[current][pieceIndex];
-    if (!isMovable(piece, result.steps) || groupLeader(pieces, current, pieceIndex) !== pieceIndex) return;
+    if (
+      !isMovable(piece, result.steps) ||
+      groupLeader(pieces, current, pieceIndex) !== pieceIndex
+    )
+      return;
     if (canChooseRoute(piece, result.steps)) {
       setHoveredToken(null);
       setHoveredRouteChoice(null);
@@ -331,21 +390,32 @@ export function useGameSession(mode: GameMode) {
   };
 
   const noticeText = notice ? notice(t) : "";
-  const statusText = phase === "ready"
-    ? isAiTurn
-      ? noticeText || t.status.aiPreparingThrow(t.team(1))
-      : noticeText || t.status.playerTurn(t.team(current))
-    : phase === "rolling"
-      ? isAiTurn ? t.status.aiJudgingThrow(t.team(1)) : t.status.waitingForSticks(t.team(current))
-      : phase === "move"
+  const statusText =
+    phase === "ready"
+      ? isAiTurn
+        ? noticeText || t.status.aiPreparingThrow(t.team(1))
+        : noticeText || t.status.playerTurn(t.team(current))
+      : phase === "rolling"
         ? isAiTurn
-          ? aiDecision ? t.status.aiDecision(t.aiReason[aiDecision.reason]) : t.status.aiComputing
-          : result === null ? "" : result.steps === -1 ? t.status.backdoMove : t.status.move(t.yut[result.id], result.steps)
-        : phase === "route"
-          ? routeChoiceFromCenter ? t.status.routeFromCenter : t.status.routeFromBranch
-          : phase === "moving"
-            ? t.status.playerTurn(t.team(current))
-            : t.status.winner(t.team(winner ?? 0));
+          ? t.status.aiJudgingThrow(t.team(1))
+          : t.status.waitingForSticks(t.team(current))
+        : phase === "move"
+          ? isAiTurn
+            ? aiDecision
+              ? t.status.aiDecision(t.aiReason[aiDecision.reason])
+              : t.status.aiComputing
+            : result === null
+              ? ""
+              : result.steps === -1
+                ? t.status.backdoMove
+                : t.status.move(t.yut[result.id], result.steps)
+          : phase === "route"
+            ? routeChoiceFromCenter
+              ? t.status.routeFromCenter
+              : t.status.routeFromBranch
+            : phase === "moving"
+              ? t.status.playerTurn(t.team(current))
+              : t.status.winner(t.team(winner ?? 0));
 
   return {
     current,

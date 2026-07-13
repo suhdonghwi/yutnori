@@ -10,7 +10,12 @@ export type PieceState =
 
 export type BoardState = PieceState[][];
 
-export const HOME_PIECE: PieceState = { status: "home", route: "outer", index: -1, stackOrder: 0 };
+export const HOME_PIECE: PieceState = {
+  status: "home",
+  route: "outer",
+  index: -1,
+  stackOrder: 0,
+};
 
 export const NODE_POSITIONS: Record<NodeId, [number, number, number]> = {
   O0: [4.6, 0.06, 4.6],
@@ -46,15 +51,40 @@ export const NODE_POSITIONS: Record<NodeId, [number, number, number]> = {
 
 export const ROUTES: Record<RouteId, NodeId[]> = {
   outer: Array.from({ length: 20 }, (_, index) => `O${index}`),
-  "shortcut-a": ["O5", "A1", "A2", "C", "A3", "A4", "O15", "O16", "O17", "O18", "O19"],
+  "shortcut-a": [
+    "O5",
+    "A1",
+    "A2",
+    "C",
+    "A3",
+    "A4",
+    "O15",
+    "O16",
+    "O17",
+    "O18",
+    "O19",
+  ],
   "shortcut-b": ["O10", "B1", "B2", "C", "B3", "B4"],
 };
 
 export const BOARD_EDGES: [NodeId, NodeId][] = [
-  ...Array.from({ length: 19 }, (_, index) => [`O${index}`, `O${index + 1}`] as [NodeId, NodeId]),
+  ...Array.from(
+    { length: 19 },
+    (_, index) => [`O${index}`, `O${index + 1}`] as [NodeId, NodeId],
+  ),
   ["O19", "O0"],
-  ["O5", "A1"], ["A1", "A2"], ["A2", "C"], ["C", "A3"], ["A3", "A4"], ["A4", "O15"],
-  ["O10", "B1"], ["B1", "B2"], ["B2", "C"], ["C", "B3"], ["B3", "B4"], ["B4", "O0"],
+  ["O5", "A1"],
+  ["A1", "A2"],
+  ["A2", "C"],
+  ["C", "A3"],
+  ["A3", "A4"],
+  ["A4", "O15"],
+  ["O10", "B1"],
+  ["B1", "B2"],
+  ["B2", "C"],
+  ["C", "B3"],
+  ["B3", "B4"],
+  ["B4", "O0"],
 ];
 
 export const BOARD_NODE_IDS = Object.keys(NODE_POSITIONS);
@@ -77,32 +107,46 @@ export function nodeForPiece(piece: PieceState): NodeId | null {
 }
 
 export function sameStack(first: PieceState, second: PieceState): boolean {
-  return first.status === "board"
-    && second.status === "board"
-    && first.route === second.route
-    && first.index === second.index;
+  return (
+    first.status === "board" &&
+    second.status === "board" &&
+    first.route === second.route &&
+    first.index === second.index
+  );
 }
 
-export function groupForPiece(board: BoardState, player: Player, pieceIndex: number): number[] {
+export function groupForPiece(
+  board: BoardState,
+  player: Player,
+  pieceIndex: number,
+): number[] {
   const piece = board[player][pieceIndex];
   if (piece.status !== "board") return [pieceIndex];
   return board[player]
     .map((candidate, index) => (sameStack(piece, candidate) ? index : -1))
     .filter((index) => index >= 0)
-    .sort((first, second) => (
-      board[player][first].stackOrder - board[player][second].stackOrder
-      || first - second
-    ));
+    .sort(
+      (first, second) =>
+        board[player][first].stackOrder - board[player][second].stackOrder ||
+        first - second,
+    );
 }
 
-export function groupLeader(board: BoardState, player: Player, pieceIndex: number): number {
+export function groupLeader(
+  board: BoardState,
+  player: Player,
+  pieceIndex: number,
+): number {
   return groupForPiece(board, player, pieceIndex)[0];
 }
 
 export function canChooseRoute(piece: PieceState, steps: number): boolean {
   if (steps <= 0 || piece.status !== "board") return false;
   const node = nodeForPiece(piece);
-  return node === "C" || (piece.route === "outer" && (node === "O5" || node === "O10"));
+  return (
+    node === "C" ||
+    (piece.route === "outer" && (node === "O5" || node === "O10"))
+  );
 }
 
 export function isMovable(piece: PieceState, steps: number): boolean {
@@ -116,61 +160,143 @@ function selectRoute(piece: PieceState, choice: RouteChoice): PieceState {
   const node = nodeForPiece(piece);
   if (node === "C") {
     return choice === "shortcut"
-      ? { status: "board", route: "shortcut-b", index: 3, stackOrder: piece.stackOrder }
-      : { status: "board", route: "shortcut-a", index: 3, stackOrder: piece.stackOrder };
+      ? {
+          status: "board",
+          route: "shortcut-b",
+          index: 3,
+          stackOrder: piece.stackOrder,
+        }
+      : {
+          status: "board",
+          route: "shortcut-a",
+          index: 3,
+          stackOrder: piece.stackOrder,
+        };
   }
   if (choice === "outer") return { ...piece };
-  if (node === "O5") return { status: "board", route: "shortcut-a", index: 0, stackOrder: piece.stackOrder };
-  if (node === "O10") return { status: "board", route: "shortcut-b", index: 0, stackOrder: piece.stackOrder };
+  if (node === "O5")
+    return {
+      status: "board",
+      route: "shortcut-a",
+      index: 0,
+      stackOrder: piece.stackOrder,
+    };
+  if (node === "O10")
+    return {
+      status: "board",
+      route: "shortcut-b",
+      index: 0,
+      stackOrder: piece.stackOrder,
+    };
   return { ...piece };
 }
 
-function moveBackward(piece: PieceState): { piece: PieceState; waypoints: NodeId[] } {
+function moveBackward(piece: PieceState): {
+  piece: PieceState;
+  waypoints: NodeId[];
+} {
   if (piece.status !== "board") return { piece: { ...piece }, waypoints: [] };
   if (piece.route === "outer" && piece.index === 1) {
     return {
-      piece: { status: "finished", route: "outer", index: ROUTES.outer.length, stackOrder: 0 },
+      piece: {
+        status: "finished",
+        route: "outer",
+        index: ROUTES.outer.length,
+        stackOrder: 0,
+      },
       waypoints: ["O0"],
     };
   }
   if (piece.index > 0) {
-    const next = { status: "board", route: piece.route, index: piece.index - 1, stackOrder: piece.stackOrder } as PieceState;
+    const next = {
+      status: "board",
+      route: piece.route,
+      index: piece.index - 1,
+      stackOrder: piece.stackOrder,
+    } as PieceState;
     return { piece: next, waypoints: [nodeForPiece(next)!] };
   }
   if (piece.route === "shortcut-a") {
-    const next = { status: "board", route: "outer", index: 4, stackOrder: piece.stackOrder } as PieceState;
+    const next = {
+      status: "board",
+      route: "outer",
+      index: 4,
+      stackOrder: piece.stackOrder,
+    } as PieceState;
     return { piece: next, waypoints: ["O4"] };
   }
   if (piece.route === "shortcut-b") {
-    const next = { status: "board", route: "outer", index: 9, stackOrder: piece.stackOrder } as PieceState;
+    const next = {
+      status: "board",
+      route: "outer",
+      index: 9,
+      stackOrder: piece.stackOrder,
+    } as PieceState;
     return { piece: next, waypoints: ["O9"] };
   }
   return { piece: { ...HOME_PIECE }, waypoints: [] };
 }
 
-function moveForward(piece: PieceState, steps: number, choice: RouteChoice): { piece: PieceState; waypoints: NodeId[] } {
-  if (piece.status === "finished") return { piece: { ...piece }, waypoints: [] };
+function moveForward(
+  piece: PieceState,
+  steps: number,
+  choice: RouteChoice,
+): { piece: PieceState; waypoints: NodeId[] } {
+  if (piece.status === "finished")
+    return { piece: { ...piece }, waypoints: [] };
   if (piece.status === "home") {
     const targetIndex = steps;
     const route = ROUTES.outer;
     const waypoints = route.slice(0, Math.min(targetIndex + 1, route.length));
     if (targetIndex >= route.length) {
-      return { piece: { status: "finished", route: "outer", index: route.length, stackOrder: 0 }, waypoints: [...waypoints, "O0"] };
+      return {
+        piece: {
+          status: "finished",
+          route: "outer",
+          index: route.length,
+          stackOrder: 0,
+        },
+        waypoints: [...waypoints, "O0"],
+      };
     }
-    return { piece: { status: "board", route: "outer", index: targetIndex, stackOrder: 0 }, waypoints };
+    return {
+      piece: {
+        status: "board",
+        route: "outer",
+        index: targetIndex,
+        stackOrder: 0,
+      },
+      waypoints,
+    };
   }
 
   const routedPiece = selectRoute(piece, choice);
   const route = ROUTES[routedPiece.route];
   const targetIndex = routedPiece.index + steps;
-  const waypoints = route.slice(routedPiece.index + 1, Math.min(targetIndex + 1, route.length));
+  const waypoints = route.slice(
+    routedPiece.index + 1,
+    Math.min(targetIndex + 1, route.length),
+  );
   if (targetIndex >= route.length) {
     return {
-      piece: { status: "finished", route: routedPiece.route, index: route.length, stackOrder: 0 },
+      piece: {
+        status: "finished",
+        route: routedPiece.route,
+        index: route.length,
+        stackOrder: 0,
+      },
       waypoints: [...waypoints, "O0"],
     };
   }
-  return { piece: { status: "board", route: routedPiece.route, index: targetIndex, stackOrder: routedPiece.stackOrder }, waypoints };
+  return {
+    piece: {
+      status: "board",
+      route: routedPiece.route,
+      index: targetIndex,
+      stackOrder: routedPiece.stackOrder,
+    },
+    waypoints,
+  };
 }
 
 export type MoveResolution = {
@@ -193,7 +319,8 @@ export function resolveMove(
   const nextBoard = cloneBoard(board);
   const movedPieces = groupForPiece(board, player, pieceIndex);
   const source = board[player][pieceIndex];
-  const movement = steps < 0 ? moveBackward(source) : moveForward(source, steps, choice);
+  const movement =
+    steps < 0 ? moveBackward(source) : moveForward(source, steps, choice);
   const capturedPieces: number[] = [];
   const stackedPieces: number[] = [];
   const destinationNode = nodeForPiece(movement.piece);
@@ -202,24 +329,33 @@ export function resolveMove(
     const destinationPiece = movement.piece;
     const opponent = (player === 0 ? 1 : 0) as Player;
     const capturedAtDestination = nextBoard[opponent]
-      .map((candidate, index) => nodeForPiece(candidate) === destinationNode ? index : -1)
+      .map((candidate, index) =>
+        nodeForPiece(candidate) === destinationNode ? index : -1,
+      )
       .filter((index) => index >= 0)
-      .sort((first, second) => (
-        nextBoard[opponent][first].stackOrder - nextBoard[opponent][second].stackOrder
-        || first - second
-      ));
+      .sort(
+        (first, second) =>
+          nextBoard[opponent][first].stackOrder -
+            nextBoard[opponent][second].stackOrder || first - second,
+      );
     capturedPieces.push(...capturedAtDestination);
     capturedPieces.forEach((index) => {
       nextBoard[opponent][index] = { ...HOME_PIECE };
     });
 
     const stationaryStack = nextBoard[player]
-      .map((candidate, index) => !movedPieces.includes(index) && nodeForPiece(candidate) === destinationNode ? index : -1)
+      .map((candidate, index) =>
+        !movedPieces.includes(index) &&
+        nodeForPiece(candidate) === destinationNode
+          ? index
+          : -1,
+      )
       .filter((index) => index >= 0)
-      .sort((first, second) => (
-        nextBoard[player][first].stackOrder - nextBoard[player][second].stackOrder
-        || first - second
-      ));
+      .sort(
+        (first, second) =>
+          nextBoard[player][first].stackOrder -
+            nextBoard[player][second].stackOrder || first - second,
+      );
     stackedPieces.push(...stationaryStack);
 
     stationaryStack.forEach((index, order) => {

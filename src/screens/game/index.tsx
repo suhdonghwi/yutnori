@@ -1,5 +1,10 @@
 import { Canvas } from "@react-three/fiber";
-import { DoorOpen, Plus, SpeakerHigh, SpeakerSlash } from "@phosphor-icons/react";
+import {
+  DoorOpen,
+  Plus,
+  SpeakerHigh,
+  SpeakerSlash,
+} from "@phosphor-icons/react";
 import { Suspense, useState } from "react";
 import type { GameMode } from "../../game/types";
 import { Scene } from "../../scene/game-scene";
@@ -26,15 +31,20 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
   } = session;
 
   return (
-    <main className="game-shell fixed inset-0 block h-svh min-h-0 w-full overflow-hidden isolate">
+    <main className="game-shell fixed inset-0 isolate block h-svh min-h-0 w-full overflow-hidden">
       {throwResultEffect && <ThrowResultEffect effect={throwResultEffect} />}
       {visibleWinner !== null && <VictoryEffect winner={visibleWinner} />}
 
-      <section className="pointer-events-none absolute inset-0 block h-full w-full" aria-label={t.game.canvasLabel}>
+      <section
+        className="pointer-events-none absolute inset-0 block h-full w-full"
+        aria-label={t.game.canvasLabel}
+      >
         <div className="pointer-events-auto absolute top-7 left-8 z-20 max-[760px]:top-4 max-[760px]:left-3">
           <PlayerProgress
             player={0}
-            finished={pieces[0].filter((piece) => piece.status === "finished").length}
+            finished={
+              pieces[0].filter((piece) => piece.status === "finished").length
+            }
             active={current === 0 && phase !== "gameover"}
           />
         </div>
@@ -43,21 +53,41 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
           <PlayerProgress
             player={1}
             ai={mode === "ai"}
-            finished={pieces[1].filter((piece) => piece.status === "finished").length}
+            finished={
+              pieces[1].filter((piece) => piece.status === "finished").length
+            }
             active={current === 1 && phase !== "gameover"}
           />
           <div className="flex items-start gap-4 border-l border-[rgba(217,186,112,.34)] pl-5 max-[760px]:gap-2 max-[760px]:pl-3">
-            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={toggleSfx} aria-label={sfxEnabled ? t.game.sfxOff : t.game.sfxOn} aria-pressed={sfxEnabled}>
-              {sfxEnabled
-                ? <SpeakerHigh size={21} weight="regular" aria-hidden="true" />
-                : <SpeakerSlash size={21} weight="regular" aria-hidden="true" />}
+            <button
+              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]"
+              type="button"
+              onClick={toggleSfx}
+              aria-label={sfxEnabled ? t.game.sfxOff : t.game.sfxOn}
+              aria-pressed={sfxEnabled}
+            >
+              {sfxEnabled ? (
+                <SpeakerHigh size={21} weight="regular" aria-hidden="true" />
+              ) : (
+                <SpeakerSlash size={21} weight="regular" aria-hidden="true" />
+              )}
               <span className="max-[760px]:hidden">{t.game.sfx}</span>
             </button>
-            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={onExit} aria-label={t.game.toLobbyLabel}>
+            <button
+              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]"
+              type="button"
+              onClick={onExit}
+              aria-label={t.game.toLobbyLabel}
+            >
               <DoorOpen size={21} weight="regular" aria-hidden="true" />
               <span className="max-[760px]:hidden">{t.game.toLobby}</span>
             </button>
-            <button className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]" type="button" onClick={reset} aria-label={t.game.newGameLabel}>
+            <button
+              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-[#a89b80] transition-colors hover:text-[#ead6a9]"
+              type="button"
+              onClick={reset}
+              aria-label={t.game.newGameLabel}
+            >
               <Plus size={21} weight="regular" aria-hidden="true" />
               <span className="max-[760px]:hidden">{t.game.newGame}</span>
             </button>
@@ -66,7 +96,11 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
 
         <div className="pointer-events-none absolute inset-0 z-[1] block min-w-0">
           <div className="pointer-events-auto absolute inset-0 h-full min-h-0 w-full [&_canvas]:touch-none">
-            <Canvas shadows dpr={[1, 1.6]} camera={{ position: [0, 10.8, 11.8], fov: 44 }}>
+            <Canvas
+              shadows
+              dpr={[1, 1.6]}
+              camera={{ position: [0, 10.8, 11.8], fov: 44 }}
+            >
               <Suspense fallback={null}>
                 <Scene
                   pieces={pieces}
@@ -99,7 +133,6 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
             onReset={reset}
           />
         </div>
-
       </section>
 
       <footer className="hidden">
@@ -118,7 +151,12 @@ export default function YutnoriGame() {
     setScreen(mode);
   };
 
-  return screen === "lobby"
-    ? <Lobby onStartLocal={() => startGame("local")} onStartAi={() => startGame("ai")} />
-    : <GameSession mode={screen} onExit={() => setScreen("lobby")} />;
+  return screen === "lobby" ? (
+    <Lobby
+      onStartLocal={() => startGame("local")}
+      onStartAi={() => startGame("ai")}
+    />
+  ) : (
+    <GameSession mode={screen} onExit={() => setScreen("lobby")} />
+  );
 }

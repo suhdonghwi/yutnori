@@ -1,14 +1,20 @@
 .victory-effect {
-  background: radial-gradient(ellipse 42% 34% at center, rgba(4, 10, 7, .78) 0, rgba(4, 10, 7, .54) 42%, rgba(4, 10, 7, .18) 72%, transparent 100%);
-  animation: victory-layer-in .36s ease-out both;
+  background: radial-gradient(
+    ellipse 42% 34% at center,
+    rgba(4, 10, 7, 0.78) 0,
+    rgba(4, 10, 7, 0.54) 42%,
+    rgba(4, 10, 7, 0.18) 72%,
+    transparent 100%
+  );
+  animation: victory-layer-in 0.36s ease-out both;
 }
 
 .victory-card {
-  animation: victory-copy-in .68s cubic-bezier(.2, .82, .24, 1) both;
+  animation: victory-copy-in 0.68s cubic-bezier(0.2, 0.82, 0.24, 1) both;
 }
 
 .victory-team-dot {
-  animation: victory-dot-in .7s cubic-bezier(.18, .8, .2, 1.2) .08s both;
+  animation: victory-dot-in 0.7s cubic-bezier(0.18, 0.8, 0.2, 1.2) 0.08s both;
 }
 
 .victory-confetti i {
@@ -19,8 +25,9 @@
   height: 16px;
   border-radius: 1px;
   background: var(--confetti-color);
-  opacity: .88;
-  animation: victory-confetti-burst 1.7s cubic-bezier(.15, .7, .28, 1) var(--confetti-delay) both;
+  opacity: 0.88;
+  animation: victory-confetti-burst 1.7s cubic-bezier(0.15, 0.7, 0.28, 1)
+    var(--confetti-delay) both;
 }
 
 .throw-result-effect {
@@ -31,60 +38,125 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 42% 31% at center, rgba(4, 10, 7, .72) 0, rgba(4, 10, 7, .48) 42%, rgba(4, 10, 7, .14) 72%, transparent 100%);
+  background: radial-gradient(
+    ellipse 42% 31% at center,
+    rgba(4, 10, 7, 0.72) 0,
+    rgba(4, 10, 7, 0.48) 42%,
+    rgba(4, 10, 7, 0.14) 72%,
+    transparent 100%
+  );
   animation: result-backdrop 1.4s ease-out both;
 }
 
 .throw-result-lockup {
-  animation: result-lockup 1.4s cubic-bezier(.2, .8, .2, 1) both;
+  animation: result-lockup 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 @keyframes victory-layer-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes victory-copy-in {
-  0% { opacity: 0; transform: translateY(24px); }
-  65% { opacity: 1; transform: translateY(-2px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes victory-dot-in {
-  0% { opacity: 0; transform: scale(.35); }
-  72% { opacity: 1; transform: scale(1.18); }
-  100% { opacity: 1; transform: scale(1); }
+  0% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  72% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes victory-confetti-burst {
-  0% { opacity: 0; transform: rotate(var(--confetti-angle)) translateY(-70px) scale(.25); }
-  16% { opacity: .88; }
-  72% { opacity: .72; }
-  100% { opacity: 0; transform: rotate(var(--confetti-angle)) translateY(-360px) rotate(420deg) scale(.9); }
+  0% {
+    opacity: 0;
+    transform: rotate(var(--confetti-angle)) translateY(-70px) scale(0.25);
+  }
+  16% {
+    opacity: 0.88;
+  }
+  72% {
+    opacity: 0.72;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--confetti-angle)) translateY(-360px) rotate(420deg)
+      scale(0.9);
+  }
 }
 
 @keyframes result-layer {
-  0%, 100% { opacity: 0; }
-  12%, 72% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0;
+  }
+  12%,
+  72% {
+    opacity: 1;
+  }
 }
 
 @keyframes result-backdrop {
-  0%, 100% { opacity: 0; }
-  18%, 68% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0;
+  }
+  18%,
+  68% {
+    opacity: 1;
+  }
 }
 
 @keyframes result-lockup {
-  0% { opacity: 0; transform: translateY(18px) scale(.96); }
-  16% { opacity: 1; transform: translateY(0) scale(1); }
-  68% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-14px) scale(1.015); }
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  16% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  68% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px) scale(1.015);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     scroll-behavior: auto !important;
-    transition-duration: .01ms !important;
-    animation-duration: .01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 
   .throw-result-effect,

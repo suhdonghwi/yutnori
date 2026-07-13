@@ -9,10 +9,12 @@
   "scripts": {
     "dev": "vite",
     "clean": "node scripts/clean-dist.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "prebuild": "pnpm clean",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "pnpm typecheck && pnpm test:rules && pnpm test:ai && pnpm build",
+    "test": "pnpm format:check && pnpm typecheck && pnpm test:rules && pnpm test:ai && pnpm build",
     "test:ai": "node --test tests/ai-player.test.mjs",
     "test:rules": "node --experimental-strip-types --test tests/yutnori-rules.test.mjs",
     "typecheck": "tsc --noEmit"
@@ -34,6 +36,8 @@
     "@types/react-dom": "19.2.3",
     "@types/three": "^0.185.1",
     "@vitejs/plugin-react": "6.0.2",
+    "prettier": "^3.9.5",
+    "prettier-plugin-tailwindcss": "^0.8.0",
     "tailwindcss": "^4.3.2",
     "typescript": "7.0.2",
     "vite": "^8.1.4"

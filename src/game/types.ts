@@ -1,7 +1,8 @@
 import type { BoardState, NodeId, Player } from "./rules";
 import type { MessageRef } from "../i18n";
 
-export type Phase = "ready" | "rolling" | "move" | "route" | "moving" | "gameover";
+export type Phase =
+  "ready" | "rolling" | "move" | "route" | "moving" | "gameover";
 export type GameMode = "local" | "ai";
 
 export type YutResultId = "backdo" | "do" | "gae" | "geol" | "yut" | "mo";
