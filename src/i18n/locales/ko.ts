@@ -67,12 +67,6 @@ export const ko = {
 
   game: {
     canvasLabel: "3D 윷놀이 게임",
-    roles: {
-      player: "플레이어",
-      ai: "AI 상대",
-      first: "첫째 선수",
-      second: "둘째 선수",
-    },
     finishedCount: (finished: number) => `${finished} / 4 도착`,
     sfx: "효과음",
     sfxOn: "효과음 켜기",

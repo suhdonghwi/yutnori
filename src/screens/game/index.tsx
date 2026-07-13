@@ -34,7 +34,6 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
         <div className="pointer-events-auto absolute top-7 left-8 z-20 max-[760px]:top-4 max-[760px]:left-3">
           <PlayerProgress
             player={0}
-            role={mode === "ai" ? "player" : "first"}
             finished={pieces[0].filter((piece) => piece.status === "finished").length}
             active={current === 0 && phase !== "gameover"}
           />
@@ -43,7 +42,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
         <div className="pointer-events-auto absolute top-7 right-8 z-20 flex items-start gap-7 max-[760px]:top-4 max-[760px]:right-3 max-[760px]:gap-3">
           <PlayerProgress
             player={1}
-            role={mode === "ai" ? "ai" : "second"}
+            ai={mode === "ai"}
             finished={pieces[1].filter((piece) => piece.status === "finished").length}
             active={current === 1 && phase !== "gameover"}
           />
