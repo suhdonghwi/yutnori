@@ -1,6 +1,6 @@
 import { ContactShadows, Float } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
 import { BoardSurface } from "./board";
 import { LacquerTokenMesh } from "./token";
@@ -88,30 +88,43 @@ function FloatingYut({ index }: { index: number }) {
 
 function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
   const rig = useRef<THREE.Group>(null);
+  // r3f의 pointer는 캔버스 위에서만 갱신되는데, 로비에서는 메뉴 영역이 캔버스를
+  // 덮고 있어 화면 전체 기준의 포인터를 직접 추적합니다.
+  const pointer = useRef({ x: 0, y: 0 });
 
-  useFrame(({ pointer }, delta) => {
+  useEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      pointer.current.x = (event.clientX / window.innerWidth) * 2 - 1;
+      pointer.current.y = -((event.clientY / window.innerHeight) * 2 - 1);
+    };
+    window.addEventListener("pointermove", handlePointerMove);
+    return () => window.removeEventListener("pointermove", handlePointerMove);
+  }, []);
+
+  useFrame((_, delta) => {
     if (!rig.current) return;
+    const { current: pointerPosition } = pointer;
     rig.current.rotation.y = THREE.MathUtils.damp(
       rig.current.rotation.y,
-      pointer.x * 0.065 - 0.06,
+      pointerPosition.x * 0.065 - 0.06,
       4.5,
       delta,
     );
     rig.current.rotation.x = THREE.MathUtils.damp(
       rig.current.rotation.x,
-      pointer.y * -0.025,
+      pointerPosition.y * -0.025,
       4.5,
       delta,
     );
     rig.current.position.x = THREE.MathUtils.damp(
       rig.current.position.x,
-      pointer.x * 0.16,
+      pointerPosition.x * 0.16,
       4.2,
       delta,
     );
     rig.current.position.y = THREE.MathUtils.damp(
       rig.current.position.y,
-      -0.72 + pointer.y * 0.055,
+      -0.72 + pointerPosition.y * 0.055,
       4.2,
       delta,
     );
