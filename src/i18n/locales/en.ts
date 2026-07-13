@@ -60,6 +60,45 @@ export const en: Messages = {
     },
   },
 
+  tutorial: {
+    title: "How to Play",
+    canvasLabel: "Animated Yutnori tutorial",
+    skip: "Skip",
+    back: "Back",
+    next: "Next",
+    done: "Got it",
+    detailedRules: "Detailed rules",
+    stepLabel: (current, total) => `Step ${current} of ${total}`,
+    steps: {
+      goal: {
+        title: "Race around the board and home",
+        body: "Move by your throw. The first team to bring all four pieces across the finish wins.",
+      },
+      throw: {
+        title: "Throw the sticks and count flat sides",
+        body: "The number of flat sides tells you how many spaces to move. Watch a real throw below.",
+      },
+      shortcut: {
+        title: "Corners unlock shortcuts",
+        body: "Land exactly on a junction to choose a faster diagonal route on your next move.",
+      },
+      "capture-stack": {
+        title: "Capture rivals and stack allies",
+        body: "Captures send rivals home and earn another throw. Your own pieces stack and move together.",
+      },
+      win: {
+        title: "Finish all four pieces first",
+        body: "Cross the finish with your last piece to win the match.",
+      },
+    },
+    throwReading: (flats, name, steps) =>
+      `${flats} flat → ${name} → move ${steps}`,
+    throwWaiting: "Throwing the sticks…",
+    throwFootnote: "Yut/Mo: throw again · Backdo: move back one.",
+    throwAgainBadge: "Throw again!",
+    finishedBadge: "You win!",
+  },
+
   game: {
     canvasLabel: "3D Yutnori game",
     finishedCount: (finished) => `${finished} / 4 finished`,

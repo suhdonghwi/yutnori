@@ -15,7 +15,7 @@ import { Token, tokenPlacement } from "./token";
 import { YutPhysics } from "./yut-physics";
 import { useI18n } from "../i18n";
 
-function PreviewPathNode({
+export function PreviewPathNode({
   position,
   color,
 }: {
@@ -51,7 +51,7 @@ function PreviewPathNode({
   );
 }
 
-function MoveDestinationPreview({ preview }: { preview: MovePreview }) {
+export function MoveDestinationPreview({ preview }: { preview: MovePreview }) {
   const { t } = useI18n();
   const ref = useRef<THREE.Group>(null);
 

@@ -9,6 +9,7 @@ import { Suspense, useState } from "react";
 import type { GameMode } from "../../game/types";
 import { Scene } from "../../scene/game-scene";
 import { gameSfx } from "../../audio/game-sfx";
+import { TutorialScreen } from "../tutorial";
 import { ThrowResultEffect, VictoryEffect } from "../result-effects";
 import { Lobby } from "../lobby";
 import { useGameSession } from "./use-game-session";
@@ -144,17 +145,23 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
 }
 
 export default function YutnoriGame() {
-  const [screen, setScreen] = useState<"lobby" | GameMode>("lobby");
+  const [screen, setScreen] = useState<"lobby" | "tutorial" | GameMode>(
+    "lobby",
+  );
 
   const startGame = (mode: GameMode) => {
     gameSfx.unlock();
     setScreen(mode);
   };
 
+  if (screen === "tutorial")
+    return <TutorialScreen onClose={() => setScreen("lobby")} />;
+
   return screen === "lobby" ? (
     <Lobby
       onStartLocal={() => startGame("local")}
       onStartAi={() => startGame("ai")}
+      onOpenTutorial={() => setScreen("tutorial")}
     />
   ) : (
     <GameSession mode={screen} onExit={() => setScreen("lobby")} />

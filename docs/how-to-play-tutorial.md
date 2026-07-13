@@ -3,7 +3,7 @@
 ## Summary
 
 Replace the static rules dialog as the primary onboarding path with a **guided demo**: a
-full-screen tutorial that plays short, looping, scripted animations on the *real* 3D board —
+full-screen tutorial that plays short, looping, scripted animations on the _real_ 3D board —
 same `BoardSurface`, same lacquered `Token` meshes, same Rapier yut-stick physics — with a
 caption card and step navigation below. The user watches and taps Next; no interaction inside
 the scene. The existing text rules stay available as a secondary "detailed rules" reference.
@@ -73,13 +73,13 @@ Node/route vocabulary below refers to `ROUTES` / `NODE_POSITIONS` in `src/game/r
 (outer ring `O0..O19`, shortcut A through corners `O5→A1→A2→C→A3→A4→O15…`, shortcut B
 `O10→B1→B2→C→B3→B4→finish`).
 
-| # | id | Concept | Initial board | Scripted actions (loop) |
-|---|----|---------|---------------|-------------------------|
-| 1 | `goal` | Race around the board and home | All pieces home | Blue piece 0 enters at `O0` and travels the full outer ring to finish, as 4 chained moves of 5 steps each (`steps: 5` × 4) so the arc-hop animation stays readable but the lap is quick. Path edges glow ahead of it via the existing preview mechanism. |
-| 2 | `throw` | Throw sticks, count flat sides | All pieces home; sticks visible | Real physics throw (`YutPhysics`). On `onSettled(flats, backdo)` the caption card counts up flat sides and stamps the result name: "3 flat = Geol = move 3" (reusing `RESULT_BY_FLATS`). Replay gives a *different* result each loop — that is a feature: it teaches reading throws. Footnote line covers Yut/Mo → throw again, Backdo → one step back. |
-| 3 | `shortcut` | Corners unlock diagonals | Blue piece 0 at `outer` index 2 (`O2`) | Move 3 steps → lands exactly on corner `O5`. Pause: both route previews glow (destination rings + path glow, shortcut colored `#f2cb72` as in the game). Then move 5 with `choice: "shortcut"` → piece cuts through `A1 A2 C A3 A4`. |
-| 4 | `capture-stack` | Capture sends home + extra throw; own pieces stack | Blue piece 0 at `O1`; red piece 0 at `O4`; blue piece 1 at `O2` is used in beat 2 | Beat 1: blue piece 0 moves 3 → lands `O4`, red piece pops back home (the existing `captureReturn` two-stage move animates this), "Throw again!" badge. Beat 2: blue piece 2 enters from home with 2 steps → lands `O2` where blue piece 1 sits → stack forms, stack label ("B2 + B3") appears automatically via `tokenPlacement`. |
-| 5 | `win` | First to finish all 4 wins | Blue: 3 finished, piece 3 at `shortcut-b` index 5 (`B4`) | Move 1 → piece crosses `O0` and finishes (`resolveMove` returns `won: true`). Small celebratory stamp (reuse the `result-stamp`/confetti CSS from `src/styles/effects.css` — *not* the full `VictoryEffect`, which is a takeover). |
+| #   | id              | Concept                                            | Initial board                                                                     | Scripted actions (loop)                                                                                                                                                                                                                                                                                                                                 |
+| --- | --------------- | -------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `goal`          | Race around the board and home                     | All pieces home                                                                   | Blue piece 0 enters at `O0` and travels the full outer ring to finish, as 4 chained moves of 5 steps each (`steps: 5` × 4) so the arc-hop animation stays readable but the lap is quick. Path edges glow ahead of it via the existing preview mechanism.                                                                                                |
+| 2   | `throw`         | Throw sticks, count flat sides                     | All pieces home; sticks visible                                                   | Real physics throw (`YutPhysics`). On `onSettled(flats, backdo)` the caption card counts up flat sides and stamps the result name: "3 flat = Geol = move 3" (reusing `RESULT_BY_FLATS`). Replay gives a _different_ result each loop — that is a feature: it teaches reading throws. Footnote line covers Yut/Mo → throw again, Backdo → one step back. |
+| 3   | `shortcut`      | Corners unlock diagonals                           | Blue piece 0 at `outer` index 2 (`O2`)                                            | Move 3 steps → lands exactly on corner `O5`. Pause: both route previews glow (destination rings + path glow, shortcut colored `#f2cb72` as in the game). Then move 5 with `choice: "shortcut"` → piece cuts through `A1 A2 C A3 A4`.                                                                                                                    |
+| 4   | `capture-stack` | Capture sends home + extra throw; own pieces stack | Blue piece 0 at `O1`; red piece 0 at `O4`; blue piece 1 at `O2` is used in beat 2 | Beat 1: blue piece 0 moves 3 → lands `O4`, red piece pops back home (the existing `captureReturn` two-stage move animates this), "Throw again!" badge. Beat 2: blue piece 2 enters from home with 2 steps → lands `O2` where blue piece 1 sits → stack forms, stack label ("B2 + B3") appears automatically via `tokenPlacement`.                       |
+| 5   | `win`           | First to finish all 4 wins                         | Blue: 3 finished, piece 3 at `shortcut-b` index 5 (`B4`)                          | Move 1 → piece crosses `O0` and finishes (`resolveMove` returns `won: true`). Small celebratory stamp (reuse the `result-stamp`/confetti CSS from `src/styles/effects.css` — _not_ the full `VictoryEffect`, which is a takeover).                                                                                                                      |
 
 Step 4 beat 2 exact layout (verified against `resolveMove` semantics): blue piece 1 sits at
 `outer` index 2 the whole step; after beat 1, blue piece 2 enters from home with `steps: 2` →
@@ -97,17 +97,17 @@ animation.
 
 ### Reuse map
 
-| Existing code | Used for |
-|---|---|
-| `resolveMove`, `createInitialBoard`, `NODE_POSITIONS`, `ROUTES` (`src/game/rules.ts`) | All scripted move outcomes and waypoints |
-| `BoardSurface`, `boardEdgeKey` (`src/scene/board.tsx`) | Board + path-glow (`previewEdgeColors`) |
-| `Token`, `tokenPlacement` (`src/scene/token.tsx`) | Piece rendering, waypoint hop animation, stacking, stack labels — driven by the same `activeMoveId`/`moveWaypoints` props |
-| `YutPhysics` (`src/scene/yut-physics.tsx`) | Step 2 physics throw, unchanged API (`rolling`, `nonce`, `onSettled`) |
-| `PreviewPathNode`, `MoveDestinationPreview` (`src/scene/game-scene.tsx`) | Route-preview glow in steps 1 and 3 — **needs to be exported** (currently module-private) |
-| `RESULT_BY_FLATS`, `BACKDO_RESULT`, `PLAYERS` (`src/game/config.ts`) | Step 2 result naming, token colors |
-| `ThrowResultEffect` (`src/screens/result-effects.tsx`) | Step 2 result stamp (optional; the caption counter may be enough) |
-| Lighting/`ContactShadows` block from `Scene` | Copied (~20 lines) into `TutorialScene`; not worth extracting |
-| `RulesDialog` (`src/screens/lobby.tsx`) | "Detailed rules" fallback — **extract to `src/screens/rules-dialog.tsx`** so both lobby and tutorial can render it |
+| Existing code                                                                         | Used for                                                                                                                  |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `resolveMove`, `createInitialBoard`, `NODE_POSITIONS`, `ROUTES` (`src/game/rules.ts`) | All scripted move outcomes and waypoints                                                                                  |
+| `BoardSurface`, `boardEdgeKey` (`src/scene/board.tsx`)                                | Board + path-glow (`previewEdgeColors`)                                                                                   |
+| `Token`, `tokenPlacement` (`src/scene/token.tsx`)                                     | Piece rendering, waypoint hop animation, stacking, stack labels — driven by the same `activeMoveId`/`moveWaypoints` props |
+| `YutPhysics` (`src/scene/yut-physics.tsx`)                                            | Step 2 physics throw, unchanged API (`rolling`, `nonce`, `onSettled`)                                                     |
+| `PreviewPathNode`, `MoveDestinationPreview` (`src/scene/game-scene.tsx`)              | Route-preview glow in steps 1 and 3 — **needs to be exported** (currently module-private)                                 |
+| `RESULT_BY_FLATS`, `BACKDO_RESULT`, `PLAYERS` (`src/game/config.ts`)                  | Step 2 result naming, token colors                                                                                        |
+| `ThrowResultEffect` (`src/screens/result-effects.tsx`)                                | Step 2 result stamp (optional; the caption counter may be enough)                                                         |
+| Lighting/`ContactShadows` block from `Scene`                                          | Copied (~20 lines) into `TutorialScene`; not worth extracting                                                             |
+| `RulesDialog` (`src/screens/lobby.tsx`)                                               | "Detailed rules" fallback — **extract to `src/screens/rules-dialog.tsx`** so both lobby and tutorial can render it        |
 
 ### New files
 
@@ -143,7 +143,7 @@ Pure TypeScript, no React imports — this keeps it testable under
 import type { BoardState, Player, RouteChoice } from "./rules";
 
 export type TutorialStepId =
-  | "goal" | "throw" | "shortcut" | "capture-stack" | "win";
+  "goal" | "throw" | "shortcut" | "capture-stack" | "win";
 
 export type TutorialAction =
   | { kind: "pause"; ms: number }
@@ -151,21 +151,23 @@ export type TutorialAction =
       kind: "move";
       player: Player;
       piece: number;
-      steps: number;            // -1 allowed if we ever demo backdo
-      choice?: RouteChoice;     // default "outer"
-      previewMs?: number;       // show path/destination glow this long before moving
+      steps: number; // -1 allowed if we ever demo backdo
+      choice?: RouteChoice; // default "outer"
+      previewMs?: number; // show path/destination glow this long before moving
     }
-  | { kind: "throw" }           // step 2 only: trigger YutPhysics
+  | { kind: "throw" } // step 2 only: trigger YutPhysics
   | { kind: "badge"; key: TutorialBadgeKey; ms: number }; // e.g. "extraThrow", "finished"
 
 export type TutorialStep = {
   id: TutorialStepId;
-  board: BoardState;            // initial layout for this step
-  showSticks: boolean;          // mount YutPhysics only when true (step 2)
+  board: BoardState; // initial layout for this step
+  showSticks: boolean; // mount YutPhysics only when true (step 2)
   actions: TutorialAction[];
 };
 
-export const TUTORIAL_STEPS: TutorialStep[] = [ /* the 5 steps from the storyboard */ ];
+export const TUTORIAL_STEPS: TutorialStep[] = [
+  /* the 5 steps from the storyboard */
+];
 ```
 
 Board literals are built with a tiny local helper
@@ -283,7 +285,7 @@ Missing entries in `en`/`bn` are compile errors, so nothing can ship half-transl
 - **Two canvases never coexist** — lobby, tutorial, and game are exclusive screens, so there
   is no WebGL context pressure.
 - **Physics nondeterminism is confined to step 2** and never affects board state — the script
-  only *displays* the result; it doesn't move pieces with it.
+  only _displays_ the result; it doesn't move pieces with it.
 - **Bundle**: no new dependencies. The tutorial reuses already-loaded three/rapier code.
 
 ## 5. Testing
@@ -296,8 +298,8 @@ Missing entries in `en`/`bn` are compile errors, so nothing can ship half-transl
    - step `capture-stack`: beat 1 yields `capturedPieces.length === 1`, beat 2 yields
      `stackedPieces.length === 1`;
    - step `win`: final resolution has `won === true`.
-   This pins the scripted choreography to the real rules — if `rules.ts` ever changes, the
-   tutorial breaks in CI, not in front of a user.
+     This pins the scripted choreography to the real rules — if `rules.ts` ever changes, the
+     tutorial breaks in CI, not in front of a user.
 2. **`pnpm typecheck`** covers the i18n catalogs and prop wiring.
 3. **Manual QA via `/verify`-style run**: each step loops cleanly; Back/Next mid-animation
    doesn't leak timers (rapid-click test); step 2 result caption matches the physical sticks,

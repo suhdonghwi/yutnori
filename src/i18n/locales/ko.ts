@@ -65,6 +65,46 @@ export const ko = {
     },
   },
 
+  tutorial: {
+    title: "윷놀이 배우기",
+    canvasLabel: "윷놀이 규칙 애니메이션",
+    skip: "건너뛰기",
+    back: "이전",
+    next: "다음",
+    done: "알겠어요",
+    detailedRules: "자세한 규칙",
+    stepLabel: (current: number, total: number) =>
+      `${total}단계 중 ${current}단계`,
+    steps: {
+      goal: {
+        title: "말을 한 바퀴 돌려 도착시키세요",
+        body: "윷 결과만큼 말을 움직여 네 말을 모두 먼저 도착시키면 승리합니다.",
+      },
+      throw: {
+        title: "윷가락의 평평한 면을 세세요",
+        body: "평평한 면의 수가 움직일 칸 수를 정합니다. 실제 윷을 던져 결과를 확인해 보세요.",
+      },
+      shortcut: {
+        title: "모서리에서 지름길을 타세요",
+        body: "갈림길에 정확히 도착하면 다음 이동에서 가운데를 가로지르는 빠른 길을 선택할 수 있습니다.",
+      },
+      "capture-stack": {
+        title: "상대를 잡고, 우리 편을 업으세요",
+        body: "상대 말은 대기석으로 보내고 한 번 더 던집니다. 같은 편 말은 업어서 함께 움직입니다.",
+      },
+      win: {
+        title: "네 말을 먼저 모두 내면 승리!",
+        body: "마지막 말까지 도착선을 넘기면 경기가 끝납니다.",
+      },
+    },
+    throwReading: (flats: number, name: string, steps: number) =>
+      `${flats}개 평면 → ${name} → ${steps}칸`,
+    throwWaiting: "윷을 던지는 중…",
+    throwFootnote: "윷·모는 한 번 더, 빽도는 한 칸 뒤로 갑니다.",
+    throwAgainBadge: "한 번 더 던지기!",
+    finishedBadge: "승리!",
+  },
+
   game: {
     canvasLabel: "3D 윷놀이 게임",
     finishedCount: (finished: number) => `${finished} / 4 도착`,

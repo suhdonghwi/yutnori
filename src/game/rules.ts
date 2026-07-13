@@ -106,6 +106,25 @@ export function nodeForPiece(piece: PieceState): NodeId | null {
   return ROUTES[piece.route][piece.index] ?? null;
 }
 
+export function waypointClearances(
+  board: BoardState,
+  player: Player,
+  movedPieces: number[],
+  waypoints: NodeId[],
+): number[] {
+  return waypoints.map((node) => {
+    let occupants = 0;
+    board.forEach((playerPieces, occupantPlayer) => {
+      playerPieces.forEach((piece, index) => {
+        const isMovingPiece =
+          occupantPlayer === player && movedPieces.includes(index);
+        if (!isMovingPiece && nodeForPiece(piece) === node) occupants += 1;
+      });
+    });
+    return occupants * 0.19;
+  });
+}
+
 export function sameStack(first: PieceState, second: PieceState): boolean {
   return (
     first.status === "board" &&

@@ -68,6 +68,46 @@ export const bn: Messages = {
     },
   },
 
+  tutorial: {
+    title: "যেভাবে খেলবেন",
+    canvasLabel: "ইউতনরি শেখার অ্যানিমেশন",
+    skip: "এড়িয়ে যান",
+    back: "আগেরটি",
+    next: "পরেরটি",
+    done: "বুঝেছি",
+    detailedRules: "বিস্তারিত নিয়ম",
+    stepLabel: (current, total) =>
+      `${bnNum(total)}টির মধ্যে ধাপ ${bnNum(current)}`,
+    steps: {
+      goal: {
+        title: "বোর্ড ঘুরে ঘুঁটি ঘরে তুলুন",
+        body: "ছোঁড়ার ফল অনুযায়ী চালুন। যে দল আগে চারটি ঘুঁটিই শেষ করে, সে জেতে।",
+      },
+      throw: {
+        title: "কাঠি ছুঁড়ে সমতল দিক গুনুন",
+        body: "সমতল দিকের সংখ্যা বলে দেয় কত ঘর চলবেন। একটি সত্যিকারের ছোঁড়া দেখুন।",
+      },
+      shortcut: {
+        title: "কোণা শর্টকাট খুলে দেয়",
+        body: "মোড়ে ঠিক পৌঁছালে পরের চালে দ্রুত তির্যক পথ বেছে নিতে পারবেন।",
+      },
+      "capture-stack": {
+        title: "প্রতিপক্ষকে খান, নিজের ঘুঁটি জোড়া দিন",
+        body: "খেলে প্রতিপক্ষ ঘরে ফেরে ও আপনি আবার ছোঁড়েন। নিজের ঘুঁটি একসঙ্গে চলে।",
+      },
+      win: {
+        title: "চারটি ঘুঁটি আগে শেষ করুন",
+        body: "শেষ ঘুঁটিটি সীমা পার করলেই জয়।",
+      },
+    },
+    throwReading: (flats, name, steps) =>
+      `${bnNum(flats)} সমতল → ${name} → ${bnNum(steps)} ঘর`,
+    throwWaiting: "কাঠি ছোঁড়া হচ্ছে…",
+    throwFootnote: "ইউত/মো: আবার ছুঁড়ুন · ব্যাকদো: এক ঘর পিছনে।",
+    throwAgainBadge: "আবার ছুঁড়ুন!",
+    finishedBadge: "জয়!",
+  },
+
   game: {
     canvasLabel: "থ্রিডি ইউতনরি খেলা",
     finishedCount: (finished) => `${bnNum(finished)} / ৪ পৌঁছেছে`,
