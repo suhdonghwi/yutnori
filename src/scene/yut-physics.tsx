@@ -140,16 +140,27 @@ function YutImpactBurst({
 function FlatBackdoX({ glowing }: { glowing: boolean }) {
   const ring = useRef<THREE.Mesh>(null);
   const light = useRef<THREE.PointLight>(null);
+  const emissives = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  const fade = useRef(0);
 
-  useFrame(({ clock }) => {
-    if (!glowing) return;
+  useFrame(({ clock }, delta) => {
+    fade.current = THREE.MathUtils.clamp(
+      fade.current + (glowing ? delta : -delta) / 0.3,
+      0,
+      1,
+    );
+    const strength = fade.current * fade.current;
     const pulse = 0.5 + Math.sin(clock.elapsedTime * 10) * 0.5;
     if (ring.current) {
+      ring.current.visible = strength > 0;
       ring.current.scale.setScalar(1 + pulse * 0.35);
       (ring.current.material as THREE.MeshBasicMaterial).opacity =
-        0.42 + pulse * 0.38;
+        (0.42 + pulse * 0.38) * strength;
     }
-    if (light.current) light.current.intensity = 2.8 + pulse * 3.4;
+    if (light.current) light.current.intensity = (2.8 + pulse * 3.4) * strength;
+    emissives.current.forEach((material) => {
+      if (material) material.emissiveIntensity = 4.2 * strength;
+    });
   });
 
   return (
@@ -165,47 +176,50 @@ function FlatBackdoX({ glowing }: { glowing: boolean }) {
       <mesh rotation={[0, Math.PI / 4, 0]}>
         <boxGeometry args={[0.052, 0.005, 0.34]} />
         <meshStandardMaterial
+          ref={(material) => {
+            emissives.current[0] = material;
+          }}
           color="#2b211b"
           roughness={1}
           emissive="#ff241c"
-          emissiveIntensity={glowing ? 4.2 : 0}
+          emissiveIntensity={0}
         />
       </mesh>
       <mesh rotation={[0, -Math.PI / 4, 0]}>
         <boxGeometry args={[0.052, 0.005, 0.34]} />
         <meshStandardMaterial
+          ref={(material) => {
+            emissives.current[1] = material;
+          }}
           color="#2b211b"
           roughness={1}
           emissive="#ff241c"
-          emissiveIntensity={glowing ? 4.2 : 0}
+          emissiveIntensity={0}
         />
       </mesh>
-      {glowing && (
-        <>
-          <mesh
-            ref={ring}
-            position={[0, -0.02, 0]}
-            rotation={[-Math.PI / 2, 0, 0]}
-          >
-            <ringGeometry args={[0.25, 0.32, 40]} />
-            <meshBasicMaterial
-              color="#ff3b2f"
-              transparent
-              opacity={0.72}
-              depthWrite={false}
-              blending={THREE.AdditiveBlending}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-          <pointLight
-            ref={light}
-            color="#ff3026"
-            intensity={4}
-            distance={2.3}
-            position={[0, -0.24, 0]}
-          />
-        </>
-      )}
+      <mesh
+        ref={ring}
+        visible={false}
+        position={[0, -0.02, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <ringGeometry args={[0.25, 0.32, 40]} />
+        <meshBasicMaterial
+          color="#ff3b2f"
+          transparent
+          opacity={0}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <pointLight
+        ref={light}
+        color="#ff3026"
+        intensity={0}
+        distance={2.3}
+        position={[0, -0.24, 0]}
+      />
     </group>
   );
 }
