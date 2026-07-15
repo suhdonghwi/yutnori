@@ -1,10 +1,24 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { PLAYERS } from "../src/game/config.ts";
 import {
   createInitialBoard,
   groupForPiece,
   resolveMove,
 } from "../src/game/rules.ts";
+
+test("keeps Tailwind team colors aligned with the game configuration", async () => {
+  const globals = await readFile(
+    new URL("../src/globals.css", import.meta.url),
+    "utf8",
+  );
+  const themeColor = (name) =>
+    globals.match(new RegExp(`--color-team-${name}:\\s*(#[0-9a-f]{6})`))?.[1];
+
+  assert.equal(themeColor("blue"), PLAYERS[0].color);
+  assert.equal(themeColor("red"), PLAYERS[1].color);
+});
 
 test("keeps arrival order when a lower-numbered piece joins and moves with a stack", () => {
   let board = createInitialBoard();
