@@ -38,7 +38,6 @@ Heaviest files, in order: `src/screens/lobby.tsx`, `src/screens/game/control-doc
 - Keep the visual result essentially identical — snapping near-duplicate
   shades to a single token is acceptable and desired ("slight design changes
   for consistency" are explicitly OK).
-- Make regressions greppable/lintable.
 
 **Non-goals**
 
@@ -226,9 +225,8 @@ already receives player colors via inline `--player-color` /
 1. Scene materials import from `config.ts` (may already — verify).
 2. Audit uses of `--team-blue` / `--team-red` Tailwind tokens; if any static
    className needs a team color, keep the CSS vars but add a one-line comment
-   in both files pointing at each other, plus an assertion in
-   `tests/yutnori-rules.test.mjs`-style Node test that greps `base.css` and
-   compares values to `config.ts`. If none, drop the tokens from `@theme`.
+   in both files pointing at each other. If none, drop the tokens from
+   `@theme`.
 
 Also clean up while there: `--font-geist-sans` / `--font-noto-serif-kr` in
 `base.css` are leftover aliases of `--font-primary` (the body `font-family`
@@ -247,27 +245,8 @@ every phase. Suggested one commit per phase (or per file in phase 2).
 | **2. Type/radius/tracking/spacing**              | Same file order, per §3.2–3.5. The snaps with visible deltas (eyebrow tracking, 19→15px mobile radius, 17/19→18px headings) get a deliberate look.                                                                                            | 1–2 h   |
 | **3. Component extraction**                      | The four components in §4. Behavior-preserving refactor; the responsive variants move inside the components.                                                                                                                                  | 1–2 h   |
 | **4. Team color unification + base.css cleanup** | Per §5.                                                                                                                                                                                                                                       | ~30 min |
-| **5. Enforcement**                               | Per §7.                                                                                                                                                                                                                                       | ~30 min |
 
-## 7. Enforcement
-
-Dependency-free check script, `scripts/check-style-literals.mjs`, wired into
-the `test` script in `package.json` (alongside `format:check`): fail if
-`className` strings in `src/**/*.tsx` contain `[#`, `[rgba(`, `[oklch(`,
-`text-[<N>px]`, `rounded-[<N>px]`, or `tracking-[`, with an inline-comment
-allowlist escape (`/* style-literal-ok */`) for the sanctioned one-offs
-(display clamps, `.04em` backdo tracking, `text-[0px]`, geometry sizes).
-
-`prettier-plugin-tailwindcss` is already installed and keeps class order
-canonical — no change needed. An ESLint Tailwind plugin is an alternative,
-but the project has no ESLint setup today; a 30-line grep script is a better
-fit than introducing one for this.
-
-Add a short "Styling" section to `README.md` (or `CLAUDE.md` if added later)
-stating the rule: _colors, font sizes, radii, and tracking come from `@theme`
-tokens in `globals.css`; arbitrary values need a `style-literal-ok` comment._
-
-## 8. Verification
+## 7. Verification
 
 After each phase:
 
@@ -279,10 +258,7 @@ After each phase:
 - Before starting phase 1, capture reference screenshots of those four
   surfaces at both widths to diff against.
 
-Final acceptance: `grep -rE '\[#|\[rgba' src --include='*.tsx'` returns only
-allowlisted lines, and the enforcement script passes in CI.
-
-## 9. Open judgment calls (resolve during migration, by eye)
+## 8. Open judgment calls (resolve during migration, by eye)
 
 1. Eyebrow tracking unification at 0.2em (§3.4) — largest visible snap.
 2. Pale-coral text tokens (§3.1 footnote) — `coral` vs `parchment-bright`.

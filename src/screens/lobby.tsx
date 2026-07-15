@@ -160,7 +160,6 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
 
       <section className="relative z-[2] mx-auto flex min-h-svh w-[min(1240px,calc(100%-64px))] items-center py-12 max-[820px]:w-[min(620px,calc(100%-36px))] max-[820px]:items-start max-[820px]:pt-10 max-[820px]:pb-16 max-[560px]:w-[calc(100%-28px)]">
         <div className="w-[min(520px,43vw)] max-[820px]:w-full">
-          {/* style-literal-ok: art-directed display tracking */}
           <h1 className="m-0 text-[clamp(54px,5.5vw,78px)] leading-[1.04] font-extrabold tracking-[.025em] text-balance text-parchment-bright max-[820px]:text-[clamp(42px,11vw,60px)]">
             {t.lobby.title}
           </h1>
@@ -213,7 +212,6 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
                     </small>
                   </span>
                   {mode.available ? (
-                    /* style-literal-ok: visually hidden mobile label */
                     <span
                       className={`flex items-center gap-2 text-xs font-bold whitespace-nowrap transition-colors duration-200 max-[560px]:text-[0px] ${active ? "text-gold" : "text-parchment-faint"}`}
                       aria-hidden="true"
