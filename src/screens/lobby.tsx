@@ -173,7 +173,7 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
 
       <section className="relative z-[2] mx-auto flex min-h-svh w-[min(1240px,calc(100%-64px))] items-center py-12 max-md:w-[min(620px,calc(100%-36px))] max-xs:w-[calc(100%-28px)]">
         <div className="w-[min(520px,43vw)] max-md:w-full">
-          <div className="flex items-center gap-[clamp(8px,1vw,12px)]">
+          <div className="flex items-center gap-[clamp(10px,1.1vw,16px)]">
             <img
               className="h-[clamp(54px,5.5vw,76px)] w-auto shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.35)] max-md:h-[clamp(42px,11vw,58px)]"
               src={yutIcon}

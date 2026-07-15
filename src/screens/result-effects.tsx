@@ -98,7 +98,7 @@ export function ThrowResultEffect({
             aria-hidden="true"
           />
           <strong
-            className={`block text-[clamp(64px,9vw,112px)] leading-[.9] font-black tracking-display whitespace-nowrap text-parchment-bright [text-shadow:0_0_30px_color-mix(in_srgb,var(--result-accent)_58%,transparent)] ${effect.result.id === "backdo" ? "tracking-[.04em]" : ""}`}
+            className={`block font-serif text-[clamp(64px,9vw,112px)] leading-[.9] font-bold tracking-display whitespace-nowrap text-parchment-bright [text-shadow:0_0_30px_color-mix(in_srgb,var(--result-accent)_58%,transparent)] ${effect.result.id === "backdo" ? "tracking-[.04em]" : ""}`}
           >
             {t.yut[effect.result.id]}
           </strong>
