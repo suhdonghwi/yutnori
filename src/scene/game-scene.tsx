@@ -1,6 +1,6 @@
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, Html, OrbitControls } from "@react-three/drei";
-import { useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
 import {
   NODE_POSITIONS,
@@ -137,6 +137,33 @@ export function Scene({
   onMoveComplete: () => void;
 }) {
   const { t } = useI18n();
+  const { camera, size } = useThree();
+  const isMobileViewport = size.width < 760;
+  const viewportOrientation =
+    size.width > size.height ? "landscape" : "portrait";
+
+  useLayoutEffect(() => {
+    if (!isMobileViewport || !(camera instanceof THREE.PerspectiveCamera)) {
+      return;
+    }
+
+    const aspect = size.width / size.height;
+    const halfVerticalFov = THREE.MathUtils.degToRad(camera.fov / 2);
+    const boardHalfWidthWithSafeArea = 8;
+    const distanceToFitBoard =
+      boardHalfWidthWithSafeArea / (Math.tan(halfVerticalFov) * aspect);
+    const distance = THREE.MathUtils.clamp(distanceToFitBoard, 26, 48);
+    const initialDistance = Math.hypot(10.8, 11.8);
+
+    camera.position.set(
+      0,
+      distance * (10.8 / initialDistance),
+      distance * (11.8 / initialDistance),
+    );
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+  }, [camera, isMobileViewport, viewportOrientation]);
+
   const previewEdgeColors = new Map<string, string>();
   movePreviews.forEach((preview) => {
     preview.pathNodes.slice(1).forEach((node, index) => {
@@ -253,7 +280,7 @@ export function Scene({
         dampingFactor={0.08}
         zoomSpeed={0.85}
         minDistance={8.5}
-        maxDistance={30}
+        maxDistance={isMobileViewport ? 52 : 30}
         minPolarAngle={0.72}
         maxPolarAngle={1.08}
         minAzimuthAngle={-0.25}

@@ -91,18 +91,10 @@ export const BOARD_NODE_IDS = Object.keys(NODE_POSITIONS);
 export const MAJOR_NODE_IDS = new Set<NodeId>(["O0", "O5", "O10", "O15", "C"]);
 
 export function createInitialBoard(): BoardState {
-  const board: BoardState = [
+  return [
     Array.from({ length: 4 }, () => ({ ...HOME_PIECE })),
     Array.from({ length: 4 }, () => ({ ...HOME_PIECE })),
   ];
-  // Temporary test setup: start Cheong piece 1 at the first branch.
-  board[0][0] = {
-    status: "board",
-    route: "outer",
-    index: 5,
-    stackOrder: 0,
-  };
-  return board;
 }
 
 export function cloneBoard(board: BoardState): BoardState {
