@@ -47,7 +47,7 @@ export function ControlDock({
   const { t } = useI18n();
   return (
     <div
-      className="pointer-events-auto absolute bottom-5 left-1/2 z-[14] flex min-h-[96px] w-[calc(100%-64px)] max-w-[1380px] -translate-x-1/2 items-stretch overflow-hidden rounded-[2px] border border-[rgba(217,186,112,.58)] bg-[rgba(7,15,12,.8)] shadow-[0_20px_60px_rgba(0,0,0,.34)] max-[760px]:bottom-2 max-[760px]:min-h-[108px] max-[760px]:w-[calc(100%-16px)] max-[760px]:flex-col max-[760px]:rounded-[3px]"
+      className="pointer-events-auto absolute bottom-5 left-1/2 z-[14] flex min-h-[96px] w-[calc(100%-64px)] max-w-[1380px] -translate-x-1/2 touch-manipulation items-stretch overflow-hidden rounded-[2px] border border-[rgba(217,186,112,.58)] bg-[rgba(7,15,12,.8)] shadow-[0_20px_60px_rgba(0,0,0,.34)] select-none [-webkit-touch-callout:none] max-[760px]:bottom-2 max-[760px]:min-h-[108px] max-[760px]:w-[calc(100%-16px)] max-[760px]:flex-col max-[760px]:rounded-[3px]"
       style={{ "--turn-color": PLAYERS[current].color } as React.CSSProperties}
     >
       <div
