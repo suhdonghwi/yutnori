@@ -20,26 +20,26 @@ export function PlayerProgress({
 
   return (
     <div
-      className={`flex min-w-0 items-center gap-3 transition-opacity duration-300 max-sm:gap-2 ${active ? "opacity-100" : "opacity-55"}`}
+      className={`flex min-w-0 items-center gap-2.5 transition-opacity duration-300 max-sm:gap-1.5 ${active ? "opacity-100" : "opacity-55"}`}
       style={{ "--player-color": config.color } as React.CSSProperties}
     >
       <span
-        className="size-6 shrink-0 rounded-full border border-gold-soft/60 bg-[var(--player-color)] shadow-[0_5px_14px] shadow-black/30 max-sm:size-4"
+        className="size-5 shrink-0 rounded-full border border-gold-soft/60 bg-[var(--player-color)] shadow-[0_5px_14px] shadow-black/30 max-sm:size-3.5"
         aria-hidden="true"
       />
       <div className="min-w-0">
-        <strong className="block overflow-hidden text-base leading-none font-extrabold text-ellipsis whitespace-nowrap text-parchment-bright max-sm:text-sm">
+        <strong className="block overflow-hidden text-sm leading-none font-extrabold text-ellipsis whitespace-nowrap text-parchment-bright max-sm:max-w-20 max-sm:text-xs max-xs:max-w-14">
           {t.team(player)}
           {ai ? " AI" : ""}
         </strong>
         <div
-          className="mt-2 flex items-center gap-3 max-sm:mt-1 max-sm:gap-1.5"
+          className="mt-1.5 flex items-center gap-2 max-sm:mt-1 max-sm:gap-1 max-xs:hidden"
           aria-hidden="true"
         >
           {Array.from({ length: 4 }, (_, index) => (
             <span
               key={index}
-              className={`size-[7px] rounded-full border max-sm:size-[5px] ${index < finished ? "border-gold bg-gold" : "border-gold/50 bg-transparent"}`}
+              className={`size-1.5 rounded-full border max-sm:size-1 ${index < finished ? "border-gold bg-gold" : "border-gold/50 bg-transparent"}`}
             />
           ))}
         </div>

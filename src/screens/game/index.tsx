@@ -6,6 +6,7 @@ import {
   SpeakerSlash,
 } from "@phosphor-icons/react";
 import { Suspense, useState, type ReactNode } from "react";
+import yutIcon from "../../assets/yut.png";
 import type { GameMode } from "../../game/types";
 import { Scene } from "../../scene/game-scene";
 import { gameSfx } from "../../audio/game-sfx";
@@ -31,14 +32,14 @@ function IconButton({
 }) {
   return (
     <button
-      className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-xs font-bold text-parchment-dim transition-colors hover:text-parchment"
+      className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 font-bold text-parchment-dim transition-colors hover:text-parchment"
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
       aria-pressed={pressed}
     >
       {icon}
-      <span className="max-sm:hidden">{label}</span>
+      <span className="text-xs leading-none max-sm:hidden">{label}</span>
     </button>
   );
 }
@@ -66,24 +67,40 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
         className="pointer-events-none absolute inset-0 block h-full w-full"
         aria-label={t.game.canvasLabel}
       >
-        <div className="pointer-events-none absolute top-4 right-5 left-5 z-20 flex min-w-0 items-center justify-between gap-6 max-sm:top-3 max-sm:right-3 max-sm:left-3 max-sm:gap-3">
-          <PlayerProgress
-            player={0}
-            finished={
-              pieces[0].filter((piece) => piece.status === "finished").length
-            }
-            active={current === 0 && phase !== "gameover"}
-          />
-          <div className="flex min-w-0 items-center gap-7 max-sm:gap-3">
-            <PlayerProgress
-              player={1}
-              ai={mode === "ai"}
-              finished={
-                pieces[1].filter((piece) => piece.status === "finished").length
-              }
-              active={current === 1 && phase !== "gameover"}
+        <header className="pointer-events-none absolute top-4 right-5 left-5 z-20 flex min-w-0 items-center justify-between gap-6 max-sm:top-3 max-sm:right-3 max-sm:left-3 max-sm:gap-2">
+          <div className="flex min-w-0 shrink items-center gap-2.5 max-xs:gap-1.5">
+            <img
+              className="h-7 w-auto shrink-0 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)] max-sm:h-6"
+              src={yutIcon}
+              alt=""
+              aria-hidden="true"
             />
-            <div className="pointer-events-auto flex shrink-0 items-center gap-4 border-l border-gold/35 pl-5 max-sm:gap-2 max-sm:pl-3">
+            <strong className="overflow-hidden text-xl leading-none font-extrabold tracking-snug text-ellipsis whitespace-nowrap text-parchment-bright max-sm:text-base max-xs:max-w-16 max-xs:text-sm">
+              {t.appTitle}
+            </strong>
+          </div>
+
+          <div className="flex min-w-0 items-center gap-2.5 max-sm:gap-1.5">
+            <div className="flex min-w-0 items-center gap-4 max-sm:gap-3.5">
+              <PlayerProgress
+                player={0}
+                finished={
+                  pieces[0].filter((piece) => piece.status === "finished")
+                    .length
+                }
+                active={current === 0 && phase !== "gameover"}
+              />
+              <PlayerProgress
+                player={1}
+                ai={mode === "ai"}
+                finished={
+                  pieces[1].filter((piece) => piece.status === "finished")
+                    .length
+                }
+                active={current === 1 && phase !== "gameover"}
+              />
+            </div>
+            <div className="pointer-events-auto ml-1 flex shrink-0 items-center gap-4 border-l border-gold/35 pl-4 max-sm:ml-0 max-sm:gap-2 max-sm:pl-2">
               <IconButton
                 icon={
                   sfxEnabled ? (
@@ -121,7 +138,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
               />
             </div>
           </div>
-        </div>
+        </header>
 
         <div className="pointer-events-none absolute inset-0 z-[1] block min-w-0">
           <div className="pointer-events-auto absolute inset-0 h-full min-h-0 w-full [&_canvas]:touch-none">
