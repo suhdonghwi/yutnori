@@ -3,7 +3,7 @@ import {
   BookOpen,
   GlobeHemisphereWest,
   Robot,
-  UsersThree,
+  Users,
 } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -17,7 +17,7 @@ type LobbyProps = {
 };
 
 const PLAY_MODES = [
-  { id: "local", icon: UsersThree, available: true },
+  { id: "local", icon: Users, available: true },
   { id: "online", icon: GlobeHemisphereWest, available: false },
   { id: "ai", icon: Robot, available: true },
 ] as const;
@@ -143,29 +143,41 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
   const { t } = useI18n();
   const [showRules, setShowRules] = useState(false);
   const [previewMode, setPreviewMode] = useState<LobbyPreviewMode | null>(null);
+  const [showLobbyScene, setShowLobbyScene] = useState(
+    () => window.matchMedia("(min-width: 51.25rem)").matches,
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 51.25rem)");
+    const handleChange = () => setShowLobbyScene(media.matches);
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
 
   return (
     <main className="lobby-shell relative min-h-svh overflow-hidden text-parchment-bright max-md:overflow-auto">
       <div className="absolute top-6 right-8 z-[3] max-md:top-4 max-md:right-4">
         <LanguageSwitcher />
       </div>
-      <div
-        className="pointer-events-none absolute inset-y-0 right-0 z-0 w-[58vw] [mask-image:linear-gradient(90deg,transparent_0%,black_18%,black_100%)] max-md:top-[76px] max-md:h-[330px] max-md:w-full max-md:[mask-image:linear-gradient(180deg,black_0%,black_72%,transparent_100%)] max-md:opacity-80 max-xs:h-[285px]"
-        aria-hidden="true"
-      >
-        <div className="pointer-events-auto size-full max-md:pointer-events-none">
-          <LobbyScene previewMode={previewMode} />
+      {showLobbyScene && (
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 z-0 w-[58vw] [mask-image:linear-gradient(90deg,transparent_0%,black_18%,black_100%)]"
+          aria-hidden="true"
+        >
+          <div className="pointer-events-auto size-full">
+            <LobbyScene previewMode={previewMode} />
+          </div>
         </div>
-      </div>
+      )}
 
-      <section className="relative z-[2] mx-auto flex min-h-svh w-[min(1240px,calc(100%-64px))] items-center py-12 max-md:w-[min(620px,calc(100%-36px))] max-md:items-start max-md:pt-10 max-md:pb-16 max-xs:w-[calc(100%-28px)]">
+      <section className="relative z-[2] mx-auto flex min-h-svh w-[min(1240px,calc(100%-64px))] items-center py-12 max-md:w-[min(620px,calc(100%-36px))] max-xs:w-[calc(100%-28px)]">
         <div className="w-[min(520px,43vw)] max-md:w-full">
           <h1 className="m-0 text-[clamp(54px,5.5vw,78px)] leading-[1.04] font-extrabold tracking-[.025em] text-balance text-parchment-bright max-md:text-[clamp(42px,11vw,60px)]">
             {t.lobby.title}
           </h1>
 
           <div
-            className="mt-10 border-y border-gold-soft/20 max-md:mt-[305px] max-xs:mt-[260px]"
+            className="mt-10 border-y border-gold-soft/20"
             aria-label={t.lobby.modeListLabel}
             onPointerLeave={() => setPreviewMode(null)}
           >
