@@ -37,6 +37,11 @@
   --radius-md: 15px;
   --radius-lg: 25px;
 
+  --breakpoint-xs: 35rem;
+  --breakpoint-sm: 47.5rem;
+  --breakpoint-md: 51.25rem;
+  --breakpoint-lg: 56.25rem;
+
   --tracking-display: -0.05em;
   --tracking-snug: -0.02em;
   --tracking-label: 0.08em;

@@ -20,25 +20,25 @@ export function PlayerProgress({
 
   return (
     <div
-      className={`relative flex items-center gap-3 transition-opacity duration-300 max-[760px]:gap-2 ${active ? "opacity-100" : "opacity-55"}`}
+      className={`relative flex items-center gap-3 transition-opacity duration-300 max-sm:gap-2 ${active ? "opacity-100" : "opacity-55"}`}
       style={{ "--player-color": config.color } as React.CSSProperties}
     >
       <span
-        className="size-6 shrink-0 rounded-full border border-gold-soft/60 bg-[var(--player-color)] shadow-[0_5px_14px] shadow-black/30 max-[760px]:size-4"
+        className="size-6 shrink-0 rounded-full border border-gold-soft/60 bg-[var(--player-color)] shadow-[0_5px_14px] shadow-black/30 max-sm:size-4"
         aria-hidden="true"
       />
       <div className="min-w-0">
-        <div className="flex items-baseline gap-2.5 whitespace-nowrap max-[760px]:gap-1.5">
-          <strong className="text-base leading-none font-extrabold text-parchment-bright max-[760px]:text-body">
+        <div className="flex items-baseline gap-2.5 whitespace-nowrap max-sm:gap-1.5">
+          <strong className="text-base leading-none font-extrabold text-parchment-bright max-sm:text-body">
             {t.team(player)}
             {ai ? " AI" : ""}
           </strong>
-          <span className="text-label font-semibold text-parchment-dim max-[760px]:text-micro">
+          <span className="text-label font-semibold text-parchment-dim max-sm:text-micro">
             {t.game.finishedCount(finished)}
           </span>
         </div>
         <div
-          className="mt-2 flex items-center gap-3 max-[760px]:hidden"
+          className="mt-2 flex items-center gap-3 max-sm:hidden"
           aria-hidden="true"
         >
           {Array.from({ length: 4 }, (_, index) => (
@@ -51,7 +51,7 @@ export function PlayerProgress({
       </div>
       {active && (
         <span
-          className="absolute -bottom-3 left-0 h-px w-full bg-[linear-gradient(90deg,var(--color-gold),transparent)] max-[760px]:-bottom-2"
+          className="absolute -bottom-3 left-0 h-px w-full bg-[linear-gradient(90deg,var(--color-gold),transparent)] max-sm:-bottom-2"
           aria-hidden="true"
         />
       )}

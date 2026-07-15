@@ -43,7 +43,7 @@ export function VictoryEffect({ winner }: { winner: Player }) {
           />
         ))}
       </div>
-      <div className="victory-card relative isolate z-[3] w-[min(680px,calc(100vw-40px))] px-7 py-11 text-center text-parchment-bright max-[560px]:py-8">
+      <div className="victory-card relative isolate z-[3] w-[min(680px,calc(100vw-40px))] px-7 py-11 text-center text-parchment-bright max-xs:py-8">
         <span
           className="victory-team-dot mx-auto mb-5 block size-5 rounded-full border border-parchment-bright/70 bg-[var(--victory-color)] shadow-[0_0_24px_var(--victory-color)]"
           aria-hidden="true"
@@ -88,11 +88,11 @@ export function ThrowResultEffect({
       style={{ "--result-accent": accent } as React.CSSProperties}
       aria-hidden="true"
     >
-      <div className="throw-result-lockup relative isolate z-[2] w-[min(700px,calc(100vw-24px))] px-8 py-9 text-center max-[560px]:px-4 max-[560px]:py-7">
+      <div className="throw-result-lockup relative isolate z-[2] w-[min(700px,calc(100vw-24px))] px-8 py-9 text-center max-xs:px-4 max-xs:py-7">
         <span className="mb-5 block text-caption font-bold tracking-eyebrow text-[color-mix(in_srgb,var(--result-accent)_44%,var(--color-parchment-dim))]">
           {t.throwEffect.tag}
         </span>
-        <div className="flex items-center justify-center gap-6 max-[560px]:gap-3">
+        <div className="flex items-center justify-center gap-6 max-xs:gap-3">
           <i
             className="h-px min-w-8 flex-1 bg-[linear-gradient(90deg,transparent,var(--result-accent))] opacity-70"
             aria-hidden="true"

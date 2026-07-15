@@ -38,7 +38,7 @@ function IconButton({
       aria-pressed={pressed}
     >
       {icon}
-      <span className="max-[760px]:hidden">{label}</span>
+      <span className="max-sm:hidden">{label}</span>
     </button>
   );
 }
@@ -66,7 +66,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
         className="pointer-events-none absolute inset-0 block h-full w-full"
         aria-label={t.game.canvasLabel}
       >
-        <div className="pointer-events-auto absolute top-7 left-8 z-20 max-[760px]:top-4 max-[760px]:left-3">
+        <div className="pointer-events-auto absolute top-7 left-8 z-20 max-sm:top-4 max-sm:left-3">
           <PlayerProgress
             player={0}
             finished={
@@ -76,7 +76,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
           />
         </div>
 
-        <div className="pointer-events-auto absolute top-7 right-8 z-20 flex items-start gap-7 max-[760px]:top-4 max-[760px]:right-3 max-[760px]:gap-3">
+        <div className="pointer-events-auto absolute top-7 right-8 z-20 flex items-start gap-7 max-sm:top-4 max-sm:right-3 max-sm:gap-3">
           <PlayerProgress
             player={1}
             ai={mode === "ai"}
@@ -85,7 +85,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
             }
             active={current === 1 && phase !== "gameover"}
           />
-          <div className="flex items-start gap-4 border-l border-gold/35 pl-5 max-[760px]:gap-2 max-[760px]:pl-3">
+          <div className="flex items-start gap-4 border-l border-gold/35 pl-5 max-sm:gap-2 max-sm:pl-3">
             <IconButton
               icon={
                 sfxEnabled ? (
