@@ -24,16 +24,16 @@ export function PlayerProgress({
       style={{ "--player-color": config.color } as React.CSSProperties}
     >
       <span
-        className="size-6 shrink-0 rounded-full border border-[rgba(245,222,168,.62)] bg-[var(--player-color)] shadow-[0_5px_14px_rgba(0,0,0,.28)] max-[760px]:size-4"
+        className="size-6 shrink-0 rounded-full border border-gold-soft/60 bg-[var(--player-color)] shadow-[0_5px_14px] shadow-black/30 max-[760px]:size-4"
         aria-hidden="true"
       />
       <div className="min-w-0">
         <div className="flex items-baseline gap-2.5 whitespace-nowrap max-[760px]:gap-1.5">
-          <strong className="text-base leading-none font-extrabold text-[#f0dfbb] max-[760px]:text-[13px]">
+          <strong className="text-base leading-none font-extrabold text-parchment-bright max-[760px]:text-[13px]">
             {t.team(player)}
             {ai ? " AI" : ""}
           </strong>
-          <span className="text-[11px] font-semibold text-[#a69a80] max-[760px]:text-[9px]">
+          <span className="text-[11px] font-semibold text-parchment-dim max-[760px]:text-[9px]">
             {t.game.finishedCount(finished)}
           </span>
         </div>
@@ -44,14 +44,14 @@ export function PlayerProgress({
           {Array.from({ length: 4 }, (_, index) => (
             <span
               key={index}
-              className={`size-[7px] rounded-full border ${index < finished ? "border-[#d9ba70] bg-[#d9ba70]" : "border-[rgba(217,186,112,.48)] bg-transparent"}`}
+              className={`size-[7px] rounded-full border ${index < finished ? "border-gold bg-gold" : "border-gold/50 bg-transparent"}`}
             />
           ))}
         </div>
       </div>
       {active && (
         <span
-          className="absolute -bottom-3 left-0 h-px w-full bg-[linear-gradient(90deg,#d9ba70,transparent)] max-[760px]:-bottom-2"
+          className="absolute -bottom-3 left-0 h-px w-full bg-[linear-gradient(90deg,var(--color-gold),transparent)] max-[760px]:-bottom-2"
           aria-hidden="true"
         />
       )}

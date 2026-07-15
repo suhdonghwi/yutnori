@@ -47,19 +47,19 @@ export function ControlDock({
   const { t } = useI18n();
   return (
     <div
-      className="pointer-events-auto absolute bottom-5 left-1/2 z-[14] flex min-h-[96px] w-[calc(100%-64px)] max-w-[1380px] -translate-x-1/2 touch-manipulation items-stretch overflow-hidden rounded-[2px] border border-[rgba(217,186,112,.58)] bg-[rgba(7,15,12,.8)] shadow-[0_20px_60px_rgba(0,0,0,.34)] select-none [-webkit-touch-callout:none] max-[760px]:bottom-2 max-[760px]:min-h-[108px] max-[760px]:w-[calc(100%-16px)] max-[760px]:flex-col max-[760px]:rounded-[3px]"
+      className="pointer-events-auto absolute bottom-5 left-1/2 z-[14] flex min-h-[96px] w-[calc(100%-64px)] max-w-[1380px] -translate-x-1/2 touch-manipulation items-stretch overflow-hidden rounded-[2px] border border-gold/60 bg-night/80 shadow-[0_20px_60px] shadow-black/35 select-none [-webkit-touch-callout:none] max-[760px]:bottom-2 max-[760px]:min-h-[108px] max-[760px]:w-[calc(100%-16px)] max-[760px]:flex-col max-[760px]:rounded-[3px]"
       style={{ "--turn-color": PLAYERS[current].color } as React.CSSProperties}
     >
       <div
-        className="flex min-w-[330px] flex-[1.05] items-center gap-4 border-r border-[rgba(217,186,112,.36)] px-8 py-4 max-[900px]:min-w-[270px] max-[760px]:min-h-[52px] max-[760px]:w-full max-[760px]:min-w-0 max-[760px]:flex-none max-[760px]:gap-2.5 max-[760px]:border-r-0 max-[760px]:border-b max-[760px]:px-3.5 max-[760px]:py-2"
+        className="flex min-w-[330px] flex-[1.05] items-center gap-4 border-r border-gold/35 px-8 py-4 max-[900px]:min-w-[270px] max-[760px]:min-h-[52px] max-[760px]:w-full max-[760px]:min-w-0 max-[760px]:flex-none max-[760px]:gap-2.5 max-[760px]:border-r-0 max-[760px]:border-b max-[760px]:px-3.5 max-[760px]:py-2"
         aria-live="polite"
       >
-        <span className="size-[11px] shrink-0 rounded-full border border-[rgba(245,222,168,.66)] bg-[var(--turn-color)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--turn-color),transparent_80%)] max-[760px]:size-[9px]" />
+        <span className="size-[11px] shrink-0 rounded-full border border-gold-soft/65 bg-[var(--turn-color)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--turn-color),transparent_80%)] max-[760px]:size-[9px]" />
         <div className="min-w-0">
-          <small className="mb-1 block text-[11px] font-medium text-[#a89b80] max-[760px]:mb-0 max-[760px]:text-[9px]">
+          <small className="mb-1 block text-[11px] font-medium text-parchment-dim max-[760px]:mb-0 max-[760px]:text-[9px]">
             {t.dock.now}
           </small>
-          <strong className="block overflow-hidden text-[clamp(16px,1.5vw,21px)] leading-[1.18] font-extrabold text-ellipsis whitespace-nowrap text-[#f0e2c5] max-[760px]:max-w-[calc(100vw-62px)] max-[760px]:text-[13px]">
+          <strong className="block overflow-hidden text-[clamp(16px,1.5vw,21px)] leading-[1.18] font-extrabold text-ellipsis whitespace-nowrap text-parchment-bright max-[760px]:max-w-[calc(100vw-62px)] max-[760px]:text-[13px]">
             {statusText}
           </strong>
         </div>
@@ -70,14 +70,14 @@ export function ControlDock({
           className="flex min-w-[310px] flex-[1.35] items-center gap-4 px-8 py-4 max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:gap-2 max-[760px]:px-3.5 max-[760px]:py-2"
           aria-live="polite"
         >
-          <span className="grid size-10 shrink-0 place-items-center rounded-full border border-[rgba(226,162,143,.34)] text-[11px] font-black text-[#e2a294] max-[760px]:size-8">
+          <span className="grid size-10 shrink-0 place-items-center rounded-full border border-coral/35 text-[11px] font-black text-coral max-[760px]:size-8">
             AI
           </span>
           <div>
-            <small className="mb-1 block text-[9px] leading-none font-semibold tracking-[.1em] text-[#b99b91]">
+            <small className="mb-1 block text-[9px] leading-none font-semibold tracking-[.1em] text-coral">
               {t.dock.aiChoice(t.team(1))}
             </small>
-            <strong className="block text-sm leading-[1.2] font-extrabold whitespace-nowrap text-[#efd6cb] max-[760px]:max-w-[68vw] max-[760px]:overflow-hidden max-[760px]:text-[11px] max-[760px]:text-ellipsis">
+            <strong className="block text-sm leading-[1.2] font-extrabold whitespace-nowrap text-parchment-bright max-[760px]:max-w-[68vw] max-[760px]:overflow-hidden max-[760px]:text-[11px] max-[760px]:text-ellipsis">
               {aiDecision ? t.aiReason[aiDecision.reason] : t.dock.aiThinking}
             </strong>
           </div>
@@ -96,7 +96,7 @@ export function ControlDock({
               <button
                 key={index}
                 type="button"
-                className="group min-w-[58px] cursor-pointer border-0 border-l border-[rgba(217,186,112,.28)] bg-transparent px-3 py-3 text-sm font-extrabold text-[#d7c8a8] transition-[background-color,color,opacity] enabled:hover:bg-[rgba(217,186,112,.1)] enabled:hover:text-[#f4dba1] disabled:cursor-not-allowed disabled:opacity-[.24] max-[760px]:min-w-0 max-[760px]:px-1 max-[760px]:py-1.5 max-[760px]:text-[11px]"
+                className="group min-w-[58px] cursor-pointer border-0 border-l border-gold/30 bg-transparent px-3 py-3 text-sm font-extrabold text-parchment transition-[background-color,color,opacity] enabled:hover:bg-gold/10 enabled:hover:text-gold disabled:cursor-not-allowed disabled:opacity-[.24] max-[760px]:min-w-0 max-[760px]:px-1 max-[760px]:py-1.5 max-[760px]:text-[11px]"
                 disabled={!movable}
                 onPointerEnter={() =>
                   onHoverToken({ player: current, piece: index })
@@ -109,7 +109,7 @@ export function ControlDock({
                 {group.length > 1 && !follower
                   ? group.map((member) => t.dock.token(member)).join(" + ")
                   : t.dock.token(index)}
-                <span className="mt-1.5 block text-[9px] font-medium text-[#817867] group-hover:text-[#c5b590] max-[760px]:mt-0.5 max-[760px]:text-[8px]">
+                <span className="mt-1.5 block text-[9px] font-medium text-parchment-faint group-hover:text-parchment-dim max-[760px]:mt-0.5 max-[760px]:text-[8px]">
                   {follower
                     ? t.dock.stackedWith(leader)
                     : t.pieceProgress(pieceProgress(piece))}
@@ -125,7 +125,7 @@ export function ControlDock({
         >
           <button
             type="button"
-            className="cursor-pointer border-0 border-r border-[rgba(217,186,112,.28)] bg-[rgba(217,186,112,.09)] px-5 py-3 text-sm font-extrabold text-[#efd49a] transition-colors hover:bg-[rgba(217,186,112,.15)] max-[760px]:min-w-0 max-[760px]:px-1.5 max-[760px]:py-[7px] max-[760px]:text-[11px]"
+            className="cursor-pointer border-0 border-r border-gold/30 bg-gold/10 px-5 py-3 text-sm font-extrabold text-gold transition-colors hover:bg-gold/15 max-[760px]:min-w-0 max-[760px]:px-1.5 max-[760px]:py-[7px] max-[760px]:text-[11px]"
             onPointerEnter={() => onHoverRoute("shortcut")}
             onPointerLeave={() => onHoverRoute(null)}
             onFocus={() => onHoverRoute("shortcut")}
@@ -138,7 +138,7 @@ export function ControlDock({
                 : t.dock.shortcutFromBranch
               ).label
             }
-            <span className="mt-[3px] block text-[9px] font-medium text-[rgba(238,224,195,.65)]">
+            <span className="mt-[3px] block text-[9px] font-medium text-parchment/65">
               {
                 (routeChoiceFromCenter
                   ? t.dock.shortcutFromCenter
@@ -149,7 +149,7 @@ export function ControlDock({
           </button>
           <button
             type="button"
-            className="cursor-pointer border-0 bg-transparent px-5 py-3 text-sm font-extrabold text-[#cabea5] transition-colors hover:bg-white/[.04] hover:text-[#f1dfb9] max-[760px]:min-w-0 max-[760px]:px-1.5 max-[760px]:py-[7px] max-[760px]:text-[11px]"
+            className="cursor-pointer border-0 bg-transparent px-5 py-3 text-sm font-extrabold text-parchment-dim transition-colors hover:bg-white/[.04] hover:text-parchment-bright max-[760px]:min-w-0 max-[760px]:px-1.5 max-[760px]:py-[7px] max-[760px]:text-[11px]"
             onPointerEnter={() => onHoverRoute("outer")}
             onPointerLeave={() => onHoverRoute(null)}
             onFocus={() => onHoverRoute("outer")}
@@ -162,7 +162,7 @@ export function ControlDock({
                 : t.dock.outerFromBranch
               ).label
             }
-            <span className="mt-[3px] block text-[9px] font-medium text-[rgba(238,224,195,.65)]">
+            <span className="mt-[3px] block text-[9px] font-medium text-parchment/65">
               {
                 (routeChoiceFromCenter
                   ? t.dock.outerFromCenter
@@ -174,7 +174,7 @@ export function ControlDock({
         </div>
       ) : phase === "gameover" ? (
         <button
-          className="flex min-w-[240px] flex-[1.2] cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-[#d9ba70] transition-colors hover:bg-[rgba(217,186,112,.1)] hover:text-[#f4d99b] max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:text-sm"
+          className="flex min-w-[240px] flex-[1.2] cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-gold transition-colors hover:bg-gold/10 hover:text-parchment-bright max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:text-sm"
           type="button"
           onClick={onReset}
         >
@@ -183,7 +183,7 @@ export function ControlDock({
         </button>
       ) : (
         <button
-          className="flex min-w-[240px] flex-[1.2] cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-[#d9ba70] transition-colors enabled:hover:bg-[rgba(217,186,112,.1)] enabled:hover:text-[#f4d99b] disabled:cursor-wait disabled:opacity-45 max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:px-3 max-[760px]:text-sm"
+          className="flex min-w-[240px] flex-[1.2] cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-gold transition-colors enabled:hover:bg-gold/10 enabled:hover:text-parchment-bright disabled:cursor-wait disabled:opacity-45 max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:px-3 max-[760px]:text-sm"
           type="button"
           onClick={onThrow}
           disabled={isAiTurn || phase === "rolling" || phase === "moving"}
