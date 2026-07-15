@@ -60,7 +60,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
           />
           <div className="flex items-start gap-4 border-l border-gold/35 pl-5 max-[760px]:gap-2 max-[760px]:pl-3">
             <button
-              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-parchment-dim transition-colors hover:text-parchment"
+              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-caption font-bold text-parchment-dim transition-colors hover:text-parchment"
               type="button"
               onClick={toggleSfx}
               aria-label={sfxEnabled ? t.game.sfxOff : t.game.sfxOn}
@@ -74,7 +74,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
               <span className="max-[760px]:hidden">{t.game.sfx}</span>
             </button>
             <button
-              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-parchment-dim transition-colors hover:text-parchment"
+              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-caption font-bold text-parchment-dim transition-colors hover:text-parchment"
               type="button"
               onClick={onExit}
               aria-label={t.game.toLobbyLabel}
@@ -83,7 +83,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
               <span className="max-[760px]:hidden">{t.game.toLobby}</span>
             </button>
             <button
-              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-[10px] font-bold text-parchment-dim transition-colors hover:text-parchment"
+              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-caption font-bold text-parchment-dim transition-colors hover:text-parchment"
               type="button"
               onClick={reset}
               aria-label={t.game.newGameLabel}

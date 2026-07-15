@@ -99,12 +99,12 @@ function MoveDestinationPreview({ preview }: { preview: MovePreview }) {
         style={{ pointerEvents: "none" }}
       >
         <div className="flex flex-col items-center gap-1.5">
-          <span className="block rounded-full border-[1.5px] border-parchment-bright/60 bg-night/95 px-3.5 py-2 text-[clamp(16px,1.35vw,20px)] leading-[1.1] font-extrabold tracking-[-.02em] whitespace-nowrap text-parchment-bright shadow-[0_8px_24px] shadow-black/45 backdrop-blur-[5px]">
+          <span className="block rounded-full border-[1.5px] border-parchment-bright/60 bg-night/95 px-3.5 py-2 text-[clamp(16px,1.35vw,20px)] leading-[1.1] font-extrabold tracking-snug whitespace-nowrap text-parchment-bright shadow-[0_8px_24px] shadow-black/45 backdrop-blur-[5px]">
             {preview.label}
           </span>
           {preview.action && (
             <span
-              className={`block rounded-full border-[1.5px] border-current px-3 py-1.5 text-[clamp(15px,1.2vw,18px)] leading-none font-black tracking-[-.02em] whitespace-nowrap text-parchment-bright shadow-[0_7px_20px] shadow-black/40 ${preview.action === "capture" ? "bg-team-red/95" : "bg-gold-deep/95"}`}
+              className={`block rounded-full border-[1.5px] border-current px-3 py-1.5 text-[clamp(15px,1.2vw,18px)] leading-none font-black tracking-snug whitespace-nowrap text-parchment-bright shadow-[0_7px_20px] shadow-black/40 ${preview.action === "capture" ? "bg-team-red/95" : "bg-gold-deep/95"}`}
             >
               {preview.action === "capture"
                 ? t.preview.capture

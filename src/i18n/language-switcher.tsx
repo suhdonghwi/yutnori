@@ -17,7 +17,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     >
       <Translate size={18} weight="regular" aria-hidden="true" />
       <select
-        className="cursor-pointer rounded-[3px] border border-gold-soft/30 bg-night/80 px-2 py-1.5 text-xs font-bold text-parchment transition-colors hover:border-gold-soft/50"
+        className="cursor-pointer rounded-xs border border-gold-soft/30 bg-night/80 px-2 py-1.5 text-xs font-bold text-parchment transition-colors hover:border-gold-soft/50"
         aria-label={t.languageSwitcherLabel}
         value={locale}
         onChange={(event) => setLocale(event.target.value as LocaleId)}

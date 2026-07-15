@@ -29,11 +29,11 @@ export function PlayerProgress({
       />
       <div className="min-w-0">
         <div className="flex items-baseline gap-2.5 whitespace-nowrap max-[760px]:gap-1.5">
-          <strong className="text-base leading-none font-extrabold text-parchment-bright max-[760px]:text-[13px]">
+          <strong className="text-base leading-none font-extrabold text-parchment-bright max-[760px]:text-body">
             {t.team(player)}
             {ai ? " AI" : ""}
           </strong>
-          <span className="text-[11px] font-semibold text-parchment-dim max-[760px]:text-[9px]">
+          <span className="text-label font-semibold text-parchment-dim max-[760px]:text-micro">
             {t.game.finishedCount(finished)}
           </span>
         </div>

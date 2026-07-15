@@ -48,10 +48,10 @@ export function VictoryEffect({ winner }: { winner: Player }) {
           className="victory-team-dot mx-auto mb-5 block size-5 rounded-full border border-parchment-bright/70 bg-[var(--victory-color)] shadow-[0_0_24px_var(--victory-color)]"
           aria-hidden="true"
         />
-        <span className="mb-4 block text-[11px] leading-none font-bold tracking-[.24em] text-[color-mix(in_srgb,var(--victory-glow)_62%,var(--color-parchment-dim))]">
+        <span className="mb-4 block text-label font-bold tracking-eyebrow text-[color-mix(in_srgb,var(--victory-glow)_62%,var(--color-parchment-dim))]">
           {t.victory.tag}
         </span>
-        <strong className="block text-[clamp(52px,7.5vw,88px)] leading-none font-black tracking-[-.045em] text-parchment-bright [text-shadow:0_0_30px_color-mix(in_srgb,var(--victory-color)_65%,transparent)]">
+        <strong className="block text-[clamp(52px,7.5vw,88px)] leading-none font-black tracking-display text-parchment-bright [text-shadow:0_0_30px_color-mix(in_srgb,var(--victory-color)_65%,transparent)]">
           {t.victory.winner(t.team(winner))}
         </strong>
         <p className="mt-5 mb-0 text-[clamp(14px,1.3vw,18px)] leading-[1.4] font-semibold text-parchment-dim">
@@ -89,7 +89,7 @@ export function ThrowResultEffect({
       aria-hidden="true"
     >
       <div className="throw-result-lockup relative isolate z-[2] w-[min(700px,calc(100vw-24px))] px-8 py-9 text-center max-[560px]:px-4 max-[560px]:py-7">
-        <span className="mb-5 block text-[10px] leading-none font-bold tracking-[.25em] text-[color-mix(in_srgb,var(--result-accent)_44%,var(--color-parchment-dim))]">
+        <span className="mb-5 block text-caption font-bold tracking-eyebrow text-[color-mix(in_srgb,var(--result-accent)_44%,var(--color-parchment-dim))]">
           {t.throwEffect.tag}
         </span>
         <div className="flex items-center justify-center gap-6 max-[560px]:gap-3">
@@ -98,7 +98,7 @@ export function ThrowResultEffect({
             aria-hidden="true"
           />
           <strong
-            className={`block text-[clamp(64px,9vw,112px)] leading-[.9] font-black whitespace-nowrap text-parchment-bright [text-shadow:0_0_30px_color-mix(in_srgb,var(--result-accent)_58%,transparent)] ${effect.result.id === "backdo" ? "tracking-[.04em]" : "tracking-[-.055em]"}`}
+            className={`block text-[clamp(64px,9vw,112px)] leading-[.9] font-black tracking-display whitespace-nowrap text-parchment-bright [text-shadow:0_0_30px_color-mix(in_srgb,var(--result-accent)_58%,transparent)] ${effect.result.id === "backdo" ? /* style-literal-ok */ "tracking-[.04em]" : ""}`}
           >
             {t.yut[effect.result.id]}
           </strong>
@@ -107,7 +107,7 @@ export function ThrowResultEffect({
             aria-hidden="true"
           />
         </div>
-        <small className="mt-6 block text-[13px] leading-none font-bold tracking-[.08em] text-[color-mix(in_srgb,var(--result-accent)_48%,var(--color-parchment))]">
+        <small className="mt-6 block text-body font-bold tracking-label text-[color-mix(in_srgb,var(--result-accent)_48%,var(--color-parchment))]">
           {detail}
         </small>
       </div>

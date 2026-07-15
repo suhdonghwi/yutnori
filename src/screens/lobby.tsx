@@ -40,25 +40,25 @@ function RulesDialog({ onClose }: { onClose: () => void }) {
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
       <section
-        className="max-h-[min(820px,calc(100svh-48px))] w-[min(760px,100%)] overflow-auto rounded-[25px] border border-gold-soft/30 bg-[linear-gradient(145deg,var(--color-panel),var(--color-panel-deep))] text-parchment shadow-[0_35px_110px] shadow-black/70 max-[560px]:max-h-[calc(100svh-20px)] max-[560px]:rounded-[19px]"
+        className="max-h-[min(820px,calc(100svh-48px))] w-[min(760px,100%)] overflow-auto rounded-lg border border-gold-soft/30 bg-[linear-gradient(145deg,var(--color-panel),var(--color-panel-deep))] text-parchment shadow-[0_35px_110px] shadow-black/70 max-[560px]:max-h-[calc(100svh-20px)] max-[560px]:rounded-md"
         role="dialog"
         aria-modal="true"
         aria-labelledby="rules-title"
       >
-        <div className="sticky top-0 z-2 flex items-center justify-between gap-5 border-b border-gold-soft/15 bg-panel px-[26px] pt-6 pb-5 max-[560px]:p-[18px]">
+        <div className="sticky top-0 z-2 flex items-center justify-between gap-5 border-b border-gold-soft/15 bg-panel px-6.5 pt-6 pb-5 max-[560px]:p-4.5">
           <div>
-            <span className="mb-1.5 block text-[9px] leading-none font-bold tracking-[.18em] text-gold-deep">
+            <span className="mb-1.5 block text-micro font-bold tracking-eyebrow text-gold-deep">
               {t.rules.tag}
             </span>
             <h2
-              className="m-0 text-[26px] leading-none font-black tracking-[-.04em] text-parchment-bright max-[560px]:text-[22px]"
+              className="m-0 text-title font-black tracking-display text-parchment-bright max-[560px]:text-heading"
               id="rules-title"
             >
               {t.rules.title}
             </h2>
           </div>
           <button
-            className="grid size-[38px] cursor-pointer place-items-center rounded-full border border-gold-soft/20 bg-white/4 text-[27px] leading-none font-light text-parchment hover:bg-white/9"
+            className="grid size-[38px] cursor-pointer place-items-center rounded-full border border-gold-soft/20 bg-white/4 text-title font-light text-parchment hover:bg-white/9"
             ref={closeButton}
             type="button"
             onClick={onClose}
@@ -68,75 +68,75 @@ function RulesDialog({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <div className="grid gap-2.5 px-[26px] pt-5 pb-[27px] max-[560px]:p-3.5">
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-[15px] border border-gold/30 bg-gold-deep/10 p-[18px] max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-[13px] max-[560px]:py-[15px]">
-            <span className="text-xs leading-none font-black tracking-[.08em] text-gold-deep">
+        <div className="grid gap-2.5 px-6.5 pt-5 pb-6.75 max-[560px]:p-3.5">
+          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-md border border-gold/30 bg-gold-deep/10 p-4.5 max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-3.25 max-[560px]:py-3.75">
+            <span className="text-xs leading-none font-black tracking-label text-gold-deep">
               01
             </span>
             <div>
-              <h3 className="mt-[-2px] mb-[7px] text-base leading-[1.2] font-extrabold text-parchment">
+              <h3 className="mt-[-2px] mb-1.75 text-base leading-[1.2] font-extrabold text-parchment">
                 {t.rules.goal.title}
               </h3>
-              <p className="m-0 text-[13px] leading-[1.65] font-medium text-parchment-dim">
+              <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
                 {t.rules.goal.body}
               </p>
             </div>
           </article>
 
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-[15px] border border-gold-soft/10 bg-white/[.025] p-[18px] max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-[13px] max-[560px]:py-[15px]">
-            <span className="text-xs leading-none font-black tracking-[.08em] text-gold-deep">
+          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-md border border-gold-soft/10 bg-white/[.025] p-4.5 max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-3.25 max-[560px]:py-3.75">
+            <span className="text-xs leading-none font-black tracking-label text-gold-deep">
               02
             </span>
             <div>
-              <h3 className="mt-[-2px] mb-[7px] text-base leading-[1.2] font-extrabold text-parchment">
+              <h3 className="mt-[-2px] mb-1.75 text-base leading-[1.2] font-extrabold text-parchment">
                 {t.rules.throws.title}
               </h3>
-              <dl className="mt-[11px] grid grid-cols-3 gap-[7px] max-[560px]:grid-cols-2">
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-white/4 px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-parchment">
+              <dl className="mt-2.75 grid grid-cols-3 gap-1.75 max-[560px]:grid-cols-2">
+                <div className="flex items-center justify-between gap-2 rounded-sm bg-white/4 px-2.5 py-2.25">
+                  <dt className="text-body font-extrabold text-parchment">
                     {t.yut.do}
                   </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-parchment-faint">
+                  <dd className="m-0 text-caption font-semibold text-parchment-faint">
                     {t.rules.throws.steps(1)}
                   </dd>
                 </div>
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-white/4 px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-parchment">
+                <div className="flex items-center justify-between gap-2 rounded-sm bg-white/4 px-2.5 py-2.25">
+                  <dt className="text-body font-extrabold text-parchment">
                     {t.yut.gae}
                   </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-parchment-faint">
+                  <dd className="m-0 text-caption font-semibold text-parchment-faint">
                     {t.rules.throws.steps(2)}
                   </dd>
                 </div>
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-white/4 px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-parchment">
+                <div className="flex items-center justify-between gap-2 rounded-sm bg-white/4 px-2.5 py-2.25">
+                  <dt className="text-body font-extrabold text-parchment">
                     {t.yut.geol}
                   </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-parchment-faint">
+                  <dd className="m-0 text-caption font-semibold text-parchment-faint">
                     {t.rules.throws.steps(3)}
                   </dd>
                 </div>
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-gold-deep/15 px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-parchment">
+                <div className="flex items-center justify-between gap-2 rounded-sm bg-gold-deep/15 px-2.5 py-2.25">
+                  <dt className="text-body font-extrabold text-parchment">
                     {t.yut.yut}
                   </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-gold">
+                  <dd className="m-0 text-caption font-semibold text-gold">
                     {t.rules.throws.stepsExtra(4)}
                   </dd>
                 </div>
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-gold-deep/15 px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-parchment">
+                <div className="flex items-center justify-between gap-2 rounded-sm bg-gold-deep/15 px-2.5 py-2.25">
+                  <dt className="text-body font-extrabold text-parchment">
                     {t.yut.mo}
                   </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-gold">
+                  <dd className="m-0 text-caption font-semibold text-gold">
                     {t.rules.throws.stepsExtra(5)}
                   </dd>
                 </div>
-                <div className="flex items-center justify-between gap-2 rounded-[9px] bg-team-red/15 px-2.5 py-[9px]">
-                  <dt className="text-[13px] leading-none font-extrabold text-parchment">
+                <div className="flex items-center justify-between gap-2 rounded-sm bg-team-red/15 px-2.5 py-2.25">
+                  <dt className="text-body font-extrabold text-parchment">
                     {t.yut.backdo}
                   </dt>
-                  <dd className="m-0 text-[10px] leading-none font-semibold text-coral">
+                  <dd className="m-0 text-caption font-semibold text-coral">
                     {t.rules.throws.backdo}
                   </dd>
                 </div>
@@ -144,29 +144,29 @@ function RulesDialog({ onClose }: { onClose: () => void }) {
             </div>
           </article>
 
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-[15px] border border-gold-soft/10 bg-white/[.025] p-[18px] max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-[13px] max-[560px]:py-[15px]">
-            <span className="text-xs leading-none font-black tracking-[.08em] text-gold-deep">
+          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-md border border-gold-soft/10 bg-white/[.025] p-4.5 max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-3.25 max-[560px]:py-3.75">
+            <span className="text-xs leading-none font-black tracking-label text-gold-deep">
               03
             </span>
             <div>
-              <h3 className="mt-[-2px] mb-[7px] text-base leading-[1.2] font-extrabold text-parchment">
+              <h3 className="mt-[-2px] mb-1.75 text-base leading-[1.2] font-extrabold text-parchment">
                 {t.rules.carryCapture.title}
               </h3>
-              <p className="m-0 text-[13px] leading-[1.65] font-medium text-parchment-dim">
+              <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
                 {t.rules.carryCapture.body}
               </p>
             </div>
           </article>
 
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-[15px] border border-gold-soft/10 bg-white/[.025] p-[18px] max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-[13px] max-[560px]:py-[15px]">
-            <span className="text-xs leading-none font-black tracking-[.08em] text-gold-deep">
+          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-md border border-gold-soft/10 bg-white/[.025] p-4.5 max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-3.25 max-[560px]:py-3.75">
+            <span className="text-xs leading-none font-black tracking-label text-gold-deep">
               04
             </span>
             <div>
-              <h3 className="mt-[-2px] mb-[7px] text-base leading-[1.2] font-extrabold text-parchment">
+              <h3 className="mt-[-2px] mb-1.75 text-base leading-[1.2] font-extrabold text-parchment">
                 {t.rules.shortcut.title}
               </h3>
-              <p className="m-0 text-[13px] leading-[1.65] font-medium text-parchment-dim">
+              <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
                 {t.rules.shortcut.body}
               </p>
             </div>
@@ -198,6 +198,7 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
 
       <section className="relative z-[2] mx-auto flex min-h-svh w-[min(1240px,calc(100%-64px))] items-center py-12 max-[820px]:w-[min(620px,calc(100%-36px))] max-[820px]:items-start max-[820px]:pt-10 max-[820px]:pb-16 max-[560px]:w-[calc(100%-28px)]">
         <div className="w-[min(520px,43vw)] max-[820px]:w-full">
+          {/* style-literal-ok: art-directed display tracking */}
           <h1 className="m-0 text-[clamp(54px,5.5vw,78px)] leading-[1.04] font-extrabold tracking-[.025em] text-balance text-parchment-bright max-[820px]:text-[clamp(42px,11vw,60px)]">
             {t.lobby.title}
           </h1>
@@ -241,15 +242,16 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
                     className={`min-w-0 transition-transform duration-200 ${mode.available ? "group-hover:translate-x-1" : ""}`}
                   >
                     <strong
-                      className={`mb-1.5 block text-[19px] leading-none font-extrabold tracking-[-.025em] transition-colors max-[560px]:text-[17px] ${active && mode.available ? "text-parchment-bright" : "text-parchment-dim"}`}
+                      className={`mb-1.5 block text-heading font-extrabold tracking-snug transition-colors ${active && mode.available ? "text-parchment-bright" : "text-parchment-dim"}`}
                     >
                       {copy.title}
                     </strong>
-                    <small className="block overflow-hidden text-xs leading-[1.35] font-medium text-ellipsis whitespace-nowrap text-parchment-faint max-[560px]:max-w-[210px] max-[560px]:text-[10px]">
+                    <small className="block overflow-hidden text-xs leading-[1.35] font-medium text-ellipsis whitespace-nowrap text-parchment-faint max-[560px]:max-w-[210px] max-[560px]:text-caption">
                       {copy.description}
                     </small>
                   </span>
                   {mode.available ? (
+                    /* style-literal-ok: visually hidden mobile label */
                     <span
                       className={`flex items-center gap-2 text-xs font-bold whitespace-nowrap transition-colors duration-200 max-[560px]:text-[0px] ${active ? "text-gold" : "text-parchment-faint"}`}
                       aria-hidden="true"
@@ -262,7 +264,7 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
                       />
                     </span>
                   ) : (
-                    <span className="rounded-full border border-gold-soft/20 px-[9px] py-1.5 text-[10px] leading-none font-bold whitespace-nowrap text-parchment-dim">
+                    <span className="rounded-full border border-gold-soft/20 px-2.25 py-1.5 text-caption font-bold whitespace-nowrap text-parchment-dim">
                       {t.lobby.comingSoon}
                     </span>
                   )}
@@ -272,7 +274,7 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
           </div>
 
           <button
-            className="mt-5 flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-[13px] font-bold text-parchment-dim transition-colors hover:text-parchment"
+            className="mt-5 flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-body font-bold text-parchment-dim transition-colors hover:text-parchment"
             type="button"
             onClick={() => setShowRules(true)}
           >
