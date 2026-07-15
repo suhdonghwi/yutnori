@@ -1,13 +1,6 @@
 :root {
-  --ink: #201a15;
-  --paper: #e5d3a8;
-  --night: #0d1713;
-  --blue: #174c6b;
-  --red: #a63f31;
   --font-primary:
     "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", sans-serif;
-  --font-geist-sans: var(--font-primary);
-  --font-noto-serif-kr: var(--font-primary);
 }
 
 * {
@@ -21,9 +14,9 @@ body {
 }
 
 body {
-  background: var(--night);
-  color: #f3e6c8;
-  font-family: var(--font-noto-serif-kr), "Apple SD Gothic Neo", serif;
+  background: var(--color-night);
+  color: var(--color-parchment-bright);
+  font-family: var(--font-primary);
 }
 
 button {

@@ -1,5 +1,7 @@
 import type { ThrowResult } from "./types";
 
+// Source of truth for player colors. globals.css mirrors these values for
+// static Tailwind utilities.
 export const PLAYERS = [
   { color: "#174c6b", glow: "#8bc0d4" },
   { color: "#a63f31", glow: "#e6a28f" },

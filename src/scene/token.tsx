@@ -292,7 +292,7 @@ export function Token({
           distanceFactor={8.5}
           style={{ pointerEvents: "none" }}
         >
-          <span className="block min-w-[76px] rounded-full border-[1.5px] border-[rgba(244,210,131,.66)] bg-[rgba(16,22,18,.96)] px-[13px] py-2 text-center text-[clamp(15px,1.2vw,18px)] leading-[1.1] font-extrabold tracking-[-.02em] whitespace-nowrap text-[#fff7df] shadow-[0_7px_20px_rgba(0,0,0,.42)]">
+          <span className="block min-w-[76px] rounded-full border-[1.5px] border-gold/65 bg-night/95 px-3.25 py-2 text-center text-[clamp(15px,1.2vw,18px)] leading-[1.1] font-extrabold tracking-snug whitespace-nowrap text-parchment-bright shadow-[0_7px_20px] shadow-black/40">
             {stackLabel}
           </span>
         </Html>

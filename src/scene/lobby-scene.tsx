@@ -2,6 +2,7 @@ import { ContactShadows, Float } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Suspense, useEffect, useRef } from "react";
 import * as THREE from "three";
+import { PLAYERS } from "../game/config";
 import { BoardSurface } from "./board";
 import { LacquerTokenMesh } from "./token";
 import { YutStickMesh } from "./yut-physics";
@@ -147,13 +148,13 @@ function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
         position={[-6, 4, -2]}
       />
       <pointLight
-        color="#174c6b"
+        color={PLAYERS[0].color}
         distance={12}
         intensity={previewMode === "local" ? 11 : 4}
         position={[-5, 2, 4]}
       />
       <pointLight
-        color="#a63f31"
+        color={PLAYERS[1].color}
         distance={12}
         intensity={previewMode === "ai" ? 11 : 4}
         position={[5, 2, 4]}
@@ -162,12 +163,12 @@ function LobbyTable({ previewMode }: { previewMode: LobbyPreviewMode | null }) {
       <group ref={rig} position={[0, -0.72, 0]} scale={0.78}>
         <BoardSurface />
         <LobbyToken
-          color="#174c6b"
+          color={PLAYERS[0].color}
           highlighted={previewMode === "local"}
           position={[-3.55, 0.06, 3.1]}
         />
         <LobbyToken
-          color="#a63f31"
+          color={PLAYERS[1].color}
           highlighted={previewMode === "ai"}
           position={[3.35, 0.06, 2.4]}
         />

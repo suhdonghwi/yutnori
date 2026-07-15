@@ -4,10 +4,43 @@
 @import "./styles/lobby.css";
 
 @theme inline {
-  --color-ink: var(--ink);
-  --color-paper: var(--paper);
-  --color-night: var(--night);
-  --color-team-blue: var(--blue);
-  --color-team-red: var(--red);
+  --color-night: #0d1713;
+  --color-panel: #17211b;
+  --color-panel-deep: #0d1511;
+  --color-parchment-bright: #fff0cf;
+  --color-parchment: #ead8b2;
+  --color-parchment-dim: #a89b80;
+  --color-parchment-faint: #928873;
+  --color-gold: #d9ba70;
+  --color-gold-deep: #b89c5e;
+  --color-gold-soft: #e0c794;
+  --color-coral: #d98a7c;
+  /* Mirrors PLAYERS in game/config.ts for static Tailwind utilities. */
+  --color-team-blue: #174c6b;
+  --color-team-red: #a63f31;
+
+  --text-micro: 9px;
+  --text-micro--line-height: 1;
+  --text-caption: 10px;
+  --text-caption--line-height: 1;
+  --text-label: 11px;
+  --text-label--line-height: 1;
+  --text-body: 13px;
+  --text-body--line-height: 1;
+  --text-heading: 18px;
+  --text-heading--line-height: 1;
+  --text-title: 26px;
+  --text-title--line-height: 1;
+
+  --radius-xs: 3px;
+  --radius-sm: 9px;
+  --radius-md: 15px;
+  --radius-lg: 25px;
+
+  --tracking-display: -0.05em;
+  --tracking-snug: -0.02em;
+  --tracking-label: 0.08em;
+  --tracking-eyebrow: 0.2em;
+
   --font-sans: var(--font-primary);
 }
