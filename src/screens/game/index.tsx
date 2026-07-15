@@ -32,14 +32,14 @@ function IconButton({
 }) {
   return (
     <button
-      className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 font-bold text-parchment-dim transition-colors hover:text-parchment"
+      className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 font-bold text-parchment-dim transition-colors hover:text-parchment max-sm:min-h-9 max-sm:flex-row max-sm:gap-1 max-sm:rounded-sm max-sm:border max-sm:border-gold/20 max-sm:bg-night/65 max-sm:px-2 max-sm:py-1.5 max-sm:text-parchment max-sm:hover:border-gold/35 max-sm:hover:bg-night/85 max-sm:[&_svg]:size-[17px]"
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
       aria-pressed={pressed}
     >
       {icon}
-      <span className="text-xs leading-none max-sm:hidden">{label}</span>
+      <span className="text-xs leading-none whitespace-nowrap">{label}</span>
     </button>
   );
 }
@@ -81,7 +81,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
           </div>
 
           <div className="flex min-w-0 items-center gap-2.5 max-sm:gap-1.5">
-            <div className="flex min-w-0 items-center gap-4 max-sm:gap-3.5">
+            <div className="flex min-w-0 items-center gap-4 max-sm:hidden">
               <PlayerProgress
                 player={0}
                 finished={
@@ -100,7 +100,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
                 active={current === 1 && phase !== "gameover"}
               />
             </div>
-            <div className="pointer-events-auto ml-1 flex shrink-0 items-center gap-4 border-l border-gold/20 pl-4 max-sm:ml-0 max-sm:gap-2 max-sm:pl-2">
+            <div className="pointer-events-auto ml-1 flex shrink-0 items-center gap-4 border-l border-gold/20 pl-4 max-sm:ml-0 max-sm:gap-1.5 max-sm:border-l-0 max-sm:pl-0">
               <IconButton
                 icon={
                   sfxEnabled ? (
