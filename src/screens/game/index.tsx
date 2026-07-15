@@ -100,7 +100,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
                 active={current === 1 && phase !== "gameover"}
               />
             </div>
-            <div className="pointer-events-auto ml-1 flex shrink-0 items-center gap-4 border-l border-gold/35 pl-4 max-sm:ml-0 max-sm:gap-2 max-sm:pl-2">
+            <div className="pointer-events-auto ml-1 flex shrink-0 items-center gap-4 border-l border-gold/20 pl-4 max-sm:ml-0 max-sm:gap-2 max-sm:pl-2">
               <IconButton
                 icon={
                   sfxEnabled ? (
