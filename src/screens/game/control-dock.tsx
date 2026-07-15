@@ -1,5 +1,5 @@
-import type React from "react";
-import { ArrowRight } from "@phosphor-icons/react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { ArrowLeft, ArrowRight } from "@phosphor-icons/react";
 import {
   groupForPiece,
   isMovable,
@@ -16,7 +16,7 @@ import { useI18n } from "../../i18n";
 type DockSectionProps = {
   ratio: number;
   minWidth: string;
-  children: React.ReactNode;
+  children: ReactNode;
   border?: "right" | "none";
   className?: string;
   ariaLabel?: string;
@@ -39,7 +39,7 @@ function DockSection({
         {
           "--dock-ratio": `${ratio} 1 0%`,
           "--dock-min-width": minWidth,
-        } as React.CSSProperties
+        } as CSSProperties
       }
       aria-label={ariaLabel}
       aria-live={ariaLive}
@@ -62,6 +62,7 @@ export function ControlDock({
   onMovePiece,
   onHoverRoute,
   onChooseRoute,
+  onCancelRoute,
   onThrow,
   onReset,
 }: {
@@ -77,20 +78,53 @@ export function ControlDock({
   onMovePiece: (pieceIndex: number) => void;
   onHoverRoute: (choice: RouteChoice | null) => void;
   onChooseRoute: (choice: RouteChoice) => void;
+  onCancelRoute: () => void;
   onThrow: () => void;
   onReset: () => void;
 }) {
   const { t } = useI18n();
+  const [canHover, setCanHover] = useState(
+    () => window.matchMedia("(hover: hover)").matches,
+  );
+  const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia("(hover: hover)");
+    const handleChange = () => setCanHover(media.matches);
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    setSelectedPiece(null);
+  }, [current, phase, result]);
+
+  const handlePieceClick = (pieceIndex: number) => {
+    if (canHover) {
+      onMovePiece(pieceIndex);
+      return;
+    }
+    setSelectedPiece(pieceIndex);
+    onHoverToken({ player: current, piece: pieceIndex });
+  };
+
+  const confirmSelectedPiece = () => {
+    if (selectedPiece === null) return;
+    const pieceIndex = selectedPiece;
+    setSelectedPiece(null);
+    onMovePiece(pieceIndex);
+  };
+
   return (
     <div
       className="pointer-events-auto absolute bottom-5 left-1/2 z-[14] flex min-h-[96px] w-[calc(100%-64px)] max-w-[1380px] -translate-x-1/2 touch-manipulation items-stretch overflow-hidden rounded-xs border border-gold/60 bg-night/80 shadow-[0_20px_60px] shadow-black/35 select-none [-webkit-touch-callout:none] max-sm:bottom-2 max-sm:min-h-[108px] max-sm:w-[calc(100%-16px)] max-sm:flex-col"
-      style={{ "--turn-color": PLAYERS[current].color } as React.CSSProperties}
+      style={{ "--turn-color": PLAYERS[current].color } as CSSProperties}
     >
       <DockSection
         ratio={1.05}
         minWidth="330px"
         border="right"
-        className="flex items-center gap-4 px-8 py-4 max-lg:min-w-[270px] max-sm:min-h-[52px] max-sm:w-full max-sm:flex-none max-sm:gap-2.5 max-sm:px-3.5 max-sm:py-2"
+        className="flex items-center gap-4 px-8 py-4 max-lg:min-w-[270px] max-sm:min-h-[56px] max-sm:w-full max-sm:flex-none max-sm:gap-2.5 max-sm:px-3.5 max-sm:py-2"
         ariaLive="polite"
       >
         <span className="size-[11px] shrink-0 rounded-full border border-gold-soft/65 bg-[var(--turn-color)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--turn-color),transparent_80%)] max-sm:size-[9px]" />
@@ -127,7 +161,7 @@ export function ControlDock({
         <DockSection
           ratio={1.55}
           minWidth="0px"
-          className="grid grid-cols-4 max-sm:min-h-[58px]"
+          className={`grid ${canHover ? "grid-cols-4" : "grid-cols-5"} max-sm:min-h-[56px]`}
           ariaLabel={t.dock.tokenListLabel}
         >
           {pieces[current].map((piece, index) => {
@@ -139,20 +173,25 @@ export function ControlDock({
               <button
                 key={index}
                 type="button"
-                className="group min-w-[58px] cursor-pointer border-0 border-l border-gold/30 bg-transparent px-3 py-3 text-sm font-extrabold text-parchment transition-[background-color,color,opacity] enabled:hover:bg-gold/10 enabled:hover:text-gold disabled:cursor-not-allowed disabled:opacity-[.24] max-sm:min-w-0 max-sm:px-1 max-sm:py-1.5 max-sm:text-xs"
+                className={`group min-w-[58px] cursor-pointer border-0 border-l border-gold/30 px-3 py-3 text-sm font-extrabold transition-[background-color,color,opacity] enabled:hover:bg-gold/10 enabled:hover:text-gold disabled:cursor-not-allowed disabled:opacity-[.24] max-sm:min-w-0 max-sm:px-1 max-sm:py-1.5 max-sm:text-xs ${!canHover && selectedPiece === index ? "bg-gold/15 text-gold" : "bg-transparent text-parchment"}`}
                 disabled={!movable}
-                onPointerEnter={() =>
-                  onHoverToken({ player: current, piece: index })
-                }
-                onPointerLeave={() => onHoverToken(null)}
+                aria-pressed={!canHover ? selectedPiece === index : undefined}
+                onPointerEnter={() => {
+                  if (canHover) onHoverToken({ player: current, piece: index });
+                }}
+                onPointerLeave={() => {
+                  if (canHover) onHoverToken(null);
+                }}
                 onFocus={() => onHoverToken({ player: current, piece: index })}
-                onBlur={() => onHoverToken(null)}
-                onClick={() => onMovePiece(index)}
+                onBlur={() => {
+                  if (canHover || selectedPiece !== index) onHoverToken(null);
+                }}
+                onClick={() => handlePieceClick(index)}
               >
                 {group.length > 1 && !follower
                   ? group.map((member) => t.dock.token(member)).join(" + ")
                   : t.dock.token(index)}
-                <span className="mt-1.5 block text-xs font-medium text-parchment-faint group-hover:text-parchment-dim max-sm:mt-0.5">
+                <span className="mt-1.5 block text-xs font-medium text-parchment-faint group-hover:text-parchment-dim max-sm:mt-0">
                   {follower
                     ? t.dock.stackedWith(leader)
                     : t.pieceProgress(pieceProgress(piece))}
@@ -160,14 +199,33 @@ export function ControlDock({
               </button>
             );
           })}
+          {!canHover && (
+            <button
+              type="button"
+              className="grid cursor-pointer place-items-center border-0 border-l border-gold/30 bg-gold/10 text-gold transition-[background-color,color,opacity] enabled:hover:bg-gold/15 enabled:hover:text-parchment-bright disabled:cursor-not-allowed disabled:opacity-[.24]"
+              disabled={selectedPiece === null}
+              aria-label={t.dock.confirmMove}
+              onClick={confirmSelectedPiece}
+            >
+              <ArrowRight size={22} weight="bold" aria-hidden="true" />
+            </button>
+          )}
         </DockSection>
       ) : phase === "route" ? (
         <DockSection
           ratio={1.45}
           minWidth="0px"
-          className="grid grid-cols-2 max-sm:min-h-[58px]"
+          className="grid grid-cols-[auto_1fr_1fr] max-sm:min-h-[56px]"
           ariaLabel={t.dock.routeListLabel}
         >
+          <button
+            type="button"
+            className="grid min-w-14 cursor-pointer place-items-center border-0 border-r border-gold/30 bg-transparent px-3 text-parchment-dim transition-colors hover:bg-white/[.04] hover:text-parchment-bright max-sm:min-w-10 max-sm:px-2"
+            aria-label={t.dock.backToTokenSelection}
+            onClick={onCancelRoute}
+          >
+            <ArrowLeft size={22} weight="bold" aria-hidden="true" />
+          </button>
           <button
             type="button"
             className="cursor-pointer border-0 border-r border-gold/30 bg-gold/10 px-5 py-3 text-sm font-extrabold text-gold transition-colors hover:bg-gold/15 max-sm:min-w-0 max-sm:px-1.5 max-sm:py-1.75 max-sm:text-xs"
@@ -183,14 +241,6 @@ export function ControlDock({
                 : t.dock.shortcutFromBranch
               ).label
             }
-            <span className="mt-0.75 block text-xs font-medium text-parchment/65">
-              {
-                (routeChoiceFromCenter
-                  ? t.dock.shortcutFromCenter
-                  : t.dock.shortcutFromBranch
-                ).description
-              }
-            </span>
           </button>
           <button
             type="button"
@@ -207,14 +257,6 @@ export function ControlDock({
                 : t.dock.outerFromBranch
               ).label
             }
-            <span className="mt-0.75 block text-xs font-medium text-parchment/65">
-              {
-                (routeChoiceFromCenter
-                  ? t.dock.outerFromCenter
-                  : t.dock.outerFromBranch
-                ).description
-              }
-            </span>
           </button>
         </DockSection>
       ) : (

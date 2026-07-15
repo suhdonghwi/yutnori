@@ -324,6 +324,13 @@ export function useGameSession(mode: GameMode) {
     executeMove(pendingRoute.piece, choice);
   };
 
+  const cancelRouteChoice = () => {
+    if (isAiTurn || phase !== "route") return;
+    setHoveredRouteChoice(null);
+    setPendingRoute(null);
+    setPhase("move");
+  };
+
   useEffect(() => {
     if (!isAiTurn) return;
 
@@ -429,6 +436,7 @@ export function useGameSession(mode: GameMode) {
     handleMoveComplete,
     movePiece,
     chooseRoute,
+    cancelRouteChoice,
     reset,
     toggleSfx,
   };

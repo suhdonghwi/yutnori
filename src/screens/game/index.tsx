@@ -175,6 +175,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
             onMovePiece={session.movePiece}
             onHoverRoute={session.setHoveredRouteChoice}
             onChooseRoute={session.chooseRoute}
+            onCancelRoute={session.cancelRouteChoice}
             onThrow={session.throwYut}
             onReset={reset}
           />

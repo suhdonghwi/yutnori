@@ -85,6 +85,8 @@ export const ko = {
     aiChoice: (team: string) => `${team}의 선택`,
     aiThinking: "수를 읽는 중",
     tokenListLabel: "움직일 말 선택",
+    confirmMove: "선택한 말 움직이기",
+    backToTokenSelection: "말 선택으로 돌아가기",
     token: (piece: number) => `말 ${piece + 1}`,
     stackedWith: (leaderPiece: number) =>
       `${josa(`${leaderPiece + 1}번 말`, "와/과")} 업힘`,

@@ -88,6 +88,8 @@ export const bn: Messages = {
     aiChoice: (team) => `${team}-এর পছন্দ`,
     aiThinking: "চাল ভাবছে",
     tokenListLabel: "কোন ঘুঁটি চালবেন বেছে নিন",
+    confirmMove: "নির্বাচিত ঘুঁটি চালুন",
+    backToTokenSelection: "ঘুঁটি বাছাইয়ে ফিরে যান",
     token: (piece) => `ঘুঁটি ${bnNum(piece + 1)}`,
     stackedWith: (leaderPiece) =>
       `${bnNum(leaderPiece + 1)} নম্বর ঘুঁটির সঙ্গে জোড়া`,

@@ -80,6 +80,8 @@ export const en: Messages = {
     aiChoice: (team) => `${team}'s choice`,
     aiThinking: "Reading the board",
     tokenListLabel: "Choose a piece to move",
+    confirmMove: "Move the selected piece",
+    backToTokenSelection: "Back to piece selection",
     token: (piece) => `Piece ${piece + 1}`,
     stackedWith: (leaderPiece) => `Stacked with piece ${leaderPiece + 1}`,
     routeListLabel: "Choose a route",
