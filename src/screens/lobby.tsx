@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import yutIcon from "../assets/yut.png";
 import { LobbyScene, type LobbyPreviewMode } from "../scene/lobby-scene";
 import { useI18n } from "../i18n";
 import { LanguageSwitcher } from "../i18n/language-switcher";
@@ -172,9 +173,17 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
 
       <section className="relative z-[2] mx-auto flex min-h-svh w-[min(1240px,calc(100%-64px))] items-center py-12 max-md:w-[min(620px,calc(100%-36px))] max-xs:w-[calc(100%-28px)]">
         <div className="w-[min(520px,43vw)] max-md:w-full">
-          <h1 className="m-0 text-[clamp(54px,5.5vw,78px)] leading-[1.04] font-extrabold tracking-[.025em] text-balance text-parchment-bright max-md:text-[clamp(42px,11vw,60px)]">
-            {t.lobby.title}
-          </h1>
+          <div className="flex items-center gap-[clamp(8px,1vw,12px)]">
+            <img
+              className="h-[clamp(54px,5.5vw,76px)] w-auto shrink-0 object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.35)] max-md:h-[clamp(42px,11vw,58px)]"
+              src={yutIcon}
+              alt=""
+              aria-hidden="true"
+            />
+            <h1 className="m-0 font-serif text-[clamp(54px,5.5vw,78px)] leading-[1.04] font-bold tracking-[.025em] text-balance text-parchment-bright max-md:text-[clamp(42px,11vw,60px)]">
+              {t.lobby.title}
+            </h1>
+          </div>
 
           <div
             className="mt-10 border-y border-gold-soft/20"

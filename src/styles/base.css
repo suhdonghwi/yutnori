@@ -1,6 +1,16 @@
+@font-face {
+  font-family: "MaruBuri";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("https://cdn.jsdelivr.net/gh/woffz/b1@4cfaaccb575bd4ce4cacc470a4f6d6ba9f4873d3/MaruBuri/MaruBuri-700.woff2")
+    format("woff2");
+}
+
 :root {
   --font-primary:
     "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", sans-serif;
+  --font-display: "MaruBuri", "Batang", serif;
 }
 
 * {

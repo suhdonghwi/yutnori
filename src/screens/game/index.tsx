@@ -75,7 +75,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
               alt=""
               aria-hidden="true"
             />
-            <strong className="overflow-hidden text-xl leading-none font-extrabold tracking-snug text-ellipsis whitespace-nowrap text-parchment-bright max-sm:text-base max-xs:max-w-16 max-xs:text-sm">
+            <strong className="overflow-hidden font-serif text-xl leading-none font-bold tracking-snug text-ellipsis whitespace-nowrap text-parchment-bright max-sm:text-base max-xs:max-w-16 max-xs:text-sm">
               {t.appTitle}
             </strong>
           </div>
