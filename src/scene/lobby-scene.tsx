@@ -1,6 +1,6 @@
 import { ContactShadows, Float } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useRef } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Suspense, useEffect, useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
 import { PLAYERS } from "../game/config";
 import { BoardSurface } from "./board";
@@ -8,6 +8,35 @@ import { LacquerTokenMesh } from "./token";
 import { YutStickMesh } from "./yut-physics";
 
 export type LobbyPreviewMode = "local" | "online" | "ai";
+
+const LOBBY_CAMERA_POSITION = new THREE.Vector3(0, 9.2, 12.7);
+const LOBBY_CAMERA_FOV = 40;
+const LOBBY_BOARD_HALF_WIDTH_WITH_SAFE_AREA = 5.7;
+
+function ResponsiveLobbyCamera() {
+  const { camera, size } = useThree();
+
+  useLayoutEffect(() => {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return;
+
+    const aspect = size.width / size.height;
+    const halfVerticalFov = THREE.MathUtils.degToRad(LOBBY_CAMERA_FOV / 2);
+    const baseDistance = LOBBY_CAMERA_POSITION.length();
+    const distanceToFitWidth =
+      LOBBY_BOARD_HALF_WIDTH_WITH_SAFE_AREA /
+      (Math.tan(halfVerticalFov) * aspect);
+    const distance = Math.max(baseDistance, distanceToFitWidth);
+
+    camera.fov = LOBBY_CAMERA_FOV;
+    camera.position
+      .copy(LOBBY_CAMERA_POSITION)
+      .multiplyScalar(distance / baseDistance);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+  }, [camera, size.height, size.width]);
+
+  return null;
+}
 
 function LobbyToken({
   color,
@@ -201,6 +230,7 @@ export function LobbyScene({
       gl={{ alpha: true, antialias: true }}
     >
       <Suspense fallback={null}>
+        <ResponsiveLobbyCamera />
         <LobbyTable previewMode={previewMode} />
       </Suspense>
     </Canvas>

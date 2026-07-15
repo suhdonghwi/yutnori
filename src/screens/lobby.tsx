@@ -150,7 +150,7 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
         <LanguageSwitcher />
       </div>
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 z-0 w-[64vw] [mask-image:linear-gradient(90deg,transparent_0%,black_18%,black_100%)] max-md:top-[76px] max-md:h-[330px] max-md:w-full max-md:[mask-image:linear-gradient(180deg,black_0%,black_72%,transparent_100%)] max-md:opacity-80 max-xs:h-[285px]"
+        className="pointer-events-none absolute inset-y-0 right-0 z-0 w-[58vw] [mask-image:linear-gradient(90deg,transparent_0%,black_18%,black_100%)] max-md:top-[76px] max-md:h-[330px] max-md:w-full max-md:[mask-image:linear-gradient(180deg,black_0%,black_72%,transparent_100%)] max-md:opacity-80 max-xs:h-[285px]"
         aria-hidden="true"
       >
         <div className="pointer-events-auto size-full max-md:pointer-events-none">
