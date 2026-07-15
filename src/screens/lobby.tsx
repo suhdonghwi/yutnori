@@ -5,6 +5,7 @@ import {
   Robot,
   UsersThree,
 } from "@phosphor-icons/react";
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { LobbyScene, type LobbyPreviewMode } from "../scene/lobby-scene";
 import { useI18n } from "../i18n";
@@ -20,6 +21,41 @@ const PLAY_MODES = [
   { id: "online", icon: GlobeHemisphereWest, available: false },
   { id: "ai", icon: Robot, available: true },
 ] as const;
+
+function RuleCard({
+  icon,
+  title,
+  children,
+}: {
+  icon: ReactNode;
+  title: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-md border border-gold-soft/10 bg-white/[.025] p-4.5 max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-3.25 max-[560px]:py-3.75">
+      <span className="text-xs leading-none font-black tracking-label text-gold-deep">
+        {icon}
+      </span>
+      <div>
+        <h3 className="mt-[-2px] mb-1.75 text-base leading-[1.2] font-extrabold text-parchment">
+          {title}
+        </h3>
+        {children}
+      </div>
+    </article>
+  );
+}
+
+function StatBox({ label, value }: { label: ReactNode; value: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-sm bg-white/4 px-2.5 py-2.25">
+      <dt className="text-body font-extrabold text-parchment">{label}</dt>
+      <dd className="m-0 text-caption font-semibold text-parchment-faint">
+        {value}
+      </dd>
+    </div>
+  );
+}
 
 function RulesDialog({ onClose }: { onClose: () => void }) {
   const { t } = useI18n();
@@ -69,108 +105,34 @@ function RulesDialog({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="grid gap-2.5 px-6.5 pt-5 pb-6.75 max-[560px]:p-3.5">
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-md border border-gold/30 bg-gold-deep/10 p-4.5 max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-3.25 max-[560px]:py-3.75">
-            <span className="text-xs leading-none font-black tracking-label text-gold-deep">
-              01
-            </span>
-            <div>
-              <h3 className="mt-[-2px] mb-1.75 text-base leading-[1.2] font-extrabold text-parchment">
-                {t.rules.goal.title}
-              </h3>
-              <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
-                {t.rules.goal.body}
-              </p>
-            </div>
-          </article>
+          <RuleCard icon="01" title={t.rules.goal.title}>
+            <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
+              {t.rules.goal.body}
+            </p>
+          </RuleCard>
 
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-md border border-gold-soft/10 bg-white/[.025] p-4.5 max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-3.25 max-[560px]:py-3.75">
-            <span className="text-xs leading-none font-black tracking-label text-gold-deep">
-              02
-            </span>
-            <div>
-              <h3 className="mt-[-2px] mb-1.75 text-base leading-[1.2] font-extrabold text-parchment">
-                {t.rules.throws.title}
-              </h3>
-              <dl className="mt-2.75 grid grid-cols-3 gap-1.75 max-[560px]:grid-cols-2">
-                <div className="flex items-center justify-between gap-2 rounded-sm bg-white/4 px-2.5 py-2.25">
-                  <dt className="text-body font-extrabold text-parchment">
-                    {t.yut.do}
-                  </dt>
-                  <dd className="m-0 text-caption font-semibold text-parchment-faint">
-                    {t.rules.throws.steps(1)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-2 rounded-sm bg-white/4 px-2.5 py-2.25">
-                  <dt className="text-body font-extrabold text-parchment">
-                    {t.yut.gae}
-                  </dt>
-                  <dd className="m-0 text-caption font-semibold text-parchment-faint">
-                    {t.rules.throws.steps(2)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-2 rounded-sm bg-white/4 px-2.5 py-2.25">
-                  <dt className="text-body font-extrabold text-parchment">
-                    {t.yut.geol}
-                  </dt>
-                  <dd className="m-0 text-caption font-semibold text-parchment-faint">
-                    {t.rules.throws.steps(3)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-2 rounded-sm bg-gold-deep/15 px-2.5 py-2.25">
-                  <dt className="text-body font-extrabold text-parchment">
-                    {t.yut.yut}
-                  </dt>
-                  <dd className="m-0 text-caption font-semibold text-gold">
-                    {t.rules.throws.stepsExtra(4)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-2 rounded-sm bg-gold-deep/15 px-2.5 py-2.25">
-                  <dt className="text-body font-extrabold text-parchment">
-                    {t.yut.mo}
-                  </dt>
-                  <dd className="m-0 text-caption font-semibold text-gold">
-                    {t.rules.throws.stepsExtra(5)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between gap-2 rounded-sm bg-team-red/15 px-2.5 py-2.25">
-                  <dt className="text-body font-extrabold text-parchment">
-                    {t.yut.backdo}
-                  </dt>
-                  <dd className="m-0 text-caption font-semibold text-coral">
-                    {t.rules.throws.backdo}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </article>
+          <RuleCard icon="02" title={t.rules.throws.title}>
+            <dl className="mt-2.75 grid grid-cols-3 gap-1.75 max-[560px]:grid-cols-2">
+              <StatBox label={t.yut.do} value={t.rules.throws.steps(1)} />
+              <StatBox label={t.yut.gae} value={t.rules.throws.steps(2)} />
+              <StatBox label={t.yut.geol} value={t.rules.throws.steps(3)} />
+              <StatBox label={t.yut.yut} value={t.rules.throws.stepsExtra(4)} />
+              <StatBox label={t.yut.mo} value={t.rules.throws.stepsExtra(5)} />
+              <StatBox label={t.yut.backdo} value={t.rules.throws.backdo} />
+            </dl>
+          </RuleCard>
 
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-md border border-gold-soft/10 bg-white/[.025] p-4.5 max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-3.25 max-[560px]:py-3.75">
-            <span className="text-xs leading-none font-black tracking-label text-gold-deep">
-              03
-            </span>
-            <div>
-              <h3 className="mt-[-2px] mb-1.75 text-base leading-[1.2] font-extrabold text-parchment">
-                {t.rules.carryCapture.title}
-              </h3>
-              <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
-                {t.rules.carryCapture.body}
-              </p>
-            </div>
-          </article>
+          <RuleCard icon="03" title={t.rules.carryCapture.title}>
+            <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
+              {t.rules.carryCapture.body}
+            </p>
+          </RuleCard>
 
-          <article className="grid grid-cols-[42px_minmax(0,1fr)] gap-3.5 rounded-md border border-gold-soft/10 bg-white/[.025] p-4.5 max-[560px]:grid-cols-[30px_minmax(0,1fr)] max-[560px]:gap-2 max-[560px]:px-3.25 max-[560px]:py-3.75">
-            <span className="text-xs leading-none font-black tracking-label text-gold-deep">
-              04
-            </span>
-            <div>
-              <h3 className="mt-[-2px] mb-1.75 text-base leading-[1.2] font-extrabold text-parchment">
-                {t.rules.shortcut.title}
-              </h3>
-              <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
-                {t.rules.shortcut.body}
-              </p>
-            </div>
-          </article>
+          <RuleCard icon="04" title={t.rules.shortcut.title}>
+            <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
+              {t.rules.shortcut.body}
+            </p>
+          </RuleCard>
         </div>
       </section>
     </div>

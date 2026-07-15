@@ -5,7 +5,7 @@ import {
   SpeakerHigh,
   SpeakerSlash,
 } from "@phosphor-icons/react";
-import { Suspense, useState } from "react";
+import { Suspense, useState, type ReactNode } from "react";
 import type { GameMode } from "../../game/types";
 import { Scene } from "../../scene/game-scene";
 import { gameSfx } from "../../audio/game-sfx";
@@ -15,6 +15,33 @@ import { useGameSession } from "./use-game-session";
 import { PlayerProgress } from "./player-progress";
 import { ControlDock } from "./control-dock";
 import { useI18n } from "../../i18n";
+
+function IconButton({
+  icon,
+  label,
+  onClick,
+  ariaLabel = label,
+  pressed,
+}: {
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  ariaLabel?: string;
+  pressed?: boolean;
+}) {
+  return (
+    <button
+      className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-caption font-bold text-parchment-dim transition-colors hover:text-parchment"
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      aria-pressed={pressed}
+    >
+      {icon}
+      <span className="max-[760px]:hidden">{label}</span>
+    </button>
+  );
+}
 
 function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
   const { t } = useI18n();
@@ -59,38 +86,31 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
             active={current === 1 && phase !== "gameover"}
           />
           <div className="flex items-start gap-4 border-l border-gold/35 pl-5 max-[760px]:gap-2 max-[760px]:pl-3">
-            <button
-              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-caption font-bold text-parchment-dim transition-colors hover:text-parchment"
-              type="button"
+            <IconButton
+              icon={
+                sfxEnabled ? (
+                  <SpeakerHigh size={21} weight="regular" aria-hidden="true" />
+                ) : (
+                  <SpeakerSlash size={21} weight="regular" aria-hidden="true" />
+                )
+              }
+              label={t.game.sfx}
               onClick={toggleSfx}
-              aria-label={sfxEnabled ? t.game.sfxOff : t.game.sfxOn}
-              aria-pressed={sfxEnabled}
-            >
-              {sfxEnabled ? (
-                <SpeakerHigh size={21} weight="regular" aria-hidden="true" />
-              ) : (
-                <SpeakerSlash size={21} weight="regular" aria-hidden="true" />
-              )}
-              <span className="max-[760px]:hidden">{t.game.sfx}</span>
-            </button>
-            <button
-              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-caption font-bold text-parchment-dim transition-colors hover:text-parchment"
-              type="button"
+              ariaLabel={sfxEnabled ? t.game.sfxOff : t.game.sfxOn}
+              pressed={sfxEnabled}
+            />
+            <IconButton
+              icon={<DoorOpen size={21} weight="regular" aria-hidden="true" />}
+              label={t.game.toLobby}
               onClick={onExit}
-              aria-label={t.game.toLobbyLabel}
-            >
-              <DoorOpen size={21} weight="regular" aria-hidden="true" />
-              <span className="max-[760px]:hidden">{t.game.toLobby}</span>
-            </button>
-            <button
-              className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-caption font-bold text-parchment-dim transition-colors hover:text-parchment"
-              type="button"
+              ariaLabel={t.game.toLobbyLabel}
+            />
+            <IconButton
+              icon={<Plus size={21} weight="regular" aria-hidden="true" />}
+              label={t.game.newGame}
               onClick={reset}
-              aria-label={t.game.newGameLabel}
-            >
-              <Plus size={21} weight="regular" aria-hidden="true" />
-              <span className="max-[760px]:hidden">{t.game.newGame}</span>
-            </button>
+              ariaLabel={t.game.newGameLabel}
+            />
           </div>
         </div>
 

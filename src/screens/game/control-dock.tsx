@@ -13,6 +13,42 @@ import type { AiDecision } from "../../game/ai-player";
 import type { HoveredToken, Phase, ThrowResult } from "../../game/types";
 import { useI18n } from "../../i18n";
 
+type DockSectionProps = {
+  ratio: number;
+  minWidth: string;
+  children: React.ReactNode;
+  border?: "right" | "none";
+  className?: string;
+  ariaLabel?: string;
+  ariaLive?: "polite";
+};
+
+function DockSection({
+  ratio,
+  minWidth,
+  children,
+  border = "none",
+  className = "",
+  ariaLabel,
+  ariaLive,
+}: DockSectionProps) {
+  return (
+    <div
+      className={`min-w-[var(--dock-min-width)] flex-[var(--dock-ratio)] max-[760px]:min-w-0 ${border === "right" ? "border-r border-gold/35 max-[760px]:border-r-0 max-[760px]:border-b" : ""} ${className}`}
+      style={
+        {
+          "--dock-ratio": `${ratio} 1 0%`,
+          "--dock-min-width": minWidth,
+        } as React.CSSProperties
+      }
+      aria-label={ariaLabel}
+      aria-live={ariaLive}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function ControlDock({
   statusText,
   current,
@@ -50,9 +86,12 @@ export function ControlDock({
       className="pointer-events-auto absolute bottom-5 left-1/2 z-[14] flex min-h-[96px] w-[calc(100%-64px)] max-w-[1380px] -translate-x-1/2 touch-manipulation items-stretch overflow-hidden rounded-xs border border-gold/60 bg-night/80 shadow-[0_20px_60px] shadow-black/35 select-none [-webkit-touch-callout:none] max-[760px]:bottom-2 max-[760px]:min-h-[108px] max-[760px]:w-[calc(100%-16px)] max-[760px]:flex-col"
       style={{ "--turn-color": PLAYERS[current].color } as React.CSSProperties}
     >
-      <div
-        className="flex min-w-[330px] flex-[1.05] items-center gap-4 border-r border-gold/35 px-8 py-4 max-[900px]:min-w-[270px] max-[760px]:min-h-[52px] max-[760px]:w-full max-[760px]:min-w-0 max-[760px]:flex-none max-[760px]:gap-2.5 max-[760px]:border-r-0 max-[760px]:border-b max-[760px]:px-3.5 max-[760px]:py-2"
-        aria-live="polite"
+      <DockSection
+        ratio={1.05}
+        minWidth="330px"
+        border="right"
+        className="flex items-center gap-4 px-8 py-4 max-[900px]:min-w-[270px] max-[760px]:min-h-[52px] max-[760px]:w-full max-[760px]:flex-none max-[760px]:gap-2.5 max-[760px]:px-3.5 max-[760px]:py-2"
+        ariaLive="polite"
       >
         <span className="size-[11px] shrink-0 rounded-full border border-gold-soft/65 bg-[var(--turn-color)] shadow-[0_0_0_4px_color-mix(in_srgb,var(--turn-color),transparent_80%)] max-[760px]:size-[9px]" />
         <div className="min-w-0">
@@ -63,12 +102,14 @@ export function ControlDock({
             {statusText}
           </strong>
         </div>
-      </div>
+      </DockSection>
 
       {phase === "move" && isAiTurn ? (
-        <div
-          className="flex min-w-[310px] flex-[1.35] items-center gap-4 px-8 py-4 max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:gap-2 max-[760px]:px-3.5 max-[760px]:py-2"
-          aria-live="polite"
+        <DockSection
+          ratio={1.35}
+          minWidth="310px"
+          className="flex items-center gap-4 px-8 py-4 max-[760px]:min-h-[56px] max-[760px]:gap-2 max-[760px]:px-3.5 max-[760px]:py-2"
+          ariaLive="polite"
         >
           <span className="grid size-10 shrink-0 place-items-center rounded-full border border-coral/35 text-label font-black text-coral max-[760px]:size-8">
             AI
@@ -81,11 +122,13 @@ export function ControlDock({
               {aiDecision ? t.aiReason[aiDecision.reason] : t.dock.aiThinking}
             </strong>
           </div>
-        </div>
+        </DockSection>
       ) : phase === "move" ? (
-        <div
-          className="grid flex-[1.55] grid-cols-4 max-[760px]:min-h-[58px] max-[760px]:grid-cols-4"
-          aria-label={t.dock.tokenListLabel}
+        <DockSection
+          ratio={1.55}
+          minWidth="0px"
+          className="grid grid-cols-4 max-[760px]:min-h-[58px]"
+          ariaLabel={t.dock.tokenListLabel}
         >
           {pieces[current].map((piece, index) => {
             const group = groupForPiece(pieces, current, index);
@@ -117,11 +160,13 @@ export function ControlDock({
               </button>
             );
           })}
-        </div>
+        </DockSection>
       ) : phase === "route" ? (
-        <div
-          className="grid flex-[1.45] grid-cols-2 max-[760px]:min-h-[58px]"
-          aria-label={t.dock.routeListLabel}
+        <DockSection
+          ratio={1.45}
+          minWidth="0px"
+          className="grid grid-cols-2 max-[760px]:min-h-[58px]"
+          ariaLabel={t.dock.routeListLabel}
         >
           <button
             type="button"
@@ -171,34 +216,42 @@ export function ControlDock({
               }
             </span>
           </button>
-        </div>
-      ) : phase === "gameover" ? (
-        <button
-          className="flex min-w-[240px] flex-[1.2] cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-gold transition-colors hover:bg-gold/10 hover:text-parchment-bright max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:text-sm"
-          type="button"
-          onClick={onReset}
-        >
-          {t.dock.playAgain}{" "}
-          <ArrowRight size={21} weight="bold" aria-hidden="true" />
-        </button>
+        </DockSection>
       ) : (
-        <button
-          className="flex min-w-[240px] flex-[1.2] cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-gold transition-colors enabled:hover:bg-gold/10 enabled:hover:text-parchment-bright disabled:cursor-wait disabled:opacity-45 max-[760px]:min-h-[56px] max-[760px]:min-w-0 max-[760px]:px-3 max-[760px]:text-sm"
-          type="button"
-          onClick={onThrow}
-          disabled={isAiTurn || phase === "rolling" || phase === "moving"}
+        <DockSection
+          ratio={1.2}
+          minWidth="240px"
+          className="max-[760px]:min-h-[56px]"
         >
-          <span>
-            {isAiTurn && phase === "ready"
-              ? t.dock.throwButton.ai
-              : phase === "rolling"
-                ? t.dock.throwButton.rolling
-                : phase === "moving"
-                  ? t.dock.throwButton.moving
-                  : t.dock.throwButton.ready}
-          </span>
-          <ArrowRight size={22} weight="bold" aria-hidden="true" />
-        </button>
+          {phase === "gameover" ? (
+            <button
+              className="flex size-full cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-gold transition-colors hover:bg-gold/10 hover:text-parchment-bright max-[760px]:text-sm"
+              type="button"
+              onClick={onReset}
+            >
+              {t.dock.playAgain}{" "}
+              <ArrowRight size={21} weight="bold" aria-hidden="true" />
+            </button>
+          ) : (
+            <button
+              className="flex size-full cursor-pointer items-center justify-center gap-3 border-0 bg-transparent px-6 font-black text-gold transition-colors enabled:hover:bg-gold/10 enabled:hover:text-parchment-bright disabled:cursor-wait disabled:opacity-45 max-[760px]:px-3 max-[760px]:text-sm"
+              type="button"
+              onClick={onThrow}
+              disabled={isAiTurn || phase === "rolling" || phase === "moving"}
+            >
+              <span>
+                {isAiTurn && phase === "ready"
+                  ? t.dock.throwButton.ai
+                  : phase === "rolling"
+                    ? t.dock.throwButton.rolling
+                    : phase === "moving"
+                      ? t.dock.throwButton.moving
+                      : t.dock.throwButton.ready}
+              </span>
+              <ArrowRight size={22} weight="bold" aria-hidden="true" />
+            </button>
+          )}
+        </DockSection>
       )}
     </div>
   );
