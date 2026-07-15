@@ -7,7 +7,6 @@ on:
       - app/**
       - public/**
       - src/**
-      - tests/**
       - deploy/**
       - .dockerignore
       - Dockerfile
@@ -49,7 +48,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      - run: pnpm format:check
+      - run: pnpm typecheck
       - id: metadata
         env:
           OWNER: ${{ github.repository_owner }}

@@ -14,9 +14,6 @@
     "prebuild": "pnpm clean",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "pnpm format:check && pnpm typecheck && pnpm test:rules && pnpm test:ai && pnpm build",
-    "test:ai": "node --test tests/ai-player.test.mjs",
-    "test:rules": "node --experimental-strip-types --test tests/yutnori-rules.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

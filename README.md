@@ -42,5 +42,5 @@ YUTNORI_IMAGE=yutnori:local docker compose up -d --wait
 
 ```bash
 pnpm typecheck
-pnpm test
+pnpm build
 ```

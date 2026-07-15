@@ -217,8 +217,7 @@ Team blue/red currently live in three places: `src/styles/base.css`
 and Three.js materials in `src/scene/`.
 
 **Recommended:** make `src/game/config.ts` the single source (it already
-holds the glow variants, and game logic/tests run in Node where CSS isn't
-readable — per the project convention, game logic stays DOM-free). The DOM
+holds the glow variants, and game logic stays DOM-free). The DOM
 already receives player colors via inline `--player-color` /
 `--turn-color` / `--victory-color` style props, so:
 
@@ -250,7 +249,7 @@ every phase. Suggested one commit per phase (or per file in phase 2).
 
 After each phase:
 
-- `pnpm test` (covers format check, typecheck, rules/AI tests, and build).
+- `pnpm format:check`, `pnpm typecheck`, and `pnpm build`.
 - Manual visual pass of the four surfaces: lobby (incl. rules dialog), game
   screen with control dock through a full turn, throw-result effect, victory
   screen. Check both desktop and a ≤560px viewport (the responsive variants
