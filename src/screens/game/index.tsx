@@ -31,7 +31,7 @@ function IconButton({
 }) {
   return (
     <button
-      className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-caption font-bold text-parchment-dim transition-colors hover:text-parchment"
+      className="group flex cursor-pointer flex-col items-center gap-1 border-0 bg-transparent p-0 text-xs font-bold text-parchment-dim transition-colors hover:text-parchment"
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
@@ -66,7 +66,7 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
         className="pointer-events-none absolute inset-0 block h-full w-full"
         aria-label={t.game.canvasLabel}
       >
-        <div className="pointer-events-auto absolute top-7 left-8 z-20 max-sm:top-4 max-sm:left-3">
+        <div className="pointer-events-none absolute top-4 right-5 left-5 z-20 flex min-w-0 items-center justify-between gap-6 max-sm:top-3 max-sm:right-3 max-sm:left-3 max-sm:gap-3">
           <PlayerProgress
             player={0}
             finished={
@@ -74,43 +74,52 @@ function GameSession({ mode, onExit }: { mode: GameMode; onExit: () => void }) {
             }
             active={current === 0 && phase !== "gameover"}
           />
-        </div>
-
-        <div className="pointer-events-auto absolute top-7 right-8 z-20 flex items-start gap-7 max-sm:top-4 max-sm:right-3 max-sm:gap-3">
-          <PlayerProgress
-            player={1}
-            ai={mode === "ai"}
-            finished={
-              pieces[1].filter((piece) => piece.status === "finished").length
-            }
-            active={current === 1 && phase !== "gameover"}
-          />
-          <div className="flex items-start gap-4 border-l border-gold/35 pl-5 max-sm:gap-2 max-sm:pl-3">
-            <IconButton
-              icon={
-                sfxEnabled ? (
-                  <SpeakerHigh size={21} weight="regular" aria-hidden="true" />
-                ) : (
-                  <SpeakerSlash size={21} weight="regular" aria-hidden="true" />
-                )
+          <div className="flex min-w-0 items-center gap-7 max-sm:gap-3">
+            <PlayerProgress
+              player={1}
+              ai={mode === "ai"}
+              finished={
+                pieces[1].filter((piece) => piece.status === "finished").length
               }
-              label={t.game.sfx}
-              onClick={toggleSfx}
-              ariaLabel={sfxEnabled ? t.game.sfxOff : t.game.sfxOn}
-              pressed={sfxEnabled}
+              active={current === 1 && phase !== "gameover"}
             />
-            <IconButton
-              icon={<DoorOpen size={21} weight="regular" aria-hidden="true" />}
-              label={t.game.toLobby}
-              onClick={onExit}
-              ariaLabel={t.game.toLobbyLabel}
-            />
-            <IconButton
-              icon={<Plus size={21} weight="regular" aria-hidden="true" />}
-              label={t.game.newGame}
-              onClick={reset}
-              ariaLabel={t.game.newGameLabel}
-            />
+            <div className="pointer-events-auto flex shrink-0 items-center gap-4 border-l border-gold/35 pl-5 max-sm:gap-2 max-sm:pl-3">
+              <IconButton
+                icon={
+                  sfxEnabled ? (
+                    <SpeakerHigh
+                      size={21}
+                      weight="regular"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <SpeakerSlash
+                      size={21}
+                      weight="regular"
+                      aria-hidden="true"
+                    />
+                  )
+                }
+                label={t.game.sfx}
+                onClick={toggleSfx}
+                ariaLabel={sfxEnabled ? t.game.sfxOff : t.game.sfxOn}
+                pressed={sfxEnabled}
+              />
+              <IconButton
+                icon={
+                  <DoorOpen size={21} weight="regular" aria-hidden="true" />
+                }
+                label={t.game.toLobby}
+                onClick={onExit}
+                ariaLabel={t.game.toLobbyLabel}
+              />
+              <IconButton
+                icon={<Plus size={21} weight="regular" aria-hidden="true" />}
+                label={t.game.newGame}
+                onClick={reset}
+                ariaLabel={t.game.newGameLabel}
+              />
+            </div>
           </div>
         </div>
 

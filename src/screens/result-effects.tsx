@@ -48,7 +48,7 @@ export function VictoryEffect({ winner }: { winner: Player }) {
           className="victory-team-dot mx-auto mb-5 block size-5 rounded-full border border-parchment-bright/70 bg-[var(--victory-color)] shadow-[0_0_24px_var(--victory-color)]"
           aria-hidden="true"
         />
-        <span className="mb-4 block text-label font-bold tracking-eyebrow text-[color-mix(in_srgb,var(--victory-glow)_62%,var(--color-parchment-dim))]">
+        <span className="mb-4 block text-xs font-bold tracking-eyebrow text-[color-mix(in_srgb,var(--victory-glow)_62%,var(--color-parchment-dim))]">
           {t.victory.tag}
         </span>
         <strong className="block text-[clamp(52px,7.5vw,88px)] leading-none font-black tracking-display text-parchment-bright [text-shadow:0_0_30px_color-mix(in_srgb,var(--victory-color)_65%,transparent)]">
@@ -89,7 +89,7 @@ export function ThrowResultEffect({
       aria-hidden="true"
     >
       <div className="throw-result-lockup relative isolate z-[2] w-[min(700px,calc(100vw-24px))] px-8 py-9 text-center max-xs:px-4 max-xs:py-7">
-        <span className="mb-5 block text-caption font-bold tracking-eyebrow text-[color-mix(in_srgb,var(--result-accent)_44%,var(--color-parchment-dim))]">
+        <span className="mb-5 block text-xs font-bold tracking-eyebrow text-[color-mix(in_srgb,var(--result-accent)_44%,var(--color-parchment-dim))]">
           {t.throwEffect.tag}
         </span>
         <div className="flex items-center justify-center gap-6 max-xs:gap-3">
@@ -107,7 +107,7 @@ export function ThrowResultEffect({
             aria-hidden="true"
           />
         </div>
-        <small className="mt-6 block text-body font-bold tracking-label text-[color-mix(in_srgb,var(--result-accent)_48%,var(--color-parchment))]">
+        <small className="mt-6 block text-sm font-bold tracking-label text-[color-mix(in_srgb,var(--result-accent)_48%,var(--color-parchment))]">
           {detail}
         </small>
       </div>

@@ -49,8 +49,8 @@ function RuleCard({
 function StatBox({ label, value }: { label: ReactNode; value: ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-2 rounded-sm bg-white/4 px-2.5 py-2.25">
-      <dt className="text-body font-extrabold text-parchment">{label}</dt>
-      <dd className="m-0 text-caption font-semibold text-parchment-faint">
+      <dt className="text-sm font-extrabold text-parchment">{label}</dt>
+      <dd className="m-0 text-xs font-semibold text-parchment-faint">
         {value}
       </dd>
     </div>
@@ -83,18 +83,18 @@ function RulesDialog({ onClose }: { onClose: () => void }) {
       >
         <div className="sticky top-0 z-2 flex items-center justify-between gap-5 border-b border-gold-soft/15 bg-panel px-6.5 pt-6 pb-5 max-xs:p-4.5">
           <div>
-            <span className="mb-1.5 block text-micro font-bold tracking-eyebrow text-gold-deep">
+            <span className="mb-1.5 block text-xs font-bold tracking-eyebrow text-gold-deep">
               {t.rules.tag}
             </span>
             <h2
-              className="m-0 text-title font-black tracking-display text-parchment-bright max-xs:text-heading"
+              className="m-0 text-2xl font-black tracking-display text-parchment-bright max-xs:text-lg"
               id="rules-title"
             >
               {t.rules.title}
             </h2>
           </div>
           <button
-            className="grid size-[38px] cursor-pointer place-items-center rounded-full border border-gold-soft/20 bg-white/4 text-title font-light text-parchment hover:bg-white/9"
+            className="grid size-[38px] cursor-pointer place-items-center rounded-full border border-gold-soft/20 bg-white/4 text-2xl font-light text-parchment hover:bg-white/9"
             ref={closeButton}
             type="button"
             onClick={onClose}
@@ -106,7 +106,7 @@ function RulesDialog({ onClose }: { onClose: () => void }) {
 
         <div className="grid gap-2.5 px-6.5 pt-5 pb-6.75 max-xs:p-3.5">
           <RuleCard icon="01" title={t.rules.goal.title}>
-            <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
+            <p className="m-0 text-sm leading-[1.65] font-medium text-parchment-dim">
               {t.rules.goal.body}
             </p>
           </RuleCard>
@@ -123,13 +123,13 @@ function RulesDialog({ onClose }: { onClose: () => void }) {
           </RuleCard>
 
           <RuleCard icon="03" title={t.rules.carryCapture.title}>
-            <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
+            <p className="m-0 text-sm leading-[1.65] font-medium text-parchment-dim">
               {t.rules.carryCapture.body}
             </p>
           </RuleCard>
 
           <RuleCard icon="04" title={t.rules.shortcut.title}>
-            <p className="m-0 text-body leading-[1.65] font-medium text-parchment-dim">
+            <p className="m-0 text-sm leading-[1.65] font-medium text-parchment-dim">
               {t.rules.shortcut.body}
             </p>
           </RuleCard>
@@ -203,11 +203,11 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
                     className={`min-w-0 transition-transform duration-200 ${mode.available ? "group-hover:translate-x-1" : ""}`}
                   >
                     <strong
-                      className={`mb-1.5 block text-heading font-extrabold tracking-snug transition-colors ${active && mode.available ? "text-parchment-bright" : "text-parchment-dim"}`}
+                      className={`mb-1.5 block text-lg font-extrabold tracking-snug transition-colors ${active && mode.available ? "text-parchment-bright" : "text-parchment-dim"}`}
                     >
                       {copy.title}
                     </strong>
-                    <small className="block overflow-hidden text-xs leading-[1.35] font-medium text-ellipsis whitespace-nowrap text-parchment-faint max-xs:max-w-[210px] max-xs:text-caption">
+                    <small className="block overflow-hidden text-xs leading-[1.35] font-medium text-ellipsis whitespace-nowrap text-parchment-faint max-xs:max-w-[210px]">
                       {copy.description}
                     </small>
                   </span>
@@ -224,7 +224,7 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
                       />
                     </span>
                   ) : (
-                    <span className="rounded-full border border-gold-soft/20 px-2.25 py-1.5 text-caption font-bold whitespace-nowrap text-parchment-dim">
+                    <span className="rounded-full border border-gold-soft/20 px-2.25 py-1.5 text-xs font-bold whitespace-nowrap text-parchment-dim">
                       {t.lobby.comingSoon}
                     </span>
                   )}
@@ -234,7 +234,7 @@ export function Lobby({ onStartLocal, onStartAi }: LobbyProps) {
           </div>
 
           <button
-            className="mt-5 flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-body font-bold text-parchment-dim transition-colors hover:text-parchment"
+            className="mt-5 flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-sm font-bold text-parchment-dim transition-colors hover:text-parchment"
             type="button"
             onClick={() => setShowRules(true)}
           >
