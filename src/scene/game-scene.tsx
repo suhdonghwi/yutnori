@@ -193,7 +193,7 @@ export function Scene({
       />
 
       <group>
-        <BoardSurface previewEdgeColors={previewEdgeColors} />
+        <BoardSurface previewEdgeColors={previewEdgeColors} showFinishTrays />
 
         {movePreviews.flatMap((preview) =>
           preview.pathNodes.map((node, index) => (

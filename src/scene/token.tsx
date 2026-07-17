@@ -4,10 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import {
   NODE_POSITIONS,
+  finishSlotPosition,
+  homeSlotPosition,
   nodeForPiece,
   type BoardState,
   type NodeId,
   type PieceState,
+  type Player,
 } from "../game/rules";
 import { gameSfx } from "../audio/game-sfx";
 
@@ -65,22 +68,17 @@ export function tokenPlacement(
 ) {
   const state = pieces[player][piece];
   if (state.status === "home") {
-    const side = player === 0 ? -1 : 1;
     return {
-      position: [side * 6.5, 0.06, 1.5 - piece] as [number, number, number],
+      position: homeSlotPosition(player as Player, piece),
       count: 1,
       slot: 0,
       members: [piece],
     };
   }
   if (state.status === "finished") {
-    const side = player === 0 ? -1 : 1;
     return {
-      position: [side * 5.32, 0.06, -1.35 - piece * 0.62] as [
-        number,
-        number,
-        number,
-      ],
+      // 트레이는 말 번호가 아니라 완주 순번(stackOrder) 순서로 채웁니다.
+      position: finishSlotPosition(player as Player, state.stackOrder),
       count: 1,
       slot: 0,
       members: [piece],

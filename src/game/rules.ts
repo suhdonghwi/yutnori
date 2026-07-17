@@ -6,7 +6,8 @@ export type RouteChoice = "outer" | "shortcut";
 export type PieceState =
   | { status: "home"; route: "outer"; index: -1; stackOrder: 0 }
   | { status: "board"; route: RouteId; index: number; stackOrder: number }
-  | { status: "finished"; route: RouteId; index: number; stackOrder: 0 };
+  // 완주한 말의 stackOrder는 완주 순번입니다. 트레이를 바깥부터 채웁니다.
+  | { status: "finished"; route: RouteId; index: number; stackOrder: number };
 
 export type BoardState = PieceState[][];
 
@@ -48,6 +49,31 @@ export const NODE_POSITIONS: Record<NodeId, [number, number, number]> = {
   B4: [3.07, 0.06, 3.07],
   C: [0, 0.06, 0],
 };
+
+// 대기 말 8개는 출발점(O0) 반대편인 위 변 바깥 한 줄에, 완주 말 8개는
+// 오른쪽 변 바깥의 두 캡슐 트레이에 놓입니다. 두 줄 모두 변의 중앙에
+// 정렬합니다: 청·홍 4개씩 미러 대칭이라 가장 바깥 말이 양 꼭지점에서
+// 같은 거리에 있습니다. 0번 자리가 각 팀의 바깥쪽 끝입니다.
+const SLOT_SPACING = 0.75;
+const OUTER_SLOT = 2.92;
+
+export function homeSlotPosition(
+  player: Player,
+  piece: number,
+): [number, number, number] {
+  const along = OUTER_SLOT - piece * SLOT_SPACING;
+  return [player === 0 ? -along : along, 0.06, -6.15];
+}
+
+export function finishSlotPosition(
+  player: Player,
+  piece: number,
+): [number, number, number] {
+  const along = OUTER_SLOT - piece * SLOT_SPACING;
+  // 보드 밖 바닥은 판 윗면(0.08)보다 낮으므로, 트레이 테두리 선(0.02)에
+  // 말이 얹혀 보이도록 y를 낮춥니다.
+  return [6.75, 0, player === 0 ? along : -along];
+}
 
 export const ROUTES: Record<RouteId, NodeId[]> = {
   // O0 appears at both ends because landing on the finish line and crossing it
@@ -382,8 +408,15 @@ export function resolveMove(
       };
     });
   } else {
-    movedPieces.forEach((index) => {
-      nextBoard[player][index] = { ...movement.piece, stackOrder: 0 };
+    const finishedBefore = nextBoard[player].filter(
+      (candidate, index) =>
+        !movedPieces.includes(index) && candidate.status === "finished",
+    ).length;
+    movedPieces.forEach((index, order) => {
+      nextBoard[player][index] =
+        movement.piece.status === "finished"
+          ? { ...movement.piece, stackOrder: finishedBefore + order }
+          : { ...movement.piece, stackOrder: 0 };
     });
   }
 

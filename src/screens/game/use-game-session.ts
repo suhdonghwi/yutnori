@@ -107,11 +107,10 @@ export function useGameSession(mode: GameMode) {
       );
       const destinationNode = nodeForPiece(resolution.destination);
       const sourceNode = nodeForPiece(piece);
+      // 완주·홈 복귀는 노드 밖(받침·대기석)의 실제 자리에 미리보기를 띄웁니다.
       const destinationPosition = destinationNode
         ? NODE_POSITIONS[destinationNode]
-        : resolution.destination.status === "finished"
-          ? NODE_POSITIONS.O0
-          : tokenPlacement(resolution.board, current, pieceIndex).position;
+        : tokenPlacement(resolution.board, current, pieceIndex).position;
       const isBranchPreview = hasRouteChoice;
       const isCenterPreview = nodeForPiece(piece) === "C";
       return {

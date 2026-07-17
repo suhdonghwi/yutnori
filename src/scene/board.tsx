@@ -7,7 +7,9 @@ import {
   BOARD_NODE_IDS,
   MAJOR_NODE_IDS,
   NODE_POSITIONS,
+  finishSlotPosition,
   type NodeId,
+  type Player,
 } from "../game/rules";
 
 export function boardEdgeKey(from: NodeId, to: NodeId) {
@@ -76,6 +78,48 @@ function BoardNode({
   );
 }
 
+// 완주한 말 4개가 모이는 보드 밖 구역. 금색 캡슐 테두리 선 하나로만
+// 표시하고, 비어 있을 때도 항상 보여서 말이 빠져나갈 자리를 알 수 있게
+// 합니다.
+function stadiumOutlineGeometry(
+  halfStraight: number,
+  radius: number,
+  strokeWidth: number,
+) {
+  const outline = (r: number) => {
+    const path = new THREE.Shape();
+    path.absarc(halfStraight, 0, r, -Math.PI / 2, Math.PI / 2, false);
+    path.absarc(-halfStraight, 0, r, Math.PI / 2, (3 * Math.PI) / 2, false);
+    return path;
+  };
+  const shape = outline(radius);
+  shape.holes.push(outline(radius - strokeWidth));
+  const geometry = new THREE.ShapeGeometry(shape, 32);
+  geometry.rotateX(-Math.PI / 2);
+  return geometry;
+}
+
+// halfStraight는 슬롯 간격(0.75) 3칸의 절반과 맞춰야 합니다.
+const TRAY_GEOMETRY = stadiumOutlineGeometry(1.125, 0.55, 0.055);
+
+function FinishTray({
+  position,
+  rotationY,
+}: {
+  position: [number, number, number];
+  rotationY: number;
+}) {
+  return (
+    <group position={position} rotation={[0, rotationY, 0]}>
+      {/* 말 밑면(0.04) 바로 아래에 그려 어느 시점에서든 말이 선 안에 앉아
+          보이게 합니다. */}
+      <mesh geometry={TRAY_GEOMETRY} position={[0, 0.035, 0]}>
+        <meshBasicMaterial color="#c9a24e" toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
 function BoardPathSegment({
   from,
   to,
@@ -121,8 +165,10 @@ function BoardPathSegment({
 
 export function BoardSurface({
   previewEdgeColors,
+  showFinishTrays,
 }: {
   previewEdgeColors?: ReadonlyMap<string, string>;
+  showFinishTrays?: boolean;
 }) {
   return (
     <group>
@@ -181,6 +227,19 @@ export function BoardSurface({
           major={MAJOR_NODE_IDS.has(node)}
         />
       ))}
+
+      {showFinishTrays &&
+        ([0, 1] as Player[]).map((player) => {
+          const first = finishSlotPosition(player, 0);
+          const last = finishSlotPosition(player, 3);
+          return (
+            <FinishTray
+              key={`finish-tray-${player}`}
+              position={[(first[0] + last[0]) / 2, 0, (first[2] + last[2]) / 2]}
+              rotationY={-Math.PI / 2}
+            />
+          );
+        })}
     </group>
   );
 }
