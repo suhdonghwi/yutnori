@@ -50,7 +50,9 @@ export const NODE_POSITIONS: Record<NodeId, [number, number, number]> = {
 };
 
 export const ROUTES: Record<RouteId, NodeId[]> = {
-  outer: Array.from({ length: 20 }, (_, index) => `O${index}`),
+  // O0 appears at both ends because landing on the finish line and crossing it
+  // are distinct states.
+  outer: [...Array.from({ length: 20 }, (_, index) => `O${index}`), "O0"],
   "shortcut-a": [
     "O5",
     "A1",
@@ -63,8 +65,9 @@ export const ROUTES: Record<RouteId, NodeId[]> = {
     "O17",
     "O18",
     "O19",
+    "O0",
   ],
-  "shortcut-b": ["O10", "B1", "B2", "C", "B3", "B4"],
+  "shortcut-b": ["O10", "B1", "B2", "C", "B3", "B4", "O0"],
 };
 
 export const BOARD_EDGES: [NodeId, NodeId][] = [
@@ -196,13 +199,24 @@ function moveBackward(piece: PieceState): {
   waypoints: NodeId[];
 } {
   if (piece.status !== "board") return { piece: { ...piece }, waypoints: [] };
+  if (nodeForPiece(piece) === "O0" && piece.index > 0) {
+    return {
+      piece: {
+        status: "board",
+        route: "outer",
+        index: 1,
+        stackOrder: piece.stackOrder,
+      },
+      waypoints: ["O1"],
+    };
+  }
   if (piece.route === "outer" && piece.index === 1) {
     return {
       piece: {
-        status: "finished",
+        status: "board",
         route: "outer",
-        index: ROUTES.outer.length,
-        stackOrder: 0,
+        index: ROUTES.outer.length - 1,
+        stackOrder: piece.stackOrder,
       },
       waypoints: ["O0"],
     };
