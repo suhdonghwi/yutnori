@@ -1,4 +1,4 @@
-name: Deploy to Lightsail
+name: Deploy to Devbox
 
 on:
   push:
@@ -80,62 +80,72 @@ jobs:
     permissions:
       packages: read
     steps:
-      - name: Configure SSH
-        env:
-          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          LIGHTSAIL_KNOWN_HOSTS: ${{ secrets.LIGHTSAIL_KNOWN_HOSTS }}
-          LIGHTSAIL_SSH_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
-        run: |
-          set -euo pipefail
-          test -n "$LIGHTSAIL_HOST"
-          test -n "$LIGHTSAIL_KNOWN_HOSTS"
-          test -n "$LIGHTSAIL_SSH_KEY"
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$LIGHTSAIL_SSH_KEY" > ~/.ssh/lightsail
-          chmod 600 ~/.ssh/lightsail
-          printf '%s\n' "$LIGHTSAIL_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Connect runner to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: ${{ secrets.VPS_HOST }}
 
       - name: Deploy immutable image
         env:
           DEPLOY_SHA: ${{ github.sha }}
           GHCR_TOKEN: ${{ github.token }}
           GHCR_USER: ${{ github.repository_owner }}
-          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USERNAME }}
           YUTNORI_IMAGE: ${{ needs.build.outputs.image }}
         run: |
           set -euo pipefail
-          user="${LIGHTSAIL_USER:-ubuntu}"
-          printf '%s' "$GHCR_TOKEN" | ssh -i ~/.ssh/lightsail "$user@$LIGHTSAIL_HOST" \
+          target="$VPS_USER@$VPS_HOST"
+          printf '%s' "$GHCR_TOKEN" | ssh -T \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=30 \
+            "$target" \
             "docker login ghcr.io -u '$GHCR_USER' --password-stdin"
-          ssh -i ~/.ssh/lightsail "$user@$LIGHTSAIL_HOST" \
+          ssh -T \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=30 \
+            "$target" \
             "DEPLOY_SHA='$DEPLOY_SHA' YUTNORI_IMAGE='$YUTNORI_IMAGE' bash -s" <<'REMOTE'
           set -euo pipefail
-          cd /home/ubuntu/yutnori
+          cd "$HOME/projects/yutnori"
           test -z "$(git status --porcelain)"
           git fetch origin main
           git checkout --detach "$DEPLOY_SHA"
           YUTNORI_IMAGE="$YUTNORI_IMAGE" docker compose config --quiet
-          YUTNORI_IMAGE="$YUTNORI_IMAGE" docker compose pull web
-          YUTNORI_IMAGE="$YUTNORI_IMAGE" docker compose up -d --no-deps --wait web
+          YUTNORI_IMAGE="$YUTNORI_IMAGE" docker compose pull
+          YUTNORI_IMAGE="$YUTNORI_IMAGE" docker compose up -d --wait --remove-orphans
           REMOTE
 
       - name: Verify container health
         env:
-          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USERNAME }}
           YUTNORI_IMAGE: ${{ needs.build.outputs.image }}
         run: |
           set -euo pipefail
-          user="${LIGHTSAIL_USER:-ubuntu}"
-          ssh -i ~/.ssh/lightsail "$user@$LIGHTSAIL_HOST" \
-            "cd /home/ubuntu/yutnori && YUTNORI_IMAGE='$YUTNORI_IMAGE' docker compose ps web"
+          target="$VPS_USER@$VPS_HOST"
+          ssh -T \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=30 \
+            "$target" \
+            "cd \"\$HOME/projects/yutnori\" && YUTNORI_IMAGE='$YUTNORI_IMAGE' docker compose ps"
 
-      - name: Logout from GHCR on Lightsail
+      - name: Logout from GHCR on Devbox
         if: always()
         env:
-          LIGHTSAIL_HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          LIGHTSAIL_USER: ${{ secrets.LIGHTSAIL_USER }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USERNAME }}
         run: |
-          user="${LIGHTSAIL_USER:-ubuntu}"
-          ssh -i ~/.ssh/lightsail "$user@$LIGHTSAIL_HOST" "docker logout ghcr.io || true" || true
+          target="$VPS_USER@$VPS_HOST"
+          ssh -T \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=accept-new \
+            -o ConnectTimeout=30 \
+            "$target" \
+            "docker logout ghcr.io || true" || true

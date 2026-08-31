@@ -1,0 +1,3 @@
+jammy.fun, www.jammy.fun {
+	reverse_proxy web:80
+}
