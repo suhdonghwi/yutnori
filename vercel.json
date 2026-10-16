@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/", "destination": "/yut/", "permanent": false },
+    { "source": "/yut", "destination": "/yut/", "permanent": true }
+  ],
+  "rewrites": [{ "source": "/yut/:path*", "destination": "/:path*" }],
+  "headers": [
+    {
+      "source": "/yut/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}
